@@ -1,9 +1,17 @@
+/* The rc variable below will already be declared before this script is loaded.
+That way we can reference variables set in our VF Page that we wouldn't have access to here.
+*/
 rc = rc || {};
 rc.utils = rc.utils || {};
 
+/* Here are the variables that should already be set in the VF Page that includes this script */
+console.log('var rc.ns in rc.js = ' + rc.ns);
 
-console.log('var rc.ns in utils.js = ' + rc.ns);
 
+
+
+
+/* util methods below */
 
 /* Helper to convert quoted HTML into text */
 rc.text = function(text) {
