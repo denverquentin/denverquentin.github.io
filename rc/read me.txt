@@ -1,0 +1,13 @@
+The files in this zipped folder are used on the Campaign_DesignForm VF Page.
+We needed to break out the css and js into cachable files to improve load
+time and prevent bandwidth overages for high use clients.
+
+Each file we use has 2 versions, a full version and a minified version.
+The Campaign_DesignForm VF Page uses the minified versions but for ease
+of use, the non-minified version should be the one that's edited/changed.
+Once the non-minified version has been edited/changed, you will need to
+minify it using one of these websites and paste the minified code into
+the corresponding .min.js or .min.css file.
+
+http://csscompressor.com/
+http://javascript-compressor.com/
