@@ -635,7 +635,7 @@ div.rc-error-label {
 	border-right:none;
 }
 
-/* FA library bootstrap override fix  - keep these at the very bottom of the css 
+/* FA library bootstrap override fix  - keep these at the very bottom of the css */
 .fa.btn-sm, .fa.btn-xs {
 	padding:5px 10px !important;
 	font-size:12px;
@@ -646,4 +646,3 @@ div.rc-error-label {
 .btn-sm {
 	padding:5px 16px !important;
 }
-*/
