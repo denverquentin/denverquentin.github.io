@@ -638,7 +638,6 @@ div.rc-error-label {
 }
 
 /* referenced on Campaign_Design_Form_Modal_Templates */
-/*
 #rc-modal-edit-columns th, #rc-modal-edit-columns td {
 	border-right:1px solid #e5e5e5;
 	text-align:center;
@@ -647,4 +646,3 @@ div.rc-error-label {
 #rc-modal-edit-columns th:last-child, #rc-modal-edit-columns td:last-child {
 	border-right:none;
 }
-*/
