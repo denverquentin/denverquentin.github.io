@@ -613,7 +613,7 @@ div.rc-error-label {
 	word-wrap:break-word;
 }
 
-/* referenced on Campaign_Design_Form_Merge_Field */
+/* referenced on Campaign_Design_Form_Merge_Field 
 .rc-placeholder-link {
     margin-left:54px;
     width:1px;
@@ -624,8 +624,8 @@ div.rc-error-label {
     text-align:right;
     padding-top:3px;
 }
-
-/* referenced on Campaign_Design_Form_Modal_Templates */
+*/
+/* referenced on Campaign_Design_Form_Modal_Templates 
 #rc-modal-edit-columns th, #rc-modal-edit-columns td {
 	border-right:1px solid #e5e5e5;
 	text-align:center;
@@ -634,8 +634,8 @@ div.rc-error-label {
 #rc-modal-edit-columns th:last-child, #rc-modal-edit-columns td:last-child {
 	border-right:none;
 }
-
-/* FA library bootstrap override fix  - keep these at the very bottom of the css */
+*/
+/* FA library bootstrap override fix  - keep these at the very bottom of the css 
 .fa.btn-sm, .fa.btn-xs {
 	padding:5px 10px !important;
 	font-size:12px;
@@ -646,3 +646,4 @@ div.rc-error-label {
 .btn-sm {
 	padding:5px 16px !important;
 }
+*/
