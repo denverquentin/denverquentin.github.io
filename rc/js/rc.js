@@ -2,27 +2,9 @@
 That way we can reference variables set in our VF Page that we wouldn't have access to here.
 */
 rc = rc || {};
-rc.utils = rc.utils || {};
+rc.text = function(text) { return $('<div></div>').html(text).text(); };
+rc.html = function(text) { return $('<div></div>').html(text).html(); };
 
-/* Here are the variables that should already be set in the VF Page that includes this script */
-console.log('var rc.ns in rc.js = ' + rc.ns);
-
-
-
-
-
-/* util methods below */
-
-/* Helper to convert quoted HTML into text */
-rc.text = function(text) {
-	return $('<div></div>').html(text).text();
-};
-
-rc.html = function(text) {
-	return $('<div></div>').html(text).html();
-};
-
-/* Encode / decode html entities */
 rc.html_encode = function(text) {
 	text = text || "";
 	text = text.replace(new RexExp('&', 'g'), '&' + 'amp;');
@@ -43,8 +25,7 @@ rc.html_decode = function(text) {
 	return text;
 };
 
-/* Helper to convert string date to SF number date */
-rc.date = function(originalDate) {
+rc.date = function(originalDate) {/* Helper to convert string date to SF number date */
 	if (originalDate) {
 		return new Date(originalDate).getTime();
 	} else {
@@ -52,7 +33,7 @@ rc.date = function(originalDate) {
 	}
 };
 
-rc.cleanKeysToLower = function(sourceObject){
+rc.cleanKeysToLower = function(sourceObject) {
 	var key;
 	var keys = rc.getKeys(sourceObject);
 	var n = keys.length;
@@ -64,8 +45,7 @@ rc.cleanKeysToLower = function(sourceObject){
 	return targetObject;
 };
 
-/* Create a random ID for the component */
-rc.guid = function() {
+rc.guid = function() {/* Create a random ID for the component */
 	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 		var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
 		return v.toString(16);
@@ -81,15 +61,13 @@ rc.stripTags = function(valueText,tag) {
 rc.getKeys = function (obj) {
 	var r = []
 	for (var k in obj) {
-		if (!obj.hasOwnProperty(k))
-			continue
+		if (!obj.hasOwnProperty(k)) {continue;}
 		r.push(k)
 	}
 	return r;
 };
 
-/* filter / decode data for components */
-rc.utils.filterComponentData = function(componentsArray) {
+rc.filterComponentData = function(componentsArray) {/* filter / decode data for components */
 	rc.context(componentsArray).each(function(index, component_data) {
 		var data = component_data || {};
 		data.data = data.data || {};
@@ -118,8 +96,7 @@ rc.setModeFlow = function() {
 	return returnVal;
 };
 
-/* utils/library extensions */
-Number.prototype.formatMoney = function(c, d, t) {
+Number.prototype.formatMoney = function(c, d, t) {/* utils/library extensions */
 	var n = this, 
 	c = isNaN(c = Math.abs(c)) ? 2 : c, 
 	d = d == undefined ? "." : d, 
