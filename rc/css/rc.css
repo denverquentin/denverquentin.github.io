@@ -646,3 +646,7 @@ div.rc-error-label {
 .btn-sm {
 	padding:5px 16px !important;
 }
+
+form[data-mode="view"] [css-display="hidden"] {
+	display:none !important;
+}
