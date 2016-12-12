@@ -10,7 +10,50 @@ rc.ui = rc.ui || {};
 rc.components = rc.components || {};
 rc.dataModal = rc.dataModal || {}
 
-/// DONE & TESTED BELOW! FINISH TODO'S AS LAST STEP
+rc.initializeFormApp = function() {
+	rc.components.initialize('.modal');// Copy data templates in modal templates
+	rc.components.initialize('.page-header');// Initialize actions in the page header
+	// Component list sorting
+	rc.context('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
+	// Make sure the body tag has a css target
+	rc.context('body').addClass('rc-content-css');
+	// Inline image data
+	rc.context('#rc-component-overview--attach-image').on('change',function() {
+		var freader = new FileReader();
+		var context = rc.context('#rc-component-overview--attach-image');
+		context.removeAttr('data-image-data');
+		if (this.files && this.files[0]) {
+			freader.onloadend = function(event) {
+				context.attr('data-image-data', event.target.result);
+			};
+			freader.readAsDataURL(this.files[0]);
+		}
+	});
+	rc.selectFormInfoList();// Load the form data
+	// Which page mode is set?
+	rc.context('#rc-page-container').find('.page-header [data-value="' + rc.getParam('mode') + '"]').click();
+	//on view change refresh html block elements to toggle between html<->text views
+	rc.events.on('view-change',rc.components.HtmlBlock.refreshView);
+	// on view change, toggle placeholder values shown in fields
+	rc.events.on('view-change',rc.rollupPlaceholderValues);// todo: changed view-cahnge to view-change
+	// on view change, toggle default values shown in fields
+	rc.events.on('view-change',rc.rollupDefaultValues);
+	rc.events.on('form-loaded-with-data',function(event) {
+		//functions to initialize components which depends on all components + data load
+		//here we have guarantee all components and data is loaded
+		//if validations enabled initialize the scene
+		rc.validateInput.initialize(); // call into Campaign_Design_Form_Validator.component
+		rc.ui.setDropdownVisible();
+		rc.ui.removeRedundantOpacity();
+	});
+	// todo: only call the next 2 if in edit mode
+	// also only make these methods visible if in edit mode - they're only called from right here
+	if (rc.isEditMode) {
+		rc.initializeModals();
+		rc.initializeHeaderButtons();
+	}
+};
+
 rc.initializeParams = function() {
 	rc.params = {};
 	var hash = (window.location.hash || '#!mode=view').substring(2);
