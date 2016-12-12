@@ -114,15 +114,6 @@ rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
 };
 
 rc.selectFormData = function() {
-/*
-	rc.siteUrl = '{!siteUrl}';
-	rc.isEditMode = {!isEditable};
-	rc.campaignId = '{!campaign.Id}';
-	rc.merchantName = '{!campaign.Merchant_Name__c}';
-	rc.paramForm = '{!$CurrentPage.Parameters.Form}';
-	rc.paramData = '{!$CurrentPage.Parameters.Data}';
-	*/
-
 	// Set the page name param
 	var form = rc.paramForm || rc.getParam('form');
 	rc.setParam('form', rc.context(this).attr('data-value') || form);
@@ -258,12 +249,6 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 		}
 	}
 	rc.events.trigger("form-loaded-with-data");
-	// Did we find existing results? Ignore the rest of this
-	if (Object.keys(recv).length) {return;}
-	// No result, but a campaign member ID?
-	if ('{!$CurrentPage.Parameters.CampaignMemberId}') {return rc.selectCampaignMemberData();}
-	// No result, but a contact ID?
-	if ('{!$CurrentPage.Parameters.ContactId}') {return rc.selectContactData();}
 };
 
 rc.selectData.fail = function(deferred, send, recv, meta) {
