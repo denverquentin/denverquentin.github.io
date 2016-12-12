@@ -328,6 +328,96 @@ rc.ui.toggleHiddenFields = function(component) {
 	return true;
 }
 
+rc.components.renderDataTemplates = function(component) {
+	// Copy templates
+	component.find('[data-template]').each(function() {
+		var name = rc.context(this).attr('data-template');
+		var html = rc.context(name).html();
+		//recursively replace templates (if any)
+		var templateElem = rc.context(html);
+		templateElem = rc.components.renderDataTemplates(templateElem);
+		rc.context(this).prepend(templateElem);
+	});
+	return component;
+};
+
+rc.components.pickListValues = function() {
+	var responsePickValsArr = null;
+	return {
+		fillPickListValues : function(keyField) {
+			rc.remoting.invokeAction(rc.actions.getPickListInfoMap, rc.ns+'batch_upload__c',this.donefunction);
+		},
+		donefunction : function(response) {
+			responsePickValsArr = response;
+			for (var fieldName in responsePickValsArr) {
+				if (hasOwnProperty.call(responsePickValsArr, fieldName)) {
+					var optionsArray = responsePickValsArr[fieldName] || [] ;
+					var picklist = rc.context("select[data-field-name="+fieldName+"]");
+					if (!picklist) {continue;}
+					picklist.html('');
+					rc.context(optionsArray).each(function() {
+						picklist.append(rc.context('<option>', {value:this}).text(this));
+					});
+				}
+			}
+		},
+		populatePicklistValue : function(pickListElem,fieldName) {
+			if (responsePickValsArr == null) {
+				return pickListElem;
+			} else {
+				var optionsArray = responsePickValsArr[fieldName] || [];
+				pickListElem.html('');
+				rc.context(optionsArray).each(function() {
+					pickListElem.append(rc.context('<option>', { value : this }).text(this));
+				});
+			}
+		},
+		getvals : function() {
+			return responsePickValsArr;
+		}
+	}
+} ();// todo: what's this nubin?
+
+rc.components.remoting.send = function(deferred, send, done, fail) {
+	send.__campaign = send.__campaign || rc.campaignId;
+	send.__mode = send.__mode || rc.getParam('mode');
+	send.__form = send.__form || rc.getParam('form') || rc.paramForm || null;
+	send.__data = send.__data || rc.getParam('data') || rc.paramData || null;
+	deferred = deferred || new jQuery.Deferred();
+	done = done || function(send, recv, meta) {};
+	fail = fail || function(send, recv, meta) {};
+	/* The return below to allow a rejected promise returned from the done handler to trigger the fail() path */
+	deferred.done(function(send, recv, meta) {return done(deferred, send, recv, meta);});
+	deferred.fail(function(send, recv, meta) {fail(deferred, send, recv, meta);});
+	deferred.always(function() {rc.ui.markProcessingDone();});
+	rc.remoting.invokeAction(send.__action, send, function(recv, meta) {// Fetch data
+		send = send || {};
+		recv = recv || {};
+		meta = meta || {};
+		if (meta.status) {
+			deferred.resolve(send, recv, meta);
+		} else {
+			deferred.reject(send, recv, meta);
+		}
+	});
+	rc.ui.markProcessing();// Update UI
+	return deferred.promise();
+};
+
+rc.components.insert = function(template, container) {
+	var component = rc.context(template).clone();
+	component.removeAttr('id');
+	component.removeClass('rc-template');
+	component.show();
+	// Initialize template and elements
+	rc.components.initialize(component);
+	// Add to container
+	rc.context(container).append(component);
+	return component;
+};
+
+
+
 /* Data Model - used in all modes */
 rc.dataModal.BatchUploadModel = {};
 rc.dataModal.getFieldByName = function(fieldName, fieldSelector) {
