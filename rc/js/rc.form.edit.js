@@ -3,8 +3,40 @@ Feel free to put loads of comments in the code and be sure to minify
 this script any time it's edited. The Campaign_DesignForm.page should
 always load the minified version. */
 console.log('LOADED rc.form.edit.js - MUST BE IN EDIT MODE!!!!');
+rc = rc || {};
+rc.ui = rc.ui || {};
+rc.modal = rc.modal || {};
 
-rc.modal = {};
+rc.ui.markUnsavedChanges = function() {
+	rc.context('#rc-ui-icon-unsaved-changes').show();
+};
+
+rc.ui.markProcessing = function() {
+	rc.ui.markProcessing.queue.push(true);// Push onto list for tracking
+	rc.context('#rc-ui-icon-processing').show();// Update UI
+};
+
+rc.ui.markProcessingDone = function(data) {
+	if (rc.ui.markProcessing.queue.length == 1) {rc.context('#rc-ui-icon-processing').hide();}
+	if (data != null && data.modified == false) {rc.context('#rc-ui-icon-unsaved-changes').hide();}
+	rc.ui.markProcessing.queue.pop();
+};
+rc.ui.markProcessing.queue = [];
+
+rc.ui.showProcessingModal = function() {
+	rc.ui.showProcessingModal.queue.push(true);
+	rc.context('#rc-modal-processing').modal('show');
+}
+
+rc.ui.releaseProcessingModal = function() {
+	rc.ui.showProcessingModal.queue.pop();
+	if (rc.ui.showProcessingModal.queue.length == 0) {rc.context('#rc-modal-processing').modal('hide');}
+}
+
+rc.ui.showProcessingModal.queue = [];
+
+
+
 rc.modal.loadContainerCSS = function() {
 	rc.console.debug('rc.modal.loadContainerCSS', this);
 	var component = rc.context('.rc-selected').filter(':first');
@@ -266,4 +298,3 @@ rc.modal.confirmInsertForm = function() {
 	rc.selectFormInfoList();// Reselect form name list
 	rc.context(this).closest('.modal').modal('hide');// Dismiss modal
 };
-
