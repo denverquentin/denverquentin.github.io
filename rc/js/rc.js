@@ -10,16 +10,6 @@ rc.ui = rc.ui || {};
 rc.components = rc.components || {};
 rc.dataModal = rc.dataModal || {}
 
-rc.context(document).ready(function() { // TAOS-798
-	rc.initializeFormApp();
-	$(document).on('keyup keypress', 'form input[type="text"]', function(e) {
-		if (e.keyCode == 13) {
-			e.preventDefault();
-			return false;
-		}
-	});
-});
-
 rc.initializeFormApp = function() {
 	rc.components.initialize('.modal');// Copy data templates in modal templates
 	rc.components.initialize('.page-header');// Initialize actions in the page header
@@ -63,6 +53,16 @@ rc.initializeFormApp = function() {
 		rc.initializeHeaderButtons();
 	}
 };
+
+rc.context(document).ready(function() { // TAOS-798
+	rc.initializeFormApp();
+	$(document).on('keyup keypress', 'form input[type="text"]', function(e) {
+		if (e.keyCode == 13) {
+			e.preventDefault();
+			return false;
+		}
+	});
+});
 
 rc.initializeParams = function() {
 	rc.params = {};
