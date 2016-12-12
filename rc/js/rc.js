@@ -55,6 +55,7 @@ rc.initializeFormApp = function() {
 };
 
 rc.context(document).ready(function() { // TAOS-798
+	rc.initializeParams();// todo: does this work here?
 	rc.initializeFormApp();
 	$(document).on('keyup keypress', 'form input[type="text"]', function(e) {
 		if (e.keyCode == 13) {
@@ -75,6 +76,90 @@ rc.initializeParams = function() {
 		if (data[1] == 'false') {data[1] = false;}
 		// Save param
 		rc.setParam(data[0], data[1]);
+	});
+};
+
+// todo: move to edit only
+rc.initializeModals = function() {
+	// Bind modal : confirm clone
+	rc.context('#rc-modal-confirm-clone').find('[data-action="confirm"]').on('click', rc.modal.confirmClone);
+	// Bind modal : confirm delete
+	rc.context('#rc-modal-confirm-delete').find('[data-action="confirm"]').on('click', rc.modal.confirmDelete);
+	// Bind modal : confirm delete form
+	rc.context('#rc-modal-confirm-delete-form').find('[data-action="confirm"]').on('click', rc.modal.confirmDeleteForm);
+	// Bind modal : confirm insert form
+	rc.context('#rc-modal-confirm-insert-form').find('[data-action="confirm"]').on('click', rc.modal.confirmInsertForm);
+	// Bind modal : confirm rename form
+	rc.context('#rc-modal-confirm-rename-form').find('[data-action="confirm"]').on('click', rc.modal.confirmRenameForm);
+	// Bind modal : configure layout
+	rc.context('#rc-modal-edit-columns').on('show.bs.modal', rc.modal.loadContainerColumns);
+	rc.context('#rc-modal-edit-columns').find('[data-action="save"]').on('click', rc.modal.saveContainerColumns);
+	// Bind modal : configure css
+	rc.context('#rc-modal-edit-css').on('show.bs.modal', rc.modal.loadContainerCSS);
+	rc.context('#rc-modal-edit-css').find('[data-action="save"]').on('click', rc.modal.saveContainerCSS);
+	// Bind modal : insert component
+	rc.context('#rc-modal-insert-component').on('show.bs.modal', rc.modal.loadInsertComponent);
+	rc.context('#rc-modal-insert-component').find('[data-action="save"]').on('click', rc.modal.saveInsertComponent);
+	// Bind modal : help wizard
+	rc.context('#rc-modal-help-wizard').on('show.bs.modal', rc.modal.loadHelpWizard);
+	rc.context('#rc-modal-help-wizard').find('[data-action="prev"]').on('click', rc.modal.prevHelpWizard);
+	rc.context('#rc-modal-help-wizard').find('[data-action="next"]').on('click', rc.modal.nextHelpWizard);
+	// Bind modal : help wizard : Remove the youtube link from it stops playing
+	rc.context('#rc-modal-help-wizard').find('[data-action="undo"]').on('click', function() {
+		rc.context('#rc-modal-help-wizard').find('iframe[src]').attr('src', '');
+	});
+	// Bind modal : help wizard : Bind clicks on the buttons to load those body sections
+	rc.context('#rc-modal-help-wizard').find('.modal-header .btn[data-value]').on('click', function() {
+		var form = rc.context(this).closest('.modal');
+		var step = rc.context(this).attr('data-value');
+		var body = form.find('.modal-body[data-step="' + step + '"]');
+		// Set the youtube video
+		form.find('iframe').attr('src', body.attr('data-video-source'));
+		// Hide the rest of the body items
+		form.find('.modal-body').hide();
+		body.show();
+	});
+};
+
+// todo: only design/edit mode?
+rc.initializeHeaderButtons = function() {
+	// Bind page header buttons
+	rc.context('#rc-page-container').find('.page-header [data-value="view"]').on('click', rc.ui.toggleContentEditable);
+	rc.context('#rc-page-container').find('.page-header [data-value="view"]').on('click', rc.setModeView);
+	rc.context('#rc-page-container').find('.page-header [data-value="edit"]').on('click', rc.ui.toggleContentEditable);
+	rc.context('#rc-page-container').find('.page-header [data-value="edit"]').on('click', rc.setModeEdit);
+	rc.context('#rc-page-container').find('.page-header [data-value="flow"]').on('click', rc.ui.toggleContentEditable);
+	rc.context('#rc-page-container').find('.page-header [data-value="flow"]').on('click', rc.setModeFlow);
+	rc.context('#rc-page-container').find('.page-header [data-action="rc-action-save"]').on('click', function() {
+		rc.upsertFormData();
+	});
+	// Add sections
+	rc.context('#rc-page-container').find('.page-header [data-action="rc-action-insert-section"]').on('click', function() {
+		var data = {data:{columns:rc.context(this).attr('data-value')}};
+		rc.components.insertColumnList('#rc-container-list',data);
+		rc.ui.markUnsavedChanges();
+	});
+	// Add workflow
+	rc.context('#rc-page-container').find('.page-header [data-action="rc-action-insert-workflow"]').on('click', function() {
+		rc.components.insertWorkflow('#rc-workflows-list',{});
+		rc.ui.markUnsavedChanges();
+	});
+	// Theme selection
+	rc.context('#rc-theme-menu').find('a').on('click', function() {
+		var href = '//netdna.bootstrapcdn.com/bootswatch/3.0.2/#[href]/bootstrap.min.css'
+		var name = (rc.context(this).attr('data-value') || '').toLowerCase();
+		rc.context('#rc-theme-link').attr('href',href.replace('#[href]',name));
+		rc.context('#rc-theme-link').attr('data-name',name);
+	});
+};
+
+rc.reenable = function(el) {
+	if (el) {el.prop("disabled",false);}
+}
+
+rc.reInitProductSlots = function() {
+	rc.context(".rc-component").each(function(index,component) {
+		rc.updateProductSlots(rc.context(component));
 	});
 };
 
@@ -312,7 +397,83 @@ rc.selectData.fail = function(deferred, send, recv, meta) {
 	rc.console.debug('.. meta', meta);
 };
 
-rc.initializeParams();// todo: find a better place to call this
+//Events component start
+//Product Slots Management
+rc.productSlots = [rc.ns+'product_1_product_code__c',rc.ns+'product_2_product_code__c',
+	rc.ns+'product_3_product_code__c',rc.ns+'product_4_product_code__c',rc.ns+'product_5_product_code__c',
+	rc.ns+'product_6_product_code__c',rc.ns+'product_7_product_code__c',rc.ns+'product_8_product_code__c',
+	rc.ns+'product_9_product_code__c',rc.ns+'product_10_product_code__c',rc.ns+'product_11_product_code__c',
+	rc.ns+'product_12_product_code__c',rc.ns+'product_13_product_code__c',rc.ns+'product_14_product_code__c',
+	rc.ns+'product_15_product_code__c',rc.ns+'product_16_product_code__c',rc.ns+'product_17_product_code__c',
+	rc.ns+'product_18_product_code__c',rc.ns+'product_19_product_code__c',rc.ns+'product_20_product_code__c'];
+rc.prodMap = {};
+rc.prodMap[rc.ns+'product_1_product_code__c'] = rc.ns+'product_1';
+rc.prodMap[rc.ns+'product_2_product_code__c'] = rc.ns+'product_2';
+rc.prodMap[rc.ns+'product_3_product_code__c'] = rc.ns+'product_3';
+rc.prodMap[rc.ns+'product_4_product_code__c'] = rc.ns+'product_4';
+rc.prodMap[rc.ns+'product_5_product_code__c'] = rc.ns+'product_5';
+rc.prodMap[rc.ns+'product_6_product_code__c'] = rc.ns+'product_6';
+rc.prodMap[rc.ns+'product_7_product_code__c'] = rc.ns+'product_7';
+rc.prodMap[rc.ns+'product_8_product_code__c'] = rc.ns+'product_8';
+rc.prodMap[rc.ns+'product_9_product_code__c'] = rc.ns+'product_9';
+rc.prodMap[rc.ns+'product_10_product_code__c'] = rc.ns+'product_10';
+rc.prodMap[rc.ns+'product_11_product_code__c'] = rc.ns+'product_11';
+rc.prodMap[rc.ns+'product_12_product_code__c'] = rc.ns+'product_12';
+rc.prodMap[rc.ns+'product_13_product_code__c'] = rc.ns+'product_13';
+rc.prodMap[rc.ns+'product_14_product_code__c'] = rc.ns+'product_14';
+rc.prodMap[rc.ns+'product_15_product_code__c'] = rc.ns+'product_15';
+rc.prodMap[rc.ns+'product_16_product_code__c'] = rc.ns+'product_16';
+rc.prodMap[rc.ns+'product_17_product_code__c'] = rc.ns+'product_17';
+rc.prodMap[rc.ns+'product_18_product_code__c'] = rc.ns+'product_18';
+rc.prodMap[rc.ns+'product_19_product_code__c'] = rc.ns+'product_19';
+rc.prodMap[rc.ns+'product_20_product_code__c'] = rc.ns+'product_20';
+
+rc.getProductSlot = function() {
+	if (rc.productSlots.length==0) {return null;}
+	return rc.productSlots.shift();
+}
+
+rc.emptyProductSlot = function(slot) {
+	if (slot && slot!=null && slot!=undefined) {rc.productSlots.push(slot);}
+}
+
+rc.occupyProductSlot = function(slot) {
+	var index = rc.productSlots.indexOf(slot);
+	if (index>-1 && rc.productSlots.length>0) {rc.productSlots.splice(index, 1);};
+};
+
+rc.validateProductSlot = function(field,value) {
+	var index = rc.productSlots.indexOf(field);
+	if (index>-1 && rc.productSlots.length>0) {
+		//if code not empty, ie slot not empty, remove from avail queue
+		if (value && rc.context.trim(value)!='') {rc.productSlots.splice(index, 1);}
+	};
+};
+
+rc.getIfProductSlotAvailable = function (slot) {
+	return rc.productSlots.indexOf(slot) > -1 && rc.productSlots.length > 1;
+}
+
+rc.updateProductSlots = function(component) {
+	var type = component.attr("data-component-type");
+	var slot;
+	if (type=="attribute") {
+		slot = component.find(".rc-field-name").attr("name");
+		rc.emptyProductSlot(slot);
+	} else if (type=="cart") {
+		component.find(".product-entry-row[data-product-slot]").each(function(index,slotElem) {
+			slot = rc.context(slotElem).attr("data-product-slot");
+			if (!slot) {return true;}
+			rc.emptyProductSlot(slot);
+		});
+	} else if (type=="session") {
+		component.find(".session-entry-row[data-session-slot]").each(function(index,slotElem) {
+			slot = rc.context(slotElem).attr("data-session-slot");
+			if (!slot) {return true;}
+			rc.emptyProductSlot(slot);
+		});
+	}
+};
 
 // UI helpers
 rc.ui.SUCCESS = 'alert-success';
