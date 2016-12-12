@@ -9,6 +9,42 @@ rc = rc || {};
 
 
 /// DONE & TESTED BELOW! FINISH TODO'S AS LAST STEP
+rc.initializeParams = function() {
+	rc.params = {};
+	var hash = (window.location.hash || '#!mode=view').substring(2);
+	if (hash == null) {return;}
+	rc.context(hash.split('&')).each(function() {
+		var data = this.split('=');
+		if (data[0] == null || data[0] == '') {return;}
+		if (data[1] == 'true') {data[1] = true;}
+		if (data[1] == 'false') {data[1] = false;}
+		// Save param
+		rc.setParam(data[0], data[1]);
+	});
+};
+
+rc.getCurrentMode = function() {
+	return rc.getParam('mode') || 'view';
+};
+
+rc.getParam = function(name) {
+	if (/false/.test(rc.isEditMode) && /mode/.test(name)) {return 'view';}
+	return rc.params[name] || null;
+};
+
+rc.setParam = function(name, data) {
+	if (/false/.test(rc.isEditMode) && /mode/.test(name)) {return;}
+	rc.params[name] = data;
+	var hash = '';
+	for (name in rc.params) {
+		data = rc.params[name];
+		if (data != null) {
+			hash += hash == '' ? '#!' : '&';
+			hash += name + '=' + data;
+		}
+	}
+	window.location.hash = hash;
+};
 
 rc.ui.toggleHiddenFields = function(component) {
 	component = rc.context(component) || '';
