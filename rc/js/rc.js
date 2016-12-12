@@ -46,6 +46,8 @@ rc.setParam = function(name, data) {
 	window.location.hash = hash;
 };
 
+rc.initializeParams();// todo: find a better place to call this
+
 rc.ui.toggleHiddenFields = function(component) {
 	component = rc.context(component) || '';
 	component.find('[data-field-hidden="true"]').each(function(index, element) {
