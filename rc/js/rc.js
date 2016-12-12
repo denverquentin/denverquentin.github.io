@@ -48,6 +48,232 @@ rc.setParam = function(name, data) {
 	window.location.hash = hash;
 };
 
+rc.selectFormInfoList = function(deferred, send) {
+	rc.console.debug('rc.selectFormInfoList');
+	rc.console.debug('.. this', this);
+	rc.console.debug('.. send', send);
+	deferred = deferred || new jQuery.Deferred();
+	send = send || {};
+	send.__action = rc.actions.selectFormInfoList;
+	rc.components.remoting.send(deferred, send, rc.selectFormInfoList.done, rc.selectFormInfoList.fail);
+	return deferred.promise();
+	};
+
+rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
+	rc.console.debug('rc.selectFormInfoList.done');
+	rc.console.debug('.. this', this);
+	rc.console.debug('.. send', send);
+	rc.console.debug('.. recv', recv);
+	rc.console.debug('.. meta', meta);
+	// Reset the list
+	var list = rc.context('#rc-form-name-list');
+	list.find('.rc-form-name').remove();
+	// Reset the dropdown text name
+	list.siblings().find('.dropdown-toggle-text').html('&nbsp;');
+	// Find the workflow action menues
+	var menu = rc.context('[data-dropdown-menu="form-list"]');
+	menu.empty();
+	// Reset the dropdown text name
+	menu.siblings().find('.dropdown-toggle-text').html('&nbsp;');
+	// Find the divider. It acts as a lower anchor
+	var divider = list.find('.divider');
+	// Process data
+	rc.context(recv).each(function(at, info) {
+		var item = rc.context('<li class="rc-form-name"><a class="rc-cursor-pointer rc-cascade-value rc-toggle-active rc-cascade-dropdown-text rc-link"></a></li>');
+		item.find('a').attr('data-cascade', 'data-page');
+		item.find('a').attr('data-value', info.id);
+		item.find('a').text(info.name);
+		divider.before(item)
+		// Also add to the workflow menues
+		var item_clone = item.clone();
+		item_clone.find('a').attr('data-cascade', 'data-value');
+		menu.append(item_clone);
+	});
+	// Initialize items
+	rc.components.initialize(list);
+	rc.components.initialize(menu);
+	// When the form item is clicked, reselect the form data
+	list.find('.rc-link').on('click', rc.selectFormData);
+	// Is there a page already selected? Or just choose the first page?
+	var form = rc.paramForm || rc.getParam('form');
+	if (form) {
+		rc.context('.rc-link[data-value="' + form+ '"]').click();
+	} else {
+		rc.context('.rc-link:first').click();
+	}
+	// Mark resolved?
+	if (deferred && deferred.resolve) {deferred.resolve();}
+};
+
+rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
+	rc.console.debug('rc.selectFormInfoList.fail');
+	rc.console.debug('.. this', this);
+	rc.console.debug('.. send', send);
+	rc.console.debug('.. recv', recv);
+	rc.console.debug('.. meta', meta);
+};
+
+rc.selectFormData = function() {
+/*
+	rc.siteUrl = '{!siteUrl}';
+	rc.isEditMode = {!isEditable};
+	rc.campaignId = '{!campaign.Id}';
+	rc.merchantName = '{!campaign.Merchant_Name__c}';
+	rc.paramForm = '{!$CurrentPage.Parameters.Form}';
+	rc.paramData = '{!$CurrentPage.Parameters.Data}';
+	*/
+
+	// Set the page name param
+	var form = rc.paramForm || rc.getParam('form');
+	rc.setParam('form', rc.context(this).attr('data-value') || form);
+	// Set the form link element
+	var href = '#{base}/' + rc.ns + 'campaign_designform?1&id=#{cpid}#!mode=view&form=#{form}';
+	href = href.replace('#{base}', '//' + rc.siteUrl);
+	href = href.replace('#{cpid}', rc.campaignId);
+	href = href.replace('#{fcid}', rc.paramFormCampaignId);
+	href = href.replace('#{form}', rc.getParam('form'));
+	rc.context('.page-header a.fa-link').attr('href', href);
+	// Load that page
+	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('form'),rc.selectFormData.done,{escape:false});
+	rc.ui.markProcessing();// Mark processing
+};
+
+rc.selectFormData.done = function(data) {
+	rc.console.debug('.. rc.selectFormData.done : ', data);
+	data = data || {};
+	data.containers = data.containers || [];
+	data.workflows = data.workflows || [];
+	data.data = data.data || {};
+	rc.console.debug('.. data : ', data);
+	rc.console.debug('.. data.containers : ', data.containers);
+	rc.console.debug('.. data.workflows : ', data.workflows);
+	rc.console.debug('.. data.data : ', data.data);
+	// Apply Page Level CSS
+	rc.components.importContentCSS(rc.context("html"), data.styles);
+	rc.components.updateContentCSS(rc.context("html"));
+	//validations flag
+	rc.validationsEnabled = data.data['validations-enabled'] || "false";
+	rc.context("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
+	// Theme
+	if (data.data['theme-href'] && data.data['theme-name']) {
+		rc.context('#rc-theme-link').attr('href', data.data['theme-href']);
+		rc.context('#rc-theme-link').attr('data-name', data.data['theme-name']);
+	} else {
+		rc.context('#rc-theme-menu').find('[data-value=""]').click();
+	}
+	// Empty the product slots, before deleting the container so they can be reused.
+	rc.reInitProductSlots();
+	// Empty existing container
+	rc.context('#rc-container-list').empty();
+	rc.context('#rc-workflows-list').empty();
+	// Add workflow names to dropdown
+	var item_list = rc.context('#rc-component-workflow-action--workflow').find('.dropdown-menu');
+	item_list.empty();
+	rc.context(data.workflows).each(function(at, data) {
+		try {
+			var item = rc.context('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
+			item.attr('data-cascade', 'data-value');
+			item.attr('data-value', data.data.guid);
+			item.text(rc.text(data.data.name));
+			// Add to workflow menu list
+			item_list.append(item.wrap('<li></li>').parent());
+			rc.console.debug('*** item', item);
+		} catch (message) {
+			rc.console.debug('[ERROR]', message);
+		}
+	});
+	// Process data
+	rc.context(data.workflows).each(function(at, data) {
+		rc.components.insertWorkflow('#rc-workflows-list', data);
+	});
+	// Process data
+	rc.context(data.containers).each(function(at, data) {
+		rc.console.debug('.. data.container at : ', at);
+		rc.console.debug('.. data.container data : ', data);
+		rc.components.insertColumnList('#rc-container-list', data);
+	});
+	// Process copy-param clicks
+	rc.context('.dropdown-menu[data-original-target]').each(function() {
+		var name = rc.context(this).attr('data-original-target');
+		rc.context(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
+	});
+	// No form containers?
+	if (rc.context('#rc-container-list').is(':empty')) {
+		rc.context('#rc-container-list-messages').slideDown();
+	} else {
+		rc.context('#rc-container-list-messages').slideUp();
+	}
+	rc.ui.markProcessingDone();// Unmark processing
+	rc.context('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
+	rc.selectData();// Trigger record selection?
+};
+
+// Select record data
+rc.selectData = function(deferred, send) {
+	rc.console.debug('rc.selectData');
+	rc.console.debug('.. this', this);
+	rc.console.debug('.. send', send);
+	deferred = deferred || new jQuery.Deferred();
+	send = send || {};
+	send.__action = rc.actions.selectData;
+	rc.components.remoting.send(deferred, send, rc.selectData.done, rc.selectData.fail);
+	return deferred.promise();
+};
+
+rc.selectData.done = function(deferred, send, recv, meta) {
+	rc.console.debug('rc.selectData.done');
+	rc.console.debug('.. this', this);
+	rc.console.debug('.. send', send);
+	rc.console.debug('.. recv', recv);
+	rc.console.debug('.. meta', meta);
+	// Assign default values to all the fields
+	// This will be overwritten by field data values, if any.
+	rc.rollupDefaultValues();
+	// Cache form-controls with a name attribute
+	var controls = rc.context('.form-control[name]');
+	rc.dataModal.BatchUploadModel = $.extend(rc.dataModal.BatchUploadModel, recv);
+	// Loop over the received data, and assign to fields as found
+	rc.context.each(recv, function(name, data) {
+		rc.validateProductSlot(name,data);
+		controls.filter('[name="' + name + '"]').val(data);
+		if (controls.filter('[name="' + name + '"]').val() == 'true') {
+			controls.filter('[name="' + name + '"]').filter('[type="checkbox"]').prop("checked", "checked");
+		}
+	});
+	// render cart products with their quantities
+	rc.components.Cart.renderUpsertData(recv);
+	rc.components.Attribute.renderUpsertData(recv);
+	//restore campaign ask state
+	rc.components.CampaignAsk.populateData(recv);
+	// render sessions with their quantities
+	rc.components.Session.renderUpsertData(recv);
+	//if a old record before introducing the giving toggle on form
+	var workflowActionGivingFlag = rc.context('[data-cascade="exclude-giving"][is-old="true"]');
+	if (workflowActionGivingFlag && workflowActionGivingFlag.length>0) {
+		//override the data in exclude-giving flag with that of batch-upload record
+		//as workflow action should not overwrite batch-upload record
+		if (recv && recv[rc.ns+'exclude_giving__c']) {
+			console.log('FOUND THE NAME WITH THE NAMESPACE!');
+			rc.context('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
+		}
+	}
+	rc.events.trigger("form-loaded-with-data");
+	// Did we find existing results? Ignore the rest of this
+	if (Object.keys(recv).length) {return;}
+	// No result, but a campaign member ID?
+	if ('{!$CurrentPage.Parameters.CampaignMemberId}') {return rc.selectCampaignMemberData();}
+	// No result, but a contact ID?
+	if ('{!$CurrentPage.Parameters.ContactId}') {return rc.selectContactData();}
+};
+
+rc.selectData.fail = function(deferred, send, recv, meta) {
+	rc.console.debug('rc.selectData.fail');
+	rc.console.debug('.. this', this);
+	rc.console.debug('.. send', send);
+	rc.console.debug('.. recv', recv);
+	rc.console.debug('.. meta', meta);
+};
+
 rc.initializeParams();// todo: find a better place to call this
 
 // UI helpers
@@ -67,6 +293,40 @@ rc.ui.CONTACT_MAIL2 = '<Contact Mail 2>';
 rc.ui.MergeFieldMap = {};
 rc.ui.MergeFieldMap[rc.ui.CONTACT_MAIL1] = {field:rc.ns + 'contact_1_email__c',control:rc.ns + 'contact_1_email_opt_out__c'};
 rc.ui.MergeFieldMap[rc.ui.CONTACT_MAIL2] = {field:rc.ns + 'contact_2_email__c',control:rc.ns + 'contact_2_email_opt_out__c'};
+
+rc.ui.setDropdownVisible = function() {
+	var mergeFieldsSelector = "  #rc-page-container .rc-component-content [data-field-hidden='true'] .rc-opacity-md "
+		+ ", #rc-page-container .rc-component-merge-field-content.rc-opacity-md ";
+	rc.context(mergeFieldsSelector).each( function(index, mergeField) {
+		mergeField = rc.context(mergeField);
+		var childTargetElements = mergeField.find("[data-opacity-target='true'], .rc-field-menu");
+		mergeField.removeClass("rc-opacity-md");
+		if (childTargetElements.length > 0) {
+			childTargetElements.addClass("rc-opacity-md rc-requires-edit");
+		}
+		if (mergeField.closest(".rc-component-content").hasClass("rc-opacity-md")) {
+			mergeField.closest(".rc-component-content").removeClass("rc-opacity-md")
+		}
+	});
+}
+
+rc.ui.removeRedundantOpacity = function() {
+	rc.context("#rc-page-container .rc-default-hidden").each(function(index, element) {
+		element = rc.context(this) || '';
+		element.removeClass("rc-opacity-md");
+		element.find(".fa-eye-slash").remove();
+		element.find(".rc-field-text").prepend('<span class="fa fa-fw fa-eye-slash pull-right rc-margin-xs rc-tooltip" data-toggle="tooltip" data-title="Hidden Field"></span>');
+		element.find("[data-opacity-target='true']").each(function(index, opacityTarget) {
+			opacityTarget = rc.context(opacityTarget) || '';
+			if (opacityTarget.hasClass("rc.opacity-md") == true) {
+				return true;
+			} else {
+				opacityTarget.addClass("rc-opacity-md rc-requires-edit");
+			}
+		});
+	});
+	rc.context(".rc-toggle-dropdown").addClass("rc-requires-edit");
+}
 
 rc.ui.showMessagePopup = function(type,message) {
 	message = message || '';
@@ -327,6 +587,110 @@ rc.ui.toggleHiddenFields = function(component) {
 	component.find('.rc-tooltip').tooltip();
 	return true;
 }
+
+// TODO: this method is called multiple times - is that needed?????
+rc.components.initialize = function(component, data) {
+	data = data || {};// Check data
+	component = rc.context(component);// Check component
+	rc.components.renderDataTemplates(component);// Copy templates
+	// Copy data-field-name
+	component.find('[data-field-name]').each(function() {
+		var name = rc.context(this).attr('data-field-name').toLowerCase();
+		rc.context(this).find('.rc-field-name').attr('name', name);
+	});
+	// Copy data-field-text
+	component.find('[data-field-text]').each(function() {
+		rc.context(this).find('.rc-field-text').text(rc.context(this).attr('data-field-text'));
+	});
+	// Copy data-field-menu
+	component.find('[data-field-menu]').each(function() {
+		var name = rc.context(this).attr('data-field-menu');
+		var html = rc.context(name).html();
+		// Add the menu html to the menu
+		menu_group = rc.context(this).find('.rc-field-menu-group');
+		menu_group.append('<span class="input-group-addon rc-field-menu"></span>');
+		menu_group.find('.rc-field-menu').html(html);
+		menu_group.addClass('input-group');
+	});
+	// Copy data-placeholder
+	component.find('[data-placeholder]').each(function() {
+		rc.context(this).find('.rc-field-name').attr('placeholder', rc.context(this).attr('data-placeholder'));
+	});
+	// Copy data-field-hidden
+	component.find('[data-field-hidden="true"]').each(function() {
+		rc.context(this).addClass('rc-requires-edit rc-opacity-md');
+		rc.context(this).find('.rc-field-text').prepend('<span class="fa fa-fw fa-eye-slash pull-right rc-margin-xs rc-tooltip" data-toggle="tooltip" data-title="Hidden Field"></span>');
+	});
+	// Copy data-required
+	component.find('[data-required="true"]').each(function() {
+		rc.context(this).find('.input-group').attr('data-required', 'true');
+	});
+	// Copy data-local-only -- prevents input data from being submitted to remote host
+	component.find('[data-local-only="true"]').each(function() {
+		var name = rc.context(this).attr('data-field-name').toLowerCase();
+		rc.context(this).find('.rc-field-name').removeAttr('name');
+		rc.context(this).find('.rc-field-name').attr('data-name', name);
+	});
+	// Bind common
+	component.find('.rc-cascade-selected').on('click', rc.ui.cascadeSelected);
+	component.find('.rc-cascade-dropdown-text').on('click', rc.ui.cascadeDropdownText);
+	component.find('.rc-cascade-css').on('click', rc.ui.cascadeCss);
+	component.find('.rc-cascade-input').on('keyup', rc.ui.cascadeInput);
+	component.find('.rc-cascade-input').on('change', rc.ui.cascadeInput);
+	component.find('.rc-cascade-input-group').on('click', rc.ui.cascadeInputGroup);
+	component.find('.rc-cascade-value').on('click', rc.ui.cascadeValue);
+	component.find('.rc-cascade-value-toggle').on('click', rc.ui.cascadeValueToggle);
+	component.find('.rc-filter-dropdown').on('keyup', rc.ui.filterDropdown);
+	component.find('.rc-toggle-active').on('click', rc.ui.toggleActive);
+	component.find('.rc-toggle-primary').on('click', rc.ui.togglePrimary);
+	component.find('.rc-toggle-siblings').on('click', rc.ui.toggleSiblings);
+	component.find('.rc-tooltip').tooltip();
+	component.find('.rc-field-name').on('change', rc.ui.setDefaultValue);
+	component.find('.rc-field-name').on('keyup', rc.ui.setDefaultValue);
+	if (rc.isPaymentTransactional) {
+		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="corduro"]').attr('disabled', 'disabled');
+	}
+	if (rc.isSageConfigured) {
+		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="sage"]').removeAttr('disabled');
+	}
+	if (rc.isHeartlandConfigured) {
+		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="heartland"]').removeAttr('disabled');
+	}
+	if (rc.isIATSConfigured) {
+		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="iATS"]').removeAttr('disabled');
+	}
+	if (rc.isPayPalConfigured) {
+		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="PayPal"]').removeAttr('disabled');
+	}
+	if (rc.isLitleConfigured) {
+		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="Litle"]').removeAttr('disabled');
+		if (rc.isLitleConfiguredForAdvancedFraudDetection) {
+			rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('[data-name="Litle"] [data-cascade="data-advanced-fraud-detection"]').removeAttr('disabled');
+		}
+	}
+	if (rc.isAuthDotNetConfigured) {
+		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="Authorize.net"]').removeAttr('disabled');
+	}
+	if (rc.isCybersourceConfigured) {
+		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="Cybersource"]').removeAttr('disabled');
+	}
+	// Content editable
+	var editable = 'edit' == rc.context('#rc-page-container').attr('data-mode');
+	component.find('[contenteditable]').attr('contenteditable', editable);
+	component.attr('id', data.guid);// Copy GUID
+	// Required input group
+	component.find('.input-group[data-required] .rc-marker').off("click").click(function() {
+		if (rc.getCurrentMode() == 'edit') {
+			var item = rc.context(this).closest('.input-group');
+			var required = item.attr('data-required') != 'true';
+			item.attr('data-required', required);
+		}
+	});
+	//add event listener to dropdown to detect overflow and flip drop direction
+	component.find(".dropdown").on('show.bs.dropdown',rc.ui.flipOverflownDropdown);
+	// Listen to changes in form controls, and remove the marker states on the form group
+	component.find('.form-control').on('change', rc.upsertData.validate);
+};
 
 rc.components.renderDataTemplates = function(component) {
 	// Copy templates
