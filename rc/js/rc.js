@@ -55,7 +55,6 @@ rc.initializeFormApp = function() {
 };
 
 rc.context(document).ready(function() { // TAOS-798
-	rc.initializeParams();// todo: does this work here?
 	rc.initializeFormApp();
 	$(document).on('keyup keypress', 'form input[type="text"]', function(e) {
 		if (e.keyCode == 13) {
@@ -78,6 +77,8 @@ rc.initializeParams = function() {
 		rc.setParam(data[0], data[1]);
 	});
 };
+
+rc.initializeParams();// todo: find a better place for this
 
 // todo: move to edit only
 rc.initializeModals = function() {
