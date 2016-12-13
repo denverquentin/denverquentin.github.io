@@ -2502,11 +2502,11 @@ rc.components.Cart.calculateProductDiscountCode.done = function(deferred, send, 
 };
 
 rc.components.Cart.calculateProductDiscountCode.fail = function(deferred, send, recv, meta) {
-	rc.console.debug('rc.components.Cart.calculateProductDiscountCode.fail..');
-	rc.console.debug('.. this', this);
-	rc.console.debug('.. send', send);
-	rc.console.debug('.. recv', recv);
-	rc.console.debug('.. meta', meta);
+	rc.console.debug('rc.components.Cart.calculateProductDiscountCode.fail');
+	rc.console.debug('this', this);
+	rc.console.debug('send', send);
+	rc.console.debug('recv', recv);
+	rc.console.debug('meta', meta);
 };
 /* end event javascript */
 
@@ -2621,7 +2621,7 @@ rc.components.Button.execute = function() {
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
 		rc.workflow.execute(workflowToExecuteId, actionButtonContext);
 	} else {
-		reenable(actionButtonContext);
+		rc.reenable(actionButtonContext);
 	}
 }
 
@@ -3338,7 +3338,7 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 			for (var key in rc.workflow.executingMap) {
 				workflowsRunning = workflowsRunning || rc.workflow.executingMap[key];
 			}
-			if (!workflowsRunning) {reenable(actionButtonContext);}
+			if (!workflowsRunning) {rc.reenable(actionButtonContext);}
 		}
 		rc.workflow.quenchByGuid[guid] = null;
 	});
