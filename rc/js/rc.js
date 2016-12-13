@@ -1707,7 +1707,366 @@ rc.html_encode = function(text) {
 	text = text.replace(new RexExp('>', 'g'), '&' + 'gt;');
 	return text;
 };
-console.log('FINISHED LOADING rc.js');
+
+// Execute workflow
+rc.workflow = {};
+// This is used to determine which workflows are still executing. When this is empty, we reactivate the disabled button.
+rc.workflow.executingMap = {};
+/* This is to allow the SendPayment 'fail' workflow to be called separately during the SaveData workflow, since the existing
+form design is to configure SendPayment and SaveData as separate actions.
+When the form processing is 'Transactional', the payment auth accept/decline won't be known until the SaveData action
+completes. The intent is that rc.workflow.retroactiveFailure will *only* have 'fail' actions and may be reject()ed when SaveData
+results in a payment decline.  When SaveData completes successfully, the expectation is that processing will continue
+only with the "success" action on the SaveData action (per the TAOS-774 design assumptions).
+This is a workaround to provide backwards-compatibility with the current form design model.
+
+This alternate flow will always be overwritten before each currently-executing workflow, and the reference must be copied
+by the executing action in order to be saved for later. */
+rc.workflow.retroactiveFailure = null;
+
+/* This is to allow configured workflow actions to "quench" the done() and fail() actions on their parent workflow.
+The quench is used when a payment is processed transactionally and the server request completes successfully, but the payment
+is declined. In that circumstance, the payment handling will quench the normal onFailure actions of the SendData workflow,
+and instead run the onFailure action(s) of the separately-configured SendPayment workflow, which is copied from
+rc.workflow.retroactiveFailure during the SendPayment workflow action.
+This is a workaround to provide backwards-compatibility with the current form design model, in which SendPayment and SendData are separate. */
+rc.workflow.quenchByGuid = {};
+
+rc.workflow.forceFail = function(deferred, quenchGuid, msg) {
+	rc.workflow.quenchByGuid[quenchGuid] = true;
+	rc.console.log(msg);
+	deferred.reject(msg);
+}
+
+rc.workflow.execute = function(guid,actionButtonContext) {
+	//if workflow trigger in the context of an action button,
+	//always disable the actionButton which was source of the event
+	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
+	rc.console.debug('rc.workflow.execute', guid);
+	var context = rc.context('#' + guid);
+	var flow_origin = new jQuery.Deferred(); // null deferred to kickoff the flow
+	var flow = flow_origin.promise();
+	rc.workflow.retroactiveFailure = new jQuery.Deferred();
+	var retroactiveFailureFlow = rc.workflow.retroactiveFailure.promise();
+	rc.workflow.executingMap[guid] = true;
+	// Add actions
+	context.find('[data-component-type="workflow-action"]').each(function() {
+		var action = rc.context(this);
+		var action_type = action.attr('data-context');
+		var action_guid = action.attr('id');
+		var action_method = action.attr('data-method');
+		rc.console.debug('.. adding action', action_guid, action_type, action.attr('data-method'));
+		if (action_type == 'then' || action_type == 'execute') { // the "execute" type is for very early versions of the form
+			
+			flow = flow.then(function(data) {
+				return rc.workflow.process('then', action_guid, {workflowGuid:guid}, actionButtonContext);
+			});
+		}
+		if (action_type == 'done') {
+			flow.done(function(data) {
+				if (!rc.workflow.quenchByGuid[guid]) {
+					return rc.workflow.process('done', action_guid, {workflowGuid:guid}, actionButtonContext);
+				}
+			});
+		}
+		if (action_type == 'fail') {
+			flow.fail(function(data) {
+				if (!rc.workflow.quenchByGuid[guid]) {
+					return rc.workflow.process('fail', action_guid, {workflowGuid:guid}, actionButtonContext);
+				}
+			});
+			// Retroactive failure flows are always called explicitly, so we ignore the quench
+			retroactiveFailureFlow.fail(function(data) {
+				return rc.workflow.process('fail', action_guid, {workflowGuid:guid}, actionButtonContext);
+			});
+		}
+	});
+	flow.always(function() {
+		//after all workflows are complete, reenable the button
+		rc.workflow.executingMap[guid] = false;
+		if (actionButtonContext) {
+			var workflowsRunning = false;
+			for (var key in rc.workflow.executingMap) {
+				workflowsRunning = workflowsRunning || rc.workflow.executingMap[key];
+			}
+			if (!workflowsRunning) {reenable(actionButtonContext);}
+		}
+		rc.workflow.quenchByGuid[guid] = null;
+	});
+	// Resolve placeholder promise
+	flow_origin.resolve();
+};
+
+rc.workflow.process = function(type, guid, data, actionButtonContext) {
+	//always disable action button when executing any action
+	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
+	rc.console.debug('rc.workflow.process');
+	rc.console.debug('.. guid', guid);
+	rc.console.debug('.. type', type);
+	rc.console.debug('.. data', data);
+	// Find and execute
+	var deferred = new jQuery.Deferred();
+	deferred.workflowGuid = data.workflowGuid;
+	var action = rc.context('#' + guid);
+	//#NOTE : All workflow actions are defined here : Campaign_Design_Form_Workflow_Actions.component
+	var method_map = {};
+	method_map['copy-param'] = rc.workflow.process.CopyParameter;
+	method_map['javascript'] = rc.workflow.process.Javascript;
+	method_map['load-data'] = rc.workflow.process.LoadData;
+	method_map['load-href'] = rc.workflow.process.LoadHref;
+	method_map['load-page'] = rc.workflow.process.LoadPage;
+	method_map['send-address'] = rc.workflow.process.SendAddress;
+	method_map['send-chatter'] = rc.workflow.process.SendChatter;
+	method_map['send-data'] = rc.workflow.process.SendData;
+	method_map['send-mail'] = rc.workflow.process.SendMail;
+	method_map['send-payment'] = rc.workflow.process.SendPayment;
+	method_map['send-text'] = rc.workflow.process.SendText;
+	method_map['send-twitter'] = rc.workflow.process.SendTwitter;
+	method_map['show-alert'] = rc.workflow.process.ShowAlert;
+	method_map['traffic-controller'] = rc.workflow.process.TrafficController;
+	method_map['workflow'] = rc.workflow.process.Workflow;
+	// Execute method
+	var method_action = action.attr('data-method');
+	var method = method_map[method_action] || function(deferred, action) {};
+	try {
+		var method_result = new method(deferred, action, data, actionButtonContext);
+	} catch (action_excp) {
+		rc.console.debug('!!! exception', action_excp);
+		deferred.reject();
+	}
+	return deferred.promise();
+};
+
+rc.upsertData = function(deferred, send) {
+	rc.console.debug('rc.upsertData');
+	rc.console.debug('.. this', this);
+	rc.console.debug('.. send', send);
+	send = send || {};
+	send.__action = rc.actions.upsertData;
+	send.__data = rc.getParam('data');
+	deferred = deferred || new jQuery.Deferred();
+	// Find all of the component form controls
+	rc.context('.rc-component-content .form-control[name]').each(function() {
+		var context = rc.context(this);
+		var name = context.attr('name');
+		// Add to send map
+		if (context.attr('type') === 'checkbox') {
+			if (context.is(':checked')) {
+				send[name] = 'true';
+			} else {
+				send[name] = 'false';
+			}
+		} else {
+			send[name] = context.val();
+		}
+		//TAOS-10, Hierarchy of importance, user input, default,
+		//if the default is blank default it with Donation, else populate as default value.
+		if ((name == rc.ns+'giving_record_type__c') && (context.attr('type') === 'text' && context.val() == '' && context.attr('data-field-default') == '')) {
+			send[name] = 'Donation';
+		}
+		// Run validation
+		context.change();
+	});
+	if (rc.upsertData.validateCustomComponents() == false) {return deferred.reject(send);}
+	if (rc.getCurrentMode() != 'view') {/* Must be in view mode */
+		return deferred.reject('Internal error: form must be in view mode to process user input.');
+	}
+	//populate events shopping cart data
+	send = rc.components.Cart.populateUpsertData(send);
+	//populate events session data
+	send = rc.components.Session.populateUpsertData(send);
+	send = rc.components.Attribute.populateUpsertData(send);
+	//for ask data
+	var askAmount = rc.components.CampaignAsk.getAskValue();
+	if (askAmount && askAmount.frequency) {
+		send[rc.ns+'giving_giving_frequency__c'] = askAmount.frequency;
+		send[rc.ns+'giving_giving_amount__c'] = askAmount.finalAmount;
+		if (askAmount.frequency != rc.givingFreqOnePymt) {
+			send[rc.ns+'giving_is_sustainer__c'] = 'true';
+		} else {
+			send[rc.ns+'giving_is_sustainer__c'] = 'false';
+		}
+	}
+	var doneCallback = rc.upsertData.done;
+	// TAOS-774 Transactional payment processing
+	if (rc.isPaymentTransactional && rc.pendingPayment) {
+		send.__action = rc.actions.processPaymentAndForm;
+		doneCallback = function(deferred, send, recv, meta) {
+			if (rc.pendingPayment) {
+				try {
+					// Clear pending payment after each attempt:
+					var pp = rc.pendingPayment;
+					rc.pendingPayment = null;
+					rc.ui.releaseProcessingModal();
+					recv = recv || {};
+					if (recv.__data) {rc.setParam('data', recv.__data);}
+					var isFlagged = jQuery.isEmptyObject(recv) || 'Flagged' == recv[rc.ns+'batch_upload_status__c'];
+					if (recv.isSuccess != 'true') {
+						// Represents a payment decline
+						var declineMsg = 'Denied: ' + recv.responseMessage + '  ' + recv.responseCode;
+						/* pp.deferred is expected to be populated here, and is the normal "declined" flow.
+						If it is not present, it's an error and we fall thru to the exception catch below.
+						Since we are using the SendPayment fail() actions to handle payment declines,
+						we quench the done() and fail() actions on the SendData workflow. */
+						rc.workflow.forceFail(pp.deferred, deferred.workflowGuid, declineMsg);
+					} else if (isFlagged) {
+						/* Represents a save data or other server error AFTER the payment has been processed.
+						We clear the Batch Upload Public Token to avoid overwriting the completed payment data on subsequent attempts */
+						rc.clearPublicToken(send, recv);
+						// This will force the "Save Data" failure flow rather than the "Process Payment" failure flow
+						rc.workflow.forceFail(rc.workflow.retroactiveFailure, deferred.workflowGuid, recv[rc.ns+'batch_upload_flagged_reason__c']);
+					}
+				} catch (message) {
+					// We clear the Batch Upload Public Token to avoid overwriting the possibly completed payment data on subsequent attempts
+					if (recv.isSuccess == 'true') {rc.clearPublicToken(send, recv);}
+					rc.workflow.forceFail(rc.workflow.retroactiveFailure, deferred.workflowGuid, message);
+					/* Note: I tried to use the below for "forceFail" functionality but wasn't able to in the current workflow design
+					See: http://stackoverflow.com/questions/17800176/jquery-deferred-rejecting-a-promise-from-within-a-done-filter */
+				}
+			} else {
+				return rc.upsertData.done(deferred, send, recv, meta);
+			}
+		}
+	}
+
+	/* TAOS-1490 - If 2 save data workflows existed in the form, then the "Exclude Giving"
+	and "Exclude Events" flag of the first w/f defined in the metadata would override any other
+	save data workflows. The old solution is commented out and the new solution is implemented. */
+	var context = rc.context('#' + deferred.workflowGuid);
+	context.find('[data-component-type="workflow-action"]').each(function() {
+		var action = rc.context(this);
+		var action_type = action.attr('data-context');
+		var action_guid = action.attr('id');
+		var action_method = action.attr('data-method');
+		var exclude_giving_flag = action.attr('exclude-giving');
+		var exclude_events_flag = action.attr('exclude-events');
+		if (action_type == "then" && action_method == "send-data") {
+			if (exclude_giving_flag==null || exclude_giving_flag===undefined) {
+				exclude_giving_flag = "true";
+			}
+			send[rc.ns+'exclude_giving__c'] = exclude_giving_flag;
+			if (exclude_events_flag==null || exclude_events_flag===undefined || exclude_events_flag=="true") {
+				exclude_events_flag = "false";
+			} else if (exclude_events_flag=="false") {
+				exclude_events_flag = "true";
+			}
+			send[rc.ns+'process_events__c'] = exclude_events_flag;
+		}
+	});
+	// Form failures?
+	if (rc.context('.form-group.has-error').length != 0) {return deferred.reject(send);}
+	//case cleanup, convert all keys to lower case
+	send = rc.cleanKeysToLower(send);
+	// TAOS-774 Transactional payment processing
+	if (rc.isPaymentTransactional && rc.pendingPayment) {
+		// Copy processor-specific params into the request
+		// This is done after cleanKeysToLower because legacy payment processors expect case-sensitive keys
+		for (name in rc.pendingPayment.processorParams) {
+			send[name] = rc.pendingPayment.processorParams[name];
+		}
+	}
+	rc.dataModal.BatchUploadModel = $.extend(rc.dataModal.BatchUploadModel, send);
+	rc.components.remoting.send(deferred, send, doneCallback, rc.upsertData.fail);
+	return deferred.promise();
+};
+
+//Validating Ask, Cart, Session component on submission of form
+rc.upsertData.validateCustomComponents = function() {
+	if (rc.components.CampaignAsk.validateAskValue() == false) {return false;}
+	if (rc.components.Cart.validate() == false) {return false;}
+	if (rc.components.Session.validate() == false) {return false;}
+	return true;
+};
+
+//WARNING : Avoid adding validation code here - see Campaign_Design_Form_Validator.component
+rc.upsertData.validate = function() {
+	rc.console.debug('rc.upsertData.validate');
+	rc.console.debug('.. this', this);
+	var context = rc.context(this);
+	var present = context.val() ? true: false;
+	var errorLabel = rc.context(rc.context("#rc-error-label").html());
+	if ($(this).attr('type') === 'checkbox') {
+		$(context).is(':checked') ? 'true' : 'false';
+		return true;
+	}
+	//if validated by bootstrap validator and has error then ignore
+	if (context.hasClass("validate-field") && context.closest(".form-group").hasClass("has-error")) {
+		return false;
+	}
+	//remove error labels if any
+	context.closest(".input-group").prev(".rc-error-label").remove();
+	context.closest(".input-group").removeClass("has-error");
+	//Validate other amount
+	if (context.attr("data-validate-type")=="otherAmount" && present) {
+		var minimumThresholdAmount = rc.components.CampaignAsk.frequencyAmountMinThreshold[context.parent().attr('data-giving-frequency')];
+		// Trim the leading and trailing spaces and replace the textbox value with it
+		var otherAmountValue = rc.context.trim(context.val());
+		context.val(otherAmountValue);
+		// validation for TAOS-1509 - todo: move to Campaign_Design_Form_Validator - will be complicated
+		if (!otherAmountValue.match(/^\d+\.?\d{0,2}$/)) {
+			errorLabel.find(".label-text").text('The Amount must be a number with only 2 decimal places');
+			context.closest(".input-group").before(errorLabel);
+			context.closest(".input-group").addClass("has-error");
+		} else if (minimumThresholdAmount != undefined && parseFloat(otherAmountValue) < parseFloat(minimumThresholdAmount)) {
+			errorLabel.find(".label-text").text('The amount which you entered should be greater than the minimum threshold amount: $' + minimumThresholdAmount);
+			context.closest(".input-group").before(errorLabel);
+			context.closest(".input-group").addClass("has-error");
+		}
+	}
+	//validate comma separated email fields
+	if (context.attr("data-validate-type")=="csv-email" && present) {
+		var emailListText = context.val() || "";
+		var emailListArray = emailListText.split(",");
+		var invalidEmailsArray = [];
+		for (var index=0;index<emailListArray.length;++index) {
+			console.log('index,',index);
+			console.log('emailListArray[index],',emailListArray[index]);
+			var emailText = rc.context.trim(emailListArray[index]);
+			if (emailText==null || !emailText) {
+				continue;
+			}
+			if (rc.workflow.process.SendMail.isValidMergeField(emailText)) {
+				continue;
+			}
+			if (!rc.workflow.process.SendMail.isValidEmail(emailText)) {
+				invalidEmailsArray.push(emailText);
+			}
+		}
+		if (invalidEmailsArray.length>0) {
+			var labelText = 'Invalid Email(s): '+invalidEmailsArray.join(",");
+			errorLabel.find(".label-text").text(labelText);
+			context.closest(".input-group").before(errorLabel);
+			context.closest(".input-group").addClass("has-error");
+			console.log('context.closest(".input-group")',context.closest(".input-group"));
+		}
+	}
+	var monthContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_month__c"]');
+	var yearContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_year__c"]');
+	if (context.attr("name")==rc.ns+"payment_method_card_expiration_month__c") {
+		var month = parseInt(monthContext.val(),10);
+		if (month==0) {
+			context.closest(".input-group").addClass("has-error");
+			errorLabel.find(".label-text").text("Invalid month - please update and resubmit.");
+			context.closest(".input-group").before(errorLabel);
+			rc.ui.showMessagePopup(rc.ui.ERROR,"Invalid month - please update and resubmit.");
+		}
+	}
+};
+
+rc.upsertData.done = function(deferred, send, recv, meta) {
+	// Update the batch upload ID param
+	rc.setParam('data', recv.__data);
+	// reset any pending payment
+	rc.pendingPayment = null;
+	rc.ui.releaseProcessingModal();
+};
+
+rc.upsertData.fail = function(deferred, send, recv, meta) {
+	// reset any pending payment
+	rc.pendingPayment = null;
+	rc.ui.releaseProcessingModal();
+};
+
 
 rc.initializeParams();// todo: find a better place for this
 rc.initializeFormApp();
