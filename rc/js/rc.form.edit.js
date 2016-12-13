@@ -390,32 +390,6 @@ rc.components.registerMergeFieldAutoComplete = function(field,dataArray) {
 };
 
 // todo: probably only edit
-// Column List
-rc.components.insertColumnList = function(container, container_data) {
-	container_data = container_data || {};
-	container_data.data = container_data.data || {};
-	container_data.data.columns = parseInt(container_data.data.columns || '1');
-	container_data.data['guid'] = container_data.data['guid'] || rc.guid();
-	// Set attributes
-	var item = rc.components.insert('#rc-container-column-list', container, container_data.data);
-	var item_content = item.find('.rc-container-column-list-content');
-	item.attr('id', container_data.data['guid']);
-	item.attr('data-columns', container_data.data.columns);
-	// Apply CSS
-	rc.components.importContentCSS(item, container_data.styles);
-	rc.components.updateContentCSS(item);
-	// Delete columns over a certain position
-	rc.components.deleteColumnListColumns(item_content, container_data.data.columns);
-	// Insert new columns
-	rc.components.upsertColumnListColumns(item_content, container_data.data.columns, container_data.columns);
-	// Now, with everything in place, loop over the column data and insert components
-	rc.components.upsertColumnListComponents(item_content, container_data.columns);
-	// Hide the empty alert message
-	rc.context('#rc-container-list-messages').hide();
-	return item;
-};
-
-// todo: probably only edit
 rc.components.deleteColumnListColumns = function(container, max_position) {
 	rc.context(container).find('.rc-container-column').each(function() {
 		var position = parseInt(rc.context(this).attr('data-position') || '999');
