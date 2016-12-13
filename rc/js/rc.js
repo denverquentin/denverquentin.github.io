@@ -1129,9 +1129,11 @@ console.log('FINISHED LOADING rc.js');
 
 rc.initializeParams();// todo: find a better place for this
 rc.initializeFormApp();
+/*
 $(document).on('keyup keypress', 'form input[type="text"]', function(e) {
 	if (e.keyCode == 13) {
 		e.preventDefault();
 		return false;
 	}
 });
+*/
