@@ -55,17 +55,6 @@ rc.initializeFormApp = function() {
 	}
 };
 
-rc.context(document).ready(function() { // TAOS-798
-	console.log('rc.context(document).ready');
-	rc.initializeFormApp();
-	$(document).on('keyup keypress', 'form input[type="text"]', function(e) {
-		if (e.keyCode == 13) {
-			e.preventDefault();
-			return false;
-		}
-	});
-});
-
 rc.initializeParams = function() {
 	console.log('rc.initializeParams');
 	rc.params = {};
