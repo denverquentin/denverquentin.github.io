@@ -142,7 +142,7 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 	list.find('.rc-form-name').remove();
 	// Reset the dropdown text name
 	list.siblings().find('.dropdown-toggle-text').html('&nbsp;');
-	// Find the workflow action menues
+	// Find the workflow action menus
 	var menu = rc.context('[data-dropdown-menu="form-list"]');
 	menu.empty();
 	// Reset the dropdown text name
@@ -598,7 +598,7 @@ rc.ui.cascadeValue = function() {
 	var cascadeTarget = rc.context(this).closest('.rc-cascade-value-target');
 	if (!cascadeTarget) {return;}
 	var item = rc.context(this);
-	//if the element is disabled dont cascade the value
+	//if the element is disabled don't cascade the value
 	if (item.is("[disabled]") && item.attr("data-cascade")=="data-method" && item.attr("data-value")=="send-payment" && rc.getCurrentMode() == "flow") {
 		return;
 	}
