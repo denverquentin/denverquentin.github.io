@@ -67,7 +67,7 @@ rc.applyDefaultAttributeDefaultValues = function(component, defaultValues) {
 }
 
 rc.applyPlaceholderAttributeValues = function(component, placeholderValues) {
-	rc.console.debug('rc.applyPlaceholderAttributeValues');
+	console.log('rc.applyPlaceholderAttributeValues');
 	var component = rc.context(component) || {};
 	var placeholderValues = placeholderValues || {};
 	rc.context( rc.context(component).find('.form-control') ).each(function() {
@@ -78,7 +78,7 @@ rc.applyPlaceholderAttributeValues = function(component, placeholderValues) {
 }
 
 rc.rollupDefaultValues = function(event, defaultValues) {
-	rc.console.debug('..rc.rollupDefaultValues');
+	console.log('rc.rollupDefaultValues');
 	var defaultValueComponents = rc.context('[data-field-default]');
 	if (!defaultValueComponents.length) {return;}
 	rc.context(defaultValueComponents).each(function(index, field) {
@@ -127,9 +127,9 @@ rc.setParam = function(name, data) {
 };
 
 rc.selectFormInfoList = function(deferred, send) {
-	rc.console.debug('rc.selectFormInfoList');
-	rc.console.debug('.. this', this);
-	rc.console.debug('.. send', send);
+	console.log('rc.selectFormInfoList');
+	console.log('this', this);
+	console.log('send', send);
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectFormInfoList;
@@ -138,11 +138,11 @@ rc.selectFormInfoList = function(deferred, send) {
 	};
 
 rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
-	rc.console.debug('rc.selectFormInfoList.done');
-	rc.console.debug('.. this', this);
-	rc.console.debug('.. send', send);
-	rc.console.debug('.. recv', recv);
-	rc.console.debug('.. meta', meta);
+	console.log('rc.selectFormInfoList.done');
+	console.log('this', this);
+	console.log('send', send);
+	console.log('recv', recv);
+	console.log('meta', meta);
 	// Reset the list
 	var list = rc.context('#rc-form-name-list');
 	list.find('.rc-form-name').remove();
@@ -184,11 +184,11 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 };
 
 rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
-	rc.console.debug('rc.selectFormInfoList.fail');
-	rc.console.debug('.. this', this);
-	rc.console.debug('.. send', send);
-	rc.console.debug('.. recv', recv);
-	rc.console.debug('.. meta', meta);
+	console.error('rc.selectFormInfoList.fail');
+	console.error('this', this);
+	console.error('send', send);
+	console.error('recv', recv);
+	console.error('meta', meta);
 };
 
 rc.selectFormData = function() {
@@ -208,15 +208,15 @@ rc.selectFormData = function() {
 };
 
 rc.selectFormData.done = function(data) {
-	rc.console.debug('.. rc.selectFormData.done : ', data);
+	console.log('rc.selectFormData.done: ', data);
 	data = data || {};
 	data.containers = data.containers || [];
 	data.workflows = data.workflows || [];
 	data.data = data.data || {};
-	rc.console.debug('.. data : ', data);
-	rc.console.debug('.. data.containers : ', data.containers);
-	rc.console.debug('.. data.workflows : ', data.workflows);
-	rc.console.debug('.. data.data : ', data.data);
+	console.log('data: ', data);
+	console.log('data.containers: ', data.containers);
+	console.log('data.workflows: ', data.workflows);
+	console.log('data.data: ', data.data);
 	// Apply Page Level CSS
 	rc.components.importContentCSS(rc.context("html"), data.styles);
 	rc.components.updateContentCSS(rc.context("html"));
@@ -246,9 +246,9 @@ rc.selectFormData.done = function(data) {
 			item.text(rc.text(data.data.name));
 			// Add to workflow menu list
 			item_list.append(item.wrap('<li></li>').parent());
-			rc.console.debug('*** item', item);
+			console.log('item', item);
 		} catch (message) {
-			rc.console.debug('[ERROR]', message);
+			console.error('[ERROR]', message);
 		}
 	});
 	// Process data
@@ -257,8 +257,8 @@ rc.selectFormData.done = function(data) {
 	});
 	// Process data
 	rc.context(data.containers).each(function(at, data) {
-		rc.console.debug('.. data.container at : ', at);
-		rc.console.debug('.. data.container data : ', data);
+		console.log('data.container at: ', at);
+		console.log('data.container data: ', data);
 		rc.components.insertColumnList('#rc-container-list', data);
 	});
 	// Process copy-param clicks
@@ -279,9 +279,9 @@ rc.selectFormData.done = function(data) {
 
 // Select record data
 rc.selectData = function(deferred, send) {
-	rc.console.debug('rc.selectData');
-	rc.console.debug('.. this', this);
-	rc.console.debug('.. send', send);
+	console.log('rc.selectData');
+	console.log('this', this);
+	console.log('send', send);
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectData;
@@ -290,11 +290,11 @@ rc.selectData = function(deferred, send) {
 };
 
 rc.selectData.done = function(deferred, send, recv, meta) {
-	rc.console.debug('rc.selectData.done');
-	rc.console.debug('.. this', this);
-	rc.console.debug('.. send', send);
-	rc.console.debug('.. recv', recv);
-	rc.console.debug('.. meta', meta);
+	console.log('rc.selectData.done');
+	console.log('this', this);
+	console.log('send', send);
+	console.log('recv', recv);
+	console.log('meta', meta);
 	// Assign default values to all the fields
 	// This will be overwritten by field data values, if any.
 	rc.rollupDefaultValues();
@@ -330,11 +330,11 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 };
 
 rc.selectData.fail = function(deferred, send, recv, meta) {
-	rc.console.debug('rc.selectData.fail');
-	rc.console.debug('.. this', this);
-	rc.console.debug('.. send', send);
-	rc.console.debug('.. recv', recv);
-	rc.console.debug('.. meta', meta);
+	console.error('rc.selectData.fail');
+	console.error('this', this);
+	console.error('send', send);
+	console.error('recv', recv);
+	console.error('meta', meta);
 };
 
 rc.initializeSessionId = function(isTestMode,sessionId) {
@@ -448,6 +448,88 @@ rc.updateProductSlots = function(component) {
 	}
 };
 
+rc.text = function(text) { return $('<div></div>').html(text).text(); };
+
+rc.html_decode = function(text) {
+	text = text || "";
+	text = text.replace(new RegExp('&' + 'amp;', 'g'), '&');
+	text = text.replace(new RegExp('&' + 'quot;', 'g'), '"');
+	text = text.replace(new RegExp('&' + '#39;', 'g'), '\'');
+	text = text.replace(new RegExp('&' + 'lt;', 'g'), '<');
+	text = text.replace(new RegExp('&' + 'gt;', 'g'), '>');
+	return text;
+};
+
+rc.cleanKeysToLower = function(sourceObject) {
+	var key;
+	var keys = rc.getKeys(sourceObject);
+	var n = keys.length;
+	var targetObject={}
+	while (n--) {
+		key = keys[n];
+		targetObject[key.toLowerCase()] = sourceObject[key];
+	}
+	return targetObject;
+};
+
+rc.getKeys = function (obj) {
+	var r = []
+	for (var k in obj) {
+		if (!obj.hasOwnProperty(k)) {continue;}
+		r.push(k)
+	}
+	return r;
+};
+
+rc.isNumericOrNull = function(str) {
+	return (!str || /^[-+]?[0-9]*\.?[0-9]+$/.test(str));
+}
+
+rc.guid = function() {/* Create a random ID for the component */
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+		return v.toString(16);
+	});
+};
+
+rc.stripTags = function(valueText,tag) {
+	var s = valueText || '';
+	s = s.replace(RegExp('<\/?' + tag + '[^<>]*>', 'gi'), '');
+	return s;
+};
+
+rc.filterComponentData = function(componentsArray) {/* filter / decode data for components */
+	rc.context(componentsArray).each(function(index, component_data) {
+		var data = component_data || {};
+		data.data = data.data || {};
+		data.type = data.type || '';
+		data.styles = data.styles || {};
+		data.defaultValues = data.defaultValues || {};
+	});
+	return componentsArray;
+}
+
+rc.setHiddenFieldAttribute = function(component, attrValue) {
+	console.log('rc.setHiddenFieldAttribute');
+	var componentContentElem = component.find('.rc-component-content');
+	if (true == componentContentElem.hasClass("rc-always-hidden-in-view")) {return true;}
+	component = rc.context(component) || '';
+	attrValue = attrValue || '';
+	componentContentElem.attr("data-field-hidden", attrValue == "true");
+	return true;
+}
+
+Number.prototype.formatMoney = function(c, d, t) {/* utils/library extensions */
+	var n = this, 
+	c = isNaN(c = Math.abs(c)) ? 2 : c, 
+	d = d == undefined ? "." : d, 
+	t = t == undefined ? "," : t, 
+	s = n < 0 ? "-" : "", 
+	i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", 
+	j = (j = i.length) > 3 ? j % 3 : 0;
+	return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+};
+
 // UI helpers
 rc.ui.SUCCESS = 'alert-success';
 rc.ui.ERROR = 'alert-danger';
@@ -495,7 +577,6 @@ rc.ui.setDropdownVisible = function() {
 }
 
 rc.ui.setDefaultValue = function(event) {
-	rc.console.debug('..rc.ui.setDefaultValue');
 	if (rc.getCurrentMode() == 'view') {return true;}
 	var source = rc.context(this) || rc.context(event.target);
 	var value  = source.val() || '';
@@ -682,13 +763,10 @@ rc.ui.cascadeValueToggle = function() {
 };
 
 rc.ui.togglePlaceholderForm = function(item, cascadeTarget) {
-	rc.console.log('..rc.ui.togglePlaceholderForm');
-	rc.console.log('..item : ', item);
-	rc.console.log('..cascadeTarget : ', cascadeTarget);
-	if (!rc.context(item).hasClass("rc-cascade-placeholder")) {
-		rc.console.log('no class!! bout to return');
-		return;
-	}
+	console.log('rc.ui.togglePlaceholderForm');
+	console.log('item: ', item);
+	console.log('cascadeTarget: ', cascadeTarget);
+	if (!rc.context(item).hasClass("rc-cascade-placeholder")) {return;}
 	item = rc.context(item) || '';
 	cascadeTarget = rc.context(cascadeTarget) || '';
 	var placeholderLink = rc.context(rc.context(cascadeTarget).prev().find(".rc-placeholder-link")) || '';
@@ -803,7 +881,7 @@ rc.ui.toggleHiddenFields = function(component) {
 }
 
 rc.ui.initializePlaceholder = function(component) {
-	rc.console.log('..rc.ui.initializePlaceholder: ',component);
+	console.log('rc.ui.initializePlaceholder: ',component);
 	component = rc.context(component) || '';
 	rc.context(component.find(".rc-placeholder-link")).each(function(index, link) {
 		link = rc.context(link) || '';
@@ -816,7 +894,7 @@ rc.ui.initializePlaceholder = function(component) {
 };
 
 rc.ui.initializePlaceholderEvents = function(component) {
-	rc.console.log('..rc.ui.initializePlaceholderEvents: ',component);
+	console.log('rc.ui.initializePlaceholderEvents: ',component);
 	var saveButtonSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-footer .rc-placeholder-save";
 	var cancelButtonSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-footer .rc-placeholder-discard";
 	var placeholderInputSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-content";
@@ -839,7 +917,7 @@ rc.ui.initializePlaceholderEvents = function(component) {
 };
 
 rc.ui.savePlaceholderValue = function(event) {
-	rc.console.log('rc.ui.savePlaceholderValue');
+	console.log('rc.ui.savePlaceholderValue');
 	var eventTarget = event.target || '';
 	var popover = rc.context(rc.context(eventTarget).closest(".popover"));
 	popover = popover || '';
@@ -848,7 +926,7 @@ rc.ui.savePlaceholderValue = function(event) {
 };
 
 rc.ui.setPlaceholderValue = function(popover) {
-	rc.console.debug('rc.ui.setPlaceholderValue');
+	console.log('rc.ui.setPlaceholderValue');
 	var source = rc.context(popover) || '';
 	var placeholderField = source.find(".rc-placeholder-content");
 	var value = placeholderField.val() || '';
@@ -859,7 +937,7 @@ rc.ui.setPlaceholderValue = function(popover) {
 }
 
 rc.ui.discardPlaceholderPopover = function(event) {
-	rc.console.log('rc.ui.discardPlaceholderPopover');
+	console.log('rc.ui.discardPlaceholderPopover');
 	var eventTarget = event.target || '';
 	var popover = rc.context(rc.context(eventTarget).closest(".popover"));
 	popover.popover("hide");
@@ -1094,7 +1172,7 @@ rc.components.insert = function(template, container) {
 };
 
 rc.components.importContentCSS = function(component, styles) {
-	rc.console.debug('rc.components.importContentCSS', component, styles);
+	console.log('rc.components.importContentCSS', component, styles);
 	styles = styles || {};
 	// Import
 	var component = rc.context(component);
@@ -1111,7 +1189,7 @@ rc.components.importContentCSS = function(component, styles) {
 };
 
 rc.components.insertWorkflow = function(container, container_data) {
-	rc.console.debug('rc.components.insertWorkflow', container_data);
+	console.log('rc.components.insertWorkflow', container_data);
 	container_data = container_data || {};
 	container_data.actions = container_data.actions || [];
 	container_data.data = container_data.data || {};
@@ -1146,8 +1224,7 @@ rc.components.insertWorkflow = function(container, container_data) {
 };
 
 rc.components.insertWorkflowAction = function(container, container_data) {
-	rc.console.debug('rc.components.insertWorkflowAction', container_data);
-	// Sanity
+	console.log('rc.components.insertWorkflowAction', container_data);
 	container_data = container_data || {};
 	container_data.context = container_data.context || 'then';
 	container_data.data = container_data.data || {};
@@ -1343,7 +1420,7 @@ rc.components.deleteColumnListColumns = function(container, max_position) {
 }
 
 rc.components.upsertColumnListColumns = function(container, max_position, column_data) {
-	rc.console.debug('rc.components.upsertColumnListColumns', max_position);
+	console.log('rc.components.upsertColumnListColumns', max_position);
 	// Check column data
 	column_data = column_data || [];
 	// Add new items
@@ -1356,7 +1433,7 @@ rc.components.upsertColumnListColumns = function(container, max_position, column
 		data.data = data.data || {};
 		// Insert if needed
 		if (item.length == 0) {
-			rc.console.debug('.. upserting position', position, 'as', data);
+			console.log('upserting position', position, 'as', data);
 			// Create
 			item = rc.components.insert('#rc-container-column', container, data.data);
 			container.append(item);
@@ -1380,7 +1457,7 @@ rc.components.upsertColumnListColumns = function(container, max_position, column
 
 rc.components.upsertColumnListComponents = function(container, column_data) {
 	rc.context(column_data).each(function(position, data) {
-		rc.console.debug('.. updating column components', data);
+		console.log('updating column components', data);
 		//filter component Data
 		data.components = rc.filterComponentData(data.components);
 		// Find column
@@ -1452,7 +1529,7 @@ rc.components.upsertComponent = function(container, component_data) {
 			template.find('.rc-cascade-value').text(data.data.text);
 			template.find('.rc-cascade-dropdown-text').on('click', rc.ui.cascadeDropdownText);
 			rc.context(this).find('[data-dropdown-menu="target-fields"]').append(template);
-			rc.console.debug('.. adding to copy-param list');
+			console.log('adding to copy-param list');
 		});
 	}
 	//initialize validation data
@@ -1462,7 +1539,7 @@ rc.components.upsertComponent = function(container, component_data) {
 };
 
 rc.components.updateContentCSS = function(component) {
-	rc.console.debug('rc.components.updateContentCSS', component);
+	console.log('rc.components.updateContentCSS', component);
 	// Update from css data
 	var component = rc.context(component);
 	var component_content = component.find('.rc-content-css').filter(':first');
@@ -1997,7 +2074,6 @@ rc.components.Attribute.renderUpsertData = function(send) {
 	}
 };
 
-
 rc.components.Cart = function(container, data) {
 	this.container = container;
 	this.type = 'cart';
@@ -2502,11 +2578,11 @@ rc.components.Cart.calculateProductDiscountCode.done = function(deferred, send, 
 };
 
 rc.components.Cart.calculateProductDiscountCode.fail = function(deferred, send, recv, meta) {
-	rc.console.debug('rc.components.Cart.calculateProductDiscountCode.fail');
-	rc.console.debug('this', this);
-	rc.console.debug('send', send);
-	rc.console.debug('recv', recv);
-	rc.console.debug('meta', meta);
+	console.error('rc.components.Cart.calculateProductDiscountCode.fail');
+	console.error('this', this);
+	console.error('send', send);
+	console.error('recv', recv);
+	console.error('meta', meta);
 };
 /* end event javascript */
 
@@ -2570,9 +2646,9 @@ rc.components.CreditCard.format = function() {
 };
 
 rc.components.Button = function(container, data) {
-	rc.console.debug('rc.components.Button');
-	rc.console.debug('.. container', container);
-	rc.console.debug('.. data', data);
+	console.log('rc.components.Button');
+	console.log('container', container);
+	console.log('data', data);
 	this.container = container;
 	this.type = 'Button';
 	this.data = data;
@@ -3121,140 +3197,6 @@ rc.dataModal.getFieldByName = function(fieldName, fieldSelector) {
 	}
 };
 
-rc.text = function(text) { return $('<div></div>').html(text).text(); };
-
-rc.html_decode = function(text) {
-	text = text || "";
-	text = text.replace(new RegExp('&' + 'amp;', 'g'), '&');
-	text = text.replace(new RegExp('&' + 'quot;', 'g'), '"');
-	text = text.replace(new RegExp('&' + '#39;', 'g'), '\'');
-	text = text.replace(new RegExp('&' + 'lt;', 'g'), '<');
-	text = text.replace(new RegExp('&' + 'gt;', 'g'), '>');
-	return text;
-};
-
-rc.cleanKeysToLower = function(sourceObject) {
-	var key;
-	var keys = rc.getKeys(sourceObject);
-	var n = keys.length;
-	var targetObject={}
-	while (n--) {
-		key = keys[n];
-		targetObject[key.toLowerCase()] = sourceObject[key];
-	}
-	return targetObject;
-};
-
-rc.getKeys = function (obj) {
-	var r = []
-	for (var k in obj) {
-		if (!obj.hasOwnProperty(k)) {continue;}
-		r.push(k)
-	}
-	return r;
-};
-
-rc.isNumericOrNull = function(str) {
-	return (!str || /^[-+]?[0-9]*\.?[0-9]+$/.test(str));
-}
-
-Number.prototype.formatMoney = function(c, d, t) {/* utils/library extensions */
-	var n = this, 
-	c = isNaN(c = Math.abs(c)) ? 2 : c, 
-	d = d == undefined ? "." : d, 
-	t = t == undefined ? "," : t, 
-	s = n < 0 ? "-" : "", 
-	i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", 
-	j = (j = i.length) > 3 ? j % 3 : 0;
-	return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-};
-
-/* todo: next method looks to be edit only */
-rc.html = function(text) { return $('<div></div>').html(text).html(); };
-
-/* todo: next method looks to be edit only */
-rc.guid = function() {/* Create a random ID for the component */
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-		var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-		return v.toString(16);
-	});
-};
-
-/* todo: next method looks to be edit only */
-rc.stripTags = function(valueText,tag) {
-	var s = valueText || '';
-	s = s.replace(RegExp('<\/?' + tag + '[^<>]*>', 'gi'), '');
-	return s;
-};
-
-/* todo: next method looks to be edit only */
-rc.filterComponentData = function(componentsArray) {/* filter / decode data for components */
-	rc.context(componentsArray).each(function(index, component_data) {
-		var data = component_data || {};
-		data.data = data.data || {};
-		data.type = data.type || '';
-		data.styles = data.styles || {};
-		data.defaultValues = data.defaultValues || {};
-	});
-	return componentsArray;
-}
-
-/* todo: next method looks to be edit only */
-rc.setModeView = function() {
-	var returnVal = rc.setParam('mode', 'view');
-	rc.events.trigger('view-change',false);
-	return returnVal;
-};
-
-/* todo: next method looks to be edit only */
-rc.setModeEdit = function() {
-	var returnVal = rc.setParam('mode', 'edit');
-	rc.events.trigger('view-change',true);
-	return returnVal;
-};
-
-/* todo: next method looks to be edit only */
-rc.setModeFlow = function() {
-	var returnVal = rc.setParam('mode', 'flow');
-	rc.events.trigger('view-change',false);
-	return returnVal;
-};
-
-/* todo: next method looks to be edit only */
-rc.setHiddenFieldAttribute = function(component, attrValue) {
-	rc.console.debug('rc.setHiddenFieldAttribute');
-	var componentContentElem = component.find('.rc-component-content');
-	if (true == componentContentElem.hasClass("rc-always-hidden-in-view")) {return true;}
-	component = rc.context(component) || '';
-	attrValue = attrValue || '';
-	componentContentElem.attr("data-field-hidden", attrValue == "true");
-	return true;
-}
-
-
-/* END OF POSSIBLE EDIT ONLY METHODS */
-
-
-/* todo: next method doesn't appear to be called */
-rc.date = function(originalDate) {/* Helper to convert string date to SF number date */
-	if (originalDate) {
-		return new Date(originalDate).getTime();
-	} else {
-		return null;
-	}
-};
-
-/* todo: next method doesn't appear to be called */
-rc.html_encode = function(text) {
-	text = text || "";
-	text = text.replace(new RexExp('&', 'g'), '&' + 'amp;');
-	text = text.replace(new RexExp('"', 'g'), '&' + 'quot;');
-	text = text.replace(new RexExp('\'', 'g'), '&' + '#39;');
-	text = text.replace(new RexExp('<', 'g'), '&' + 'lt;');
-	text = text.replace(new RexExp('>', 'g'), '&' + 'gt;');
-	return text;
-};
-
 // This is used to determine which workflows are still executing. When this is empty, we reactivate the disabled button.
 rc.workflow.executingMap = {};
 /* This is to allow the SendPayment 'fail' workflow to be called separately during the SaveData workflow, since the existing
@@ -3283,7 +3225,7 @@ rc.workflow.hasPaymentProcessor = function() {
 
 rc.workflow.forceFail = function(deferred, quenchGuid, msg) {
 	rc.workflow.quenchByGuid[quenchGuid] = true;
-	rc.console.log(msg);
+	console.log(msg);
 	deferred.reject(msg);
 }
 
@@ -3291,7 +3233,7 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 	//if workflow trigger in the context of an action button,
 	//always disable the actionButton which was source of the event
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
-	rc.console.debug('rc.workflow.execute', guid);
+	console.log('rc.workflow.execute', guid);
 	var context = rc.context('#' + guid);
 	var flow_origin = new jQuery.Deferred(); // null deferred to kickoff the flow
 	var flow = flow_origin.promise();
@@ -3304,9 +3246,8 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 		var action_type = action.attr('data-context');
 		var action_guid = action.attr('id');
 		var action_method = action.attr('data-method');
-		rc.console.debug('.. adding action', action_guid, action_type, action.attr('data-method'));
+		console.log('adding action', action_guid, action_type, action.attr('data-method'));
 		if (action_type == 'then' || action_type == 'execute') { // the "execute" type is for very early versions of the form
-			
 			flow = flow.then(function(data) {
 				return rc.workflow.process('then', action_guid, {workflowGuid:guid}, actionButtonContext);
 			});
@@ -3349,10 +3290,10 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 rc.workflow.process = function(type, guid, data, actionButtonContext) {
 	//always disable action button when executing any action
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
-	rc.console.debug('rc.workflow.process');
-	rc.console.debug('.. guid', guid);
-	rc.console.debug('.. type', type);
-	rc.console.debug('.. data', data);
+	console.log('rc.workflow.process');
+	console.log('guid', guid);
+	console.log('type', type);
+	console.log('data', data);
 	// Find and execute
 	var deferred = new jQuery.Deferred();
 	deferred.workflowGuid = data.workflowGuid;
@@ -3379,7 +3320,7 @@ rc.workflow.process = function(type, guid, data, actionButtonContext) {
 	try {
 		var method_result = new method(deferred, action, data, actionButtonContext);
 	} catch (action_excp) {
-		rc.console.debug('!!! exception', action_excp);
+		console.error('exception', action_excp);
 		deferred.reject();
 	}
 	return deferred.promise();
@@ -3412,9 +3353,9 @@ rc.workflow.process.LoadData = function(deferred, action, data) {
 
 rc.workflow.process.LoadPage = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
-	console.log('campaignFormId = ' + campaignFormId);
+	console.log('campaignFormId: ' + campaignFormId);
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
-	console.log('campaignFormId after blank check = ' + campaignFormId);
+	console.log('campaignFormId after blank check: ' + campaignFormId);
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
 		+ '&formCampaignId=' + campaignFormId + '&form=' + action.attr('data-value')
 		+ '&data=' + rc.getParam('data');
@@ -3423,9 +3364,9 @@ rc.workflow.process.LoadPage = function(deferred, action, data) {
 
 rc.workflow.process.TrafficController = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
-	console.log('campaignFormId = ' + campaignFormId);
+	console.log('campaignFormId: ' + campaignFormId);
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
-	console.log('campaignFormId after blank check = ' + campaignFormId);
+	console.log('campaignFormId after blank check: ' + campaignFormId);
 	var redirectTo = rc.pageCampaignTrafficControllerRoute + '?id=' + rc.campaignId
 		+ '&formCampaignId=' + campaignFormId + '&form=' + rc.getParam('form')
 		+ '&data=' + rc.getParam('data');
@@ -3620,9 +3561,9 @@ rc.workflow.process.Workflow = function(deferred, action, data, actionButtonCont
 
 
 rc.upsertData = function(deferred, send) {
-	rc.console.debug('rc.upsertData');
-	rc.console.debug('.. this', this);
-	rc.console.debug('.. send', send);
+	console.log('rc.upsertData');
+	console.log('this', this);
+	console.log('send', send);
 	send = send || {};
 	send.__action = rc.actions.upsertData;
 	send.__data = rc.getParam('data');
@@ -3762,8 +3703,8 @@ rc.upsertData.validateCustomComponents = function() {
 
 //WARNING : Avoid adding validation code here - see Campaign_Design_Form_Validator.component
 rc.upsertData.validate = function() {
-	rc.console.debug('rc.upsertData.validate');
-	rc.console.debug('.. this', this);
+	console.log('rc.upsertData.validate');
+	console.log('this', this);
 	var context = rc.context(this);
 	var present = context.val() ? true: false;
 	var errorLabel = rc.context(rc.context("#rc-error-label").html());
