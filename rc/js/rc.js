@@ -639,7 +639,10 @@ rc.ui.togglePlaceholderForm = function(item, cascadeTarget) {
 	rc.console.log('..rc.ui.togglePlaceholderForm');
 	rc.console.log('..item : ', item);
 	rc.console.log('..cascadeTarget : ', cascadeTarget);
-	if (!rc.context(item).hasClass("rc-cascade-placeholder")) {return;}
+	if (!rc.context(item).hasClass("rc-cascade-placeholder")) {
+		rc.console.log('no class!! bout to return');
+		return;
+	}
 	item = rc.context(item) || '';
 	cascadeTarget = rc.context(cascadeTarget) || '';
 	var placeholderLink = rc.context(rc.context(cascadeTarget).prev().find(".rc-placeholder-link")) || '';
