@@ -147,6 +147,16 @@ rc.initializeHeaderButtons = function() {
 	});
 };
 
+rc.applyDefaultAttributeDefaultValues = function(component, defaultValues) {
+	var component = rc.context(component) || {};
+	var defaultValues = defaultValues || {};
+	rc.context(rc.context(component).find('.rc-field-name')).each(function() {
+		var field = rc.context(this);
+		var defaultData = defaultValues[field.attr('name')] || '';
+		field.attr('data-field-default', defaultData);
+	});
+}
+
 rc.reenable = function(el) {
 	if (el) {el.prop("disabled",false);}
 }
@@ -695,6 +705,26 @@ rc.ui.cascadeValueToggle = function() {
 	}
 };
 
+rc.ui.togglePlaceholderForm = function(item, cascadeTarget) {
+	rc.console.log('..rc.ui.togglePlaceholderForm');
+	rc.console.log('..item : ', item);
+	rc.console.log('..cascadeTarget : ', cascadeTarget);
+	if (!rc.context(item).hasClass("rc-cascade-placeholder")) {return;}
+	item = rc.context(item) || '';
+	cascadeTarget = rc.context(cascadeTarget) || '';
+	var placeholderLink = rc.context(rc.context(cascadeTarget).prev().find(".rc-placeholder-link")) || '';
+	placeholderLink.trigger("click");
+	var dataField = rc.context(cascadeTarget.find(".rc-field-name[placeholder]"));
+	var placeholderValue = dataField.attr("placeholder") || '';
+	// fill in existing placeholder value
+	if (placeholderLink.next('div.popover:visible').length > 0) {
+		// popover is visible
+		var placeholderField = rc.context(placeholderLink.next().find(".rc-placeholder-content")) || '';
+		placeholderField.val(placeholderValue);
+	}
+	return true;
+};
+
 rc.ui.filterDropdown = function() {
 	// Find the menu
 	var menu = rc.context(this).closest('.rc-filter-dropdown-container').find('.dropdown-menu');
@@ -800,6 +830,52 @@ rc.ui.toggleHiddenFields = function(component) {
 	component.find('.rc-tooltip').tooltip();
 	return true;
 }
+
+rc.ui.initializePlaceholder = function(component) {
+	rc.console.log('..rc.ui.initializePlaceholder: ',component);
+	component = rc.context(component) || '';
+	rc.context(component.find(".rc-placeholder-link")).each(function(index, link) {
+		link = rc.context(link) || '';
+		link.popover({html:true,placement:"top",title:function() {
+			return rc.context(this).parent().find('.rc-popover-head').html();
+		},content: function() {
+			return rc.context(this).parent().find('.rc-popover-content').html();
+		}});
+	});
+};
+
+rc.ui.initializePlaceholderEvents = function(component) {
+	rc.console.log('..rc.ui.initializePlaceholderEvents: ',component);
+	var saveButtonSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-footer .rc-placeholder-save";
+	var cancelButtonSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-footer .rc-placeholder-discard";
+	var placeholderInputSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-content";
+	// Bind events
+	rc.context(component.find(".rc-component-content")).on("click", saveButtonSelector, function(event) {
+		event.preventDefault();
+		rc.ui.savePlaceholderValue(event);
+	});
+	rc.context(component.find(".rc-component-content")).on("click", cancelButtonSelector, function(event) {
+		event.preventDefault();
+		rc.ui.discardPlaceholderPopover(event);
+	});
+	rc.context(component.find(".rc-component-content")).on("keypress", placeholderInputSelector, function(event) {
+		// todo: does this confict with javascript at the bottom of the page
+		// Save if enter key is pressed
+		if (event.which == 13) {
+			event.preventDefault();
+			rc.ui.savePlaceholderValue(event);
+		}
+		if (event.which == 27) {rc.ui.discardPlaceholderPopover(event);}
+	});
+};
+
+rc.ui.discardPlaceholderPopover = function(event) {
+	rc.console.log('rc.ui.discardPlaceholderPopover');
+	var eventTarget = event.target || '';
+	var popover = rc.context(rc.context(eventTarget).closest(".popover"));
+	popover.popover("hide");
+	return true;
+};
 
 // TODO: this method is called multiple times - is that needed?????
 rc.components.initialize = function(component, data) {
