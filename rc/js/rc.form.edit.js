@@ -735,20 +735,4 @@ rc.components.upsertComponent = function(container, component_data) {
 	if (item.send) {item.send();}
 };
 
-rc.components.importContentCSS = function(component, styles) {
-	rc.console.debug('rc.components.importContentCSS', component, styles);
-	styles = styles || {};
-	// Import
-	var component = rc.context(component);
-	// Remove any existing css attributes from the component
-	// Delete any form attributes starting with css-
-	if (component && component.length>0 && component.get(0)) {
-		rc.context(component.get(0).attributes).each(function(index, attr) {
-			if (attr.name.match('css-')) {
-				component.removeAttr(attr.name);
-			}
-		});
-	}
-	for (var name in styles) {component.attr('css-' + name, styles[name]);}
-};
 
