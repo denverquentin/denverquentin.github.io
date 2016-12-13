@@ -16,15 +16,11 @@ rc.sessionId;/* litle Session Id */
 var sessionList = {};
 
 rc.initializeFormApp = function() {
-	console.log('rc.initializeFormApp');
-	//rc.components.initialize('.modal');// Copy data templates in modal templates
 	//rc.components.initialize('.page-header');// Initialize actions in the page header
 	// Component list sorting
 	rc.context('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
-	// Make sure the body tag has a css target
-	rc.context('body').addClass('rc-content-css');
-	// Inline image data
-	rc.context('#rc-component-overview--attach-image').on('change',function() {
+	rc.context('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
+	rc.context('#rc-component-overview--attach-image').on('change',function() {/* Inline image data */
 		var freader = new FileReader();
 		var context = rc.context('#rc-component-overview--attach-image');
 		context.removeAttr('data-image-data');
@@ -36,36 +32,14 @@ rc.initializeFormApp = function() {
 		}
 	});
 	rc.selectFormInfoList();// Load the form data
-	// Which page mode is set?
-	/*
-	rc.context('#rc-page-container').find('.page-header [data-value="' + rc.getParam('mode') + '"]').click();
-	//on view change refresh html block elements to toggle between html<->text views
-	rc.events.on('view-change',rc.components.HtmlBlock.refreshView);
-	// on view change, toggle placeholder values shown in fields
-	rc.events.on('view-change',rc.rollupPlaceholderValues);// todo: changed view-cahnge to view-change
-	// on view change, toggle default values shown in fields
-	rc.events.on('view-change',rc.rollupDefaultValues);
-	*/
 	rc.events.on('form-loaded-with-data',function(event) {
 		//functions to initialize components which depends on all components + data load
 		//here we have guarantee all components and data is loaded
-		//if validations enabled initialize the scene
-		rc.validateInput.initialize(); // call into Campaign_Design_Form_Validator.component
+		rc.validateInput.initialize(); /* if validations enabled initialize the scene */
 		rc.ui.setDropdownVisible();
 		rc.ui.removeRedundantOpacity();
 	});
-	// todo: only call the next 2 if in edit mode
-	// also only make these methods visible if in edit mode - they're only called from right here
-/*
-	console.log('rc.isEditMode = ' + rc.isEditMode);
-	if (rc.isEditMode) {
-		console.log('bout to initializeModals & initializeHeaderButtons');
-		rc.initializeModals();
-		rc.initializeHeaderButtons();
-	}
-*/
 };
-
 
 rc.initializeParams = function() {
 	console.log('rc.initializeParams');
@@ -370,6 +344,31 @@ rc.initializeSessionId = function(isTestMode,sessionId) {
 		rc.sessionId = rc.litleSessionId;
 	}
 }
+
+rc.initializeViewSelector = function(context,selectDataArray,defaultSelected) {
+	var selectedComponentString = context.data['selectedViewComponents'];
+	context.data.componentSelectDataArray = [];
+	if (selectedComponentString) {context.data.componentSelectDataArray = selectedComponentString.split(",");}
+	context.component.find(".view-component-select").select2({data: selectDataArray, placeholder: "Select view components"});
+	//if nothing selected atleast title is shown always
+	if (!context.data.componentSelectDataArray || context.data.componentSelectDataArray.length==0) {context.data.componentSelectDataArray = defaultSelected;}
+	context.component.find(".view-component-select").val(context.data.componentSelectDataArray).trigger("change");
+	context.component.find(".view-component-select").on("change", function (event) {
+		//re-populate data array based on what is selected currently
+		context.data.componentSelectDataArray = context.component.find(".view-component-select").val();
+		rc.initializeViewSelector.rerender(context);
+	});
+};
+
+rc.initializeViewSelector.rerender = function(context) {
+	context.data.componentSelectDataArray = !context.data.componentSelectDataArray?[]:context.data.componentSelectDataArray;
+	context.component.find(".default-hide").hide();
+	//show components selected as view components
+	for (var index=0;index<context.data.componentSelectDataArray.length;++index) {
+		var viewClass = context.data.componentSelectDataArray[index];
+		context.component.find('.'+viewClass).show();
+	}
+};
 
 //Events component start
 //Product Slots Management
@@ -734,7 +733,6 @@ rc.ui.toggleActive = function() {
 rc.ui.togglePrimary = function() {
 	var parentContainer = rc.context(this).closest('.rc-toggle-primary-container');
 	rc.context(parentContainer).find('.rc-toggle-primary').removeClass('btn-primary');
-	//#TODO	: Move code to Campaign Ask Component
 	//Fix for RCSBIRD-20315 - Check if this is done from Campaign Ask component only for frequency buttons OR for giving amount buttons
 	if (rc.context(parentContainer).hasClass('rc-campaign-ask-frequency-list')
 		|| rc.context(parentContainer).hasClass('rc-component-campaign-ask-item-list')) {
@@ -832,8 +830,6 @@ rc.ui.initializePlaceholderEvents = function(component) {
 		rc.ui.discardPlaceholderPopover(event);
 	});
 	rc.context(component.find(".rc-component-content")).on("keypress", placeholderInputSelector, function(event) {
-		// todo: does this confict with javascript at the bottom of the page
-		// Save if enter key is pressed
 		if (event.which == 13) {
 			event.preventDefault();
 			rc.ui.savePlaceholderValue(event);
@@ -870,7 +866,42 @@ rc.ui.discardPlaceholderPopover = function(event) {
 	return true;
 };
 
-// TODO: this method is called multiple times - is that needed?????
+rc.ui.toggleDisountCode = function() {
+	var item = rc.context(this);
+	var productRow = rc.context(this).closest(".product-entry-row");
+	if (item.hasClass("rc-toggle-discount-code") == true) {
+		var dataValue = item.attr("data-value");
+		productRow.attr("discount-code-hidden", dataValue);
+		productRow.find('.rc-toggle-discount-code[data-value='+dataValue+']').attr("disabled", "disabled").addClass("rc-opacity-md");
+		var toggleDiscountCode = dataValue == "false" ? productRow.find('.rc-toggle-discount-code[data-value="true"]') : productRow.find('.rc-toggle-discount-code[data-value="false"]');
+		toggleDiscountCode.removeAttr("disabled").removeClass("rc-opacity-md");
+		if (dataValue == "false") {
+			productRow.find(".discount-code").show();
+			productRow.find(".product-discount-code").show();
+		} else {
+			productRow.find(".discount-code").hide();
+			productRow.find(".product-discount-code").hide();
+		}
+	}
+};
+
+rc.ui.toggleDescription = function() {
+	var item = rc.context(this);
+	var productRow = rc.context(this).closest(".product-entry-row");
+	if (item.hasClass("rc-toggle-description") == true ) {
+		var dataValue = item.attr("data-value");
+		productRow.attr("product-description-hidden", dataValue);
+		productRow.find('.rc-toggle-description[data-value='+dataValue+']').attr("disabled", "disabled").addClass("rc-opacity-md");
+		var toggleDescription12 = dataValue == "false" ? productRow.find('.rc-toggle-description[data-value="true"]') : productRow.find('.rc-toggle-description[data-value="false"]');
+		toggleDescription12.removeAttr("disabled").removeClass("rc-opacity-md");
+		if (dataValue == "false") {
+			productRow.find(".product-description").show();
+		} else {
+			productRow.find(".product-description").hide();
+		}
+	}
+};
+
 rc.components.initialize = function(component, data) {
 	data = data || {};// Check data
 	component = rc.context(component);// Check component
@@ -1806,6 +1837,679 @@ rc.components.CampaignAsk.populateData = function(data) {
 	amountList.find('[data-giving-frequency="'+frequency+'"][data-value="'+amount+'"]').click();
 }
 
+/* start event javascript */
+rc.components.Attribute = function(container, data) {
+	this.container = container;
+	this.type = 'attribute';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-cm-attribute', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	// Actions: Required as properties here so that they can access the "this" value
+	this.send = rc.components.Attribute.send;
+	this.done = rc.components.Attribute.done;
+	this.render = rc.components.Attribute.render;
+};
+
+rc.components.Attribute.send = function(deferred, send) {
+	deferred = deferred || new jQuery.Deferred();
+	send = send || {};
+	send.__action = rc.actions.selectCampaignMemberAttributeList;
+	// Done and fail
+	rc.components.remoting.send(deferred, send, rc.context.proxy(this.done,this),this.fail);
+	// Done
+	return deferred.promise();
+};
+
+rc.components.Attribute.done = function(deferred, send, recv, meta) {
+	var data = this.data;
+	var defaultOptionElement = rc.context("<option/>", {
+		value:"",
+		text:"Select Attribute",
+		selected:true
+	});
+	var attribute;
+	var optionList = [defaultOptionElement];
+	for (var index=0;index<recv.campaignMemberAttributeList.length;++index) {
+		attribute = recv.campaignMemberAttributeList[index];
+		var optionElement = rc.context("<option/>", {
+			value:attribute.Id,
+			text:attribute.type
+		});
+		rc.context.data(optionElement[0],'data',attribute);
+		optionList.push(optionElement);
+	}
+	this.component.find(".attribute-select").html("").append(optionList).val("").change(rc.context.proxy(this.render,this));
+	this.component.find(".attribute-select").val(data.attribute_id);
+	this.component.find(".attribute-select").trigger("change");
+};
+
+rc.components.Attribute.render = function(event) {
+	//get selected option & clear label
+	var data = this.data;
+	this.component.find(".rc-label-container label").text("");
+	this.component.find(".rc-value-container").html("");
+	var selectedOption = this.component.find(".attribute-select").find(":selected");
+	if (!selectedOption || selectedOption.length==0 || selectedOption.attr("value")=='') {return true;}
+	var attributeData  = rc.context.data(selectedOption[0],'data');
+	if (!attributeData) {return true;}
+	//if slot saved and used remove it from empty slot list
+	if (this.data.productSlot) {rc.occupyProductSlot(this.data.productSlot);}
+	//load existing product slot or get a new one
+	var productSlot = this.data.productSlot || rc.getProductSlot();
+	//update productslot to data
+	this.data.productSlot = productSlot;
+	if (!productSlot) {
+		rc.ui.showMessagePopup(rc.ui.ERROR,'Maximum allowed attributes added !');
+		return true;
+	}
+	//set label value
+	this.component.find(".rc-label-container label").text(rc.html_decode(attributeData.type));
+	//depending on type render the attribute and populate the value
+	if (attributeData.attributeDataType &&  attributeData.attributeDataType.toLowerCase() == 'picklist') {
+		//get template
+		var picklistTemplateHTML = rc.context('#rc-component-merge-field-picklist .rc-value-container').html();
+		this.component.find(".rc-value-container").html(picklistTemplateHTML);
+		var selectList = this.component.find('.rc-field-name');
+		var optionList = [];
+		for (var index=0;index<attributeData.options.length;++index) {
+			var optionElement = rc.context("<option />", {
+				value:rc.context.trim(rc.html_decode(attributeData.options[index])),
+				text:rc.context.trim(rc.html_decode(attributeData.options[index]))
+			});
+			optionList.push(optionElement);
+		}
+		var defaultOptionElement = rc.context("<option/>", {value:"",text:"Select Value"});
+		selectList.append(optionList).prepend(defaultOptionElement);
+	} else if (attributeData.attributeDataType && attributeData.attributeDataType.toLowerCase() == 'checkbox') {
+		var checkboxTemplateHTML = rc.context('#rc-component-merge-field-checkbox .rc-value-container').html();
+		this.component.find(".rc-value-container").html(checkboxTemplateHTML);
+	} else if (attributeData.attributeDataType && attributeData.attributeDataType.toLowerCase() == 'date') {
+		//keep the default which is a text field   
+		var checkboxTemplateHTML = rc.context('#rc-component-cm-attribute .rc-value-container').html();
+		this.component.find(".rc-value-container").html(checkboxTemplateHTML);         
+		this.component.find("input.form-control").datepicker({orientation:"bottom"});
+		//initialize datepicker
+	} else {
+		//keep the default which is a text field   
+		var checkboxTemplateHTML = rc.context('#rc-component-cm-attribute .rc-value-container').html();
+		this.component.find(".rc-value-container").html(checkboxTemplateHTML);         
+	}
+	this.component.find(".form-control").attr("name",productSlot);
+	this.component.find('.input-group').attr('data-required', data.required);//set required flag from data
+	rc.components.initialize(this.component.find(".rc-value-stub-container"));//initialize the component
+	return true;
+};
+
+rc.components.Attribute.populateUpsertData = function(send) {
+	var attributeInputList = rc.context(".rc-component-cm-attribute .rc-value-container .rc-field-name");
+	rc.context(attributeInputList).each(function(index,attributeInput) {
+		attributeInput = rc.context(attributeInput);
+		var productSlot = attributeInput.attr("name");
+		if (!productSlot) {return true;}
+		var fieldNamePrefix = rc.prodMap[productSlot];
+		var productId = attributeInput.closest(".rc-component-cm-attribute").find(".attribute-select").val();
+		var value = "";
+		if (attributeInput.attr("type") == "checkbox") {
+			value = ""+attributeInput.is(":checked");
+		} else {
+			value = attributeInput.val();
+		}
+		var productType = 'Attribute';
+		send[productSlot] = productId+':'+value;
+		send[fieldNamePrefix+'_type__c'] = productType;
+	});
+	return send;
+};
+
+rc.components.Attribute.renderUpsertData = function(send) {
+	var productSlotList = rc.getKeys(rc.prodMap);
+	for (var index=0;index<productSlotList.length;++index) {
+		var productSlot = productSlotList[index];
+		var prefix = rc.prodMap[productSlot];
+		var productId = send[productSlot];
+		//if type to be managed by attribute component
+		if (!!productId && send[prefix+'_type__c'] == 'Attribute') {
+			var slotArray = productId.split(":");
+			productId = slotArray[0];
+			var value = slotArray[1] || "";
+			for (var i=2;i<slotArray.length;++i) {
+				if (slotArray[i]) {
+					value = value+":"+slotArray[i];
+				}
+			}
+			value = rc.html_decode(value);
+			//find product row
+			var productElem = rc.context(".rc-component-cm-attribute-content .attribute-select").find("option[value='"+productId+"']:selected");
+			if (!productElem || productElem.length==0) {continue;}
+			var component = productElem.closest(".rc-component-cm-attribute");
+			if (component.find(".rc-field-name").attr("type") == "checkbox") {
+				if (value == "true") {
+					component.find(".rc-field-name").prop('checked', true);
+				} else {
+					component.find(".rc-field-name").prop('checked', false);
+				}
+			} else {
+				component.find(".rc-field-name").val(value).attr("name",productSlot);
+				component.find("select.rc-field-name option[value='" + value +"']").attr("selected","selected");
+			}
+		}
+	}
+};
+
+
+rc.components.Cart = function(container, data) {
+	this.container = container;
+	this.type = 'cart';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-cart', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	data.header = data.header || "Shopping Cart";
+	this.component.find('.cart-header-text').text(data.header);
+	// Actions: Required as properties here so that they can access the "this" value
+	this.send = rc.components.Cart.send;
+	this.done = rc.components.Cart.done;
+	this.getOptionGroup = rc.components.Cart.getOptionGroup;
+	this.appendProductRow = rc.components.Cart.appendProductRow;
+	this.recalculateTotal = rc.components.Cart.recalculateTotal;
+	this.refreshEmptyCartMessage = rc.components.Cart.refreshEmptyCartMessage;
+	this.isValidPurchaseQuantity = rc.components.Cart.isValidPurchaseQuantity;
+	this.calculateProductDiscountCode = rc.components.Cart.calculateProductDiscountCode;
+	this.initialize = rc.components.Cart.initialize;
+	this.idProductMap = {};
+	rc.context(this.component).on('recalculate-sum',rc.context.proxy(this.recalculateTotal,this));
+	this.component.find('.input-group').attr('data-required', data.required);
+};
+
+rc.components.Cart.getPaymentDetails = function() {
+	var cartPaymentDetails = rc.components.Cart.getComponentPaymentDetails();
+	//if component is not configured then get details from the model
+	if (cartPaymentDetails==null || !cartPaymentDetails) {
+		cartPaymentDetails = {};
+		cartPaymentDetails['frequency'] = 'One Payment';
+		cartPaymentDetails['finalAmount'] = rc.dataModal.BatchUploadModel[rc.ns+'event_purchase_giving_amount__c'];
+	}
+	//if data not defined return null
+	if (!cartPaymentDetails['finalAmount'] || cartPaymentDetails['finalAmount']=='') {
+		return null;
+	}
+	return cartPaymentDetails;
+};
+
+rc.components.Cart.getComponentPaymentDetails = function() {
+	if (rc.context("#rc-container-list .rc-component-cart .products-total-amount").length==0) {return null;}
+	var result = {};
+	result.finalAmount = 0;
+	var total = 0.0;
+	rc.context("#rc-container-list .rc-component-cart .products-total-amount").each(function(index,amountElem) {
+		var value = parseFloat(rc.context(amountElem).attr("total-sum"));
+		if (value) {total+=value;}
+	});
+	result.finalAmount = total;
+	result.frequency='One Payment';//Event Meals/Tickets/Items purchase will be 'One payment'
+	return result;
+};
+
+rc.components.Cart.validate = function() {
+	var flag = false;
+	var messageText = "Product quantity is not selected. Please select and resubmit.";
+	var messageTypeElement = rc.context("#rc-container-list .rc-component-cart .rc-component-cart-content .cart-validation-error .message-header");
+	rc.context("#rc-container-list .rc-component-cart").find('.input-group[data-required="true"]').closest('.rc-component-cart').each(function(i, cartComponent) {
+		var totalQuantity = 0;
+		rc.context(cartComponent).find('.product-quantity').each(function(index, quantity) {
+			var value = parseInt(rc.context(quantity).attr("aria-valuenow"));
+			if (value) {totalQuantity += value;}
+		});
+		if (parseInt(totalQuantity,10) == 0) {
+			flag = true;
+			rc.context('#rc-container-list .rc-component-cart .product-quantity').closest('.form-group').toggleClass('has-error', present == false);
+			var present = flag == true ? false : true;
+			var componentElem = rc.context(cartComponent);
+			messageTypeElement.text(rc.ui.MessageHeaders[rc.ui.ERROR] + ' ');
+			componentElem.find(".cart-validation-error").show();
+		} else {
+			rc.context('#rc-container-list .rc-component-cart .product-quantity').closest('.form-group').toggleClass('has-error', false);
+			var componentElem = rc.context(cartComponent);
+			messageTypeElement.text('');//hide error messages
+			var exist=rc.context(componentElem).find(".component-alert .message-text:contains("+messageText+")");
+			if (exist.length) {exist.closest(".component-alert ").remove();}
+		}
+	});
+	if (flag == true) {
+		rc.ui.showMessagePopup(rc.ui.ERROR, messageText);
+		return false;
+	} else {
+		return true;
+	}
+};
+
+rc.components.Cart.recalculateTotal = function(event) {
+	var totalSum = 0.0;
+	var component = $(this.component);
+	this.component.find(".product-entry-row").each(function(index,row) {
+		var product = rc.context.data(row,'product');
+		var price = product.purchasePrice;
+		var quantityText = $(row).find('input.product-quantity').val();
+		var quantity = !parseInt(quantityText,10) ? 0 : parseInt(quantityText,10);
+		var discountCode = rc.context(row).find(".product-discount-code");
+		var discountedAmount = rc.context(discountCode).data('discountedAmount');
+		if (discountedAmount) {
+			totalSum += (parseFloat(discountedAmount, 10) * quantity);
+		} else {
+			totalSum += (price * quantity);
+		}
+	});
+	this.component.find(".products-total-amount").text(totalSum.formatMoney(2)).attr("total-sum",totalSum);
+};
+
+rc.components.Cart.send = function(deferred, send) {
+	deferred = deferred || new jQuery.Deferred();
+	send = send || {};
+	send.__action = rc.actions.selectProductList;
+	rc.components.remoting.send(deferred, send, rc.context.proxy(this.done,this),this.fail);
+	return deferred.promise();
+};
+
+rc.components.Cart.done = function(deferred, send, recv, meta) {
+	//create select elements in cart-select
+	var selectElem = this.component.find(".cart-select");
+	//clear it out
+	selectElem.empty();
+	var campaignEvent = recv;
+	campaignEvent.name = 'Parent Event';
+	selectElem.append(this.getOptionGroup(campaignEvent));
+	for (var index=0;index<campaignEvent.sessionList.length;++index) {
+		var session = campaignEvent.sessionList[index];
+		selectElem.append(this.getOptionGroup(session));
+	}
+	this.component.find(".cart-select").select2({placeholder:"Select a Product"});
+	var that = this;
+	this.component.find(".add-product").click(function(event) {
+		var selectedOption = $(this).closest(".rc-component-cart").find(".cart-select option:selected")[0];
+		var product = rc.context.data(selectedOption,'product');
+		product.quantity = 0;
+		that.appendProductRow(product);
+		that.initialize();
+		event.preventDefault();
+		return false;
+	});
+	var ticketCount = 0;
+	var itemCount = 0;
+	var mealCount = 0;
+	//empty the section if it has any values
+	this.component.find(".panel-body").html("");
+	//add products already selected via data/json
+	var savedProductsText = this.data["selectedProducts"];
+	if (savedProductsText && this.idProductMap && rc.getKeys(this.idProductMap).length>0) {
+		savedProductsText = $(document.createElement('span')).html(savedProductsText).text();
+		var selectedProductsArr = JSON.parse(savedProductsText);
+		for (var index=0;index<selectedProductsArr.length;++index) {
+			var productSavedData = selectedProductsArr[index];
+			if (!productSavedData) {continue;}
+			var productRecord = this.idProductMap[productSavedData.id];
+			productRecord.quantity = productSavedData.def_quantity ? productSavedData.def_quantity : 0;
+			productRecord.productSlot = productSavedData.productSlot;
+			productRecord.hideProductDescription = productSavedData.hideProductDescription;
+			productRecord.hideDiscountCode = productSavedData.hideDiscountCode;
+			if (productSavedData.creatGivingProduct!=null) {
+				productRecord.creatGivingProduct = productSavedData.creatGivingProduct;
+			} else {
+				productRecord.creatGivingProduct = "true";
+			}
+			that.appendProductRow(productRecord);
+		}
+	}
+	//if section is empty append info panel
+	this.refreshEmptyCartMessage();
+	this.initialize();
+};
+
+rc.components.Cart.initialize = function() {
+	this.component.find(".panel-body .product-entry-row").each(function(index,productRow) {
+		var createGiving = rc.context(productRow).attr("create-giving-product");
+		rc.context(productRow).find('[data-cascade="data-create-giving-product"][data-value="'+createGiving+'"]').click();
+		var isProductDescriptionHidden = rc.context(productRow).attr("product-description-hidden") == "true" ? "true" : "false";
+		rc.context(productRow).find('.rc-toggle-description[data-value='+isProductDescriptionHidden+']').attr("disabled", "disabled");
+		rc.context(productRow).find('.rc-toggle-description[data-value='+isProductDescriptionHidden+']').addClass("rc-opacity-md");
+		if (isProductDescriptionHidden == "true") {
+			rc.context(productRow).find(".product-description").hide();
+		} else {
+			rc.context(productRow).find(".product-description").show();
+		}
+		//RCSBIRD-15502
+		var isDiscountCodeHidden = rc.context(productRow).attr("discount-code-hidden") == "true" ? "true" : "false";
+		rc.context(productRow).find('.rc-toggle-discount-code[data-value='+isDiscountCodeHidden+']').attr("disabled", "disabled");
+		rc.context(productRow).find('.rc-toggle-discount-code[data-value='+isDiscountCodeHidden+']').addClass("rc-opacity-md");
+		if (isDiscountCodeHidden == "true") {
+			rc.context(productRow).find(".discount-code").hide();
+			rc.context(productRow).find(".product-discount-code").hide();
+		} else {
+			rc.context(productRow).find(".discount-code").show();
+			rc.context(productRow).find(".product-discount-code").show();
+		}
+	});
+};
+
+rc.components.Cart.refreshEmptyCartMessage = function() {
+	var rowCount = this.component.find(".panel-body .row").length;
+	if (rowCount==0) {
+		var msgElem = rc.context(rc.context("#rc-component-cart-empty-cart-msg").html());
+		this.component.find(".panel-body").append(msgElem);
+	}
+};
+
+rc.components.Cart.getOptionGroup = function(campaignEvent) {
+	if (!campaignEvent.productList || campaignEvent.productList.length==0) {return null;}
+	campaignEvent.name = !campaignEvent.name ? 'Event' : campaignEvent.name;
+	var optGroup = rc.context('<optgroup label="" />');
+	optGroup.attr("label",campaignEvent.name);
+	for (var index=0;index<campaignEvent.productList.length;++index) {
+		var product = campaignEvent.productList[index];
+		var optionElement = rc.context("<option/>", {value:product.Id,text:product.type +' : '+product.name});
+		this.idProductMap[''+product.Id] = product;
+		rc.context.data(optionElement[0],'product',product);
+		optGroup.append(optionElement);
+	}
+	return optGroup;
+};
+
+rc.components.Cart.isProductAlreadyAdded = function(product) {
+	var productElem = rc.context(".rc-component .rc-component-cart-content .product-entry-row[data-product-id='"+product.Id+"']");
+	if (productElem.length>0) {//If product already added just increment its quantity
+		product.quantity = parseInt(productElem.find("input.default-quantity").val(),10);
+		product.quantity = !product.quantity ? 1 : product.quantity + 1;
+		productElem.find("input.default-quantity").val(product.quantity).trigger("change");
+		return productElem;
+	}
+	return null;
+};
+
+rc.components.Cart.isValidPurchaseQuantity = function(row) {
+	var productRow = rc.context(row);
+	var purchaseLimit = productRow.attr("data-purchase-limit");
+	//if purchase limit not defined assume its infinite
+	if (!purchaseLimit) {return true;}
+	purchaseLimit = parseInt(purchaseLimit, 10);
+	var currentQuantity = productRow.find(".product-quantity").val();
+	currentQuantity = currentQuantity ? parseInt(currentQuantity,10) : 0;
+	if (currentQuantity>purchaseLimit) {
+		productRow.addClass("quantity-limit-error");
+		productRow.find(".product-quantity").val(purchaseLimit).trigger("change");
+		return false;
+	}
+};
+
+rc.components.Cart.appendProductRow = function(product) {
+	if (!product) {return;}
+	var that = this;
+	var component = rc.context(this.component);
+	var foundRow = rc.components.Cart.isProductAlreadyAdded(product);
+	if (foundRow!=null) {
+		rc.ui.showMessagePopup(rc.ui.INFO,'Product already added to form, Default quantity updated (+1) to '+product.quantity);
+		return;
+	}
+	//if already maximum items added throw error
+	var currentCount = rc.context(".rc-component-cart-content .product-entry-row[data-product-type='"+product.type+"']").length;
+	if (currentCount>=rc.maxProductCount) {
+		rc.ui.showMessagePopup(rc.ui.ERROR,'Maximum allowed count for product type:'+product.type+', reached!');
+		return;
+	}
+	var productSlotId = null;
+	if (product.productSlot && product.productSlot!='') {
+		// Get if the product slot is available, if yes then allocate
+		if (!rc.getIfProductSlotAvailable(product.productSlot)) {
+			productSlotId = rc.getProductSlot();
+		} else {// ...else get a new product slot
+			rc.validateProductSlot(product.productSlot,'stub');
+			productSlotId = product.productSlot;
+		}
+	} else {//if product slot not assigned, get a new one
+		//Need update here : use product slot only when utmost necessary
+		productSlotId = rc.getProductSlot();
+	}
+	if (!productSlotId) {
+		rc.ui.showMessagePopup(rc.ui.ERROR,'Maximum allowed products added !');
+		return;
+	}
+	//if first row, clear out messages.
+	if (component.find(".panel-body .row").length == 0) {
+		component.find(".panel-body").html("");
+	}
+	var rowTemplate = rc.context(rc.context("#rc-component-cart-row-template").html());
+	product.quantity = product.quantity || 0;
+	//select logo
+	if (product.type == product.TYPE_TICKET) {
+		rowTemplate.find(".product-logo i").addClass("fa-ticket");
+	} else if (product.type == product.TYPE_MEAL) {
+		rowTemplate.find(".product-logo i").addClass("fa-cutlery");
+		//RCSBIRD-15502
+		rowTemplate.find(".dropdown").hide();
+		rowTemplate.find(".discount-code-element").hide();
+	} else if (product.type == product.TYPE_ITEM) {
+		rowTemplate.find(".product-logo i").addClass("fa-gift");
+		//RCSBIRD-15502
+		rowTemplate.find(".dropdown").hide();
+		rowTemplate.find(".discount-code-element").hide();
+	}
+	rowTemplate.attr("data-product-type",product.type);
+	rowTemplate.attr("data-product-id",product.Id);
+	rowTemplate.attr("data-product-slot",productSlotId);
+	rowTemplate.attr("data-purchase-limit",product.purchaseLimit);
+	rowTemplate.find(".product-name").text(product.name);
+	//.product-name
+	rowTemplate.find(".product-description").text(product.description);
+	//RCSBIRD-14521
+	product.purchasePrice = product.purchasePrice || 0;
+	rowTemplate.find(".product-price").text(product.purchasePrice.formatMoney(2));
+	rowTemplate.find("input.product-quantity").val(product.quantity);
+	rowTemplate.find("input.product-quantity").on("change",function(event) {
+		var row = rc.context(this).closest(".product-entry-row");
+		if (that.isValidPurchaseQuantity(row) == false) {
+			rc.ui.showMessagePopup(rc.ui.ERROR,'Purchase limit for '+product.name+' reached. Cannot buy more than '+product.purchaseLimit+' units.');
+		}
+		rc.context(that.component).trigger('recalculate-sum');
+	});
+	rowTemplate.find("input.product-discount-code").on("change",function(event) {//RCSBIRD-15502
+		var row = rc.context(this).closest(".product-entry-row");
+		that.calculateProductDiscountCode(row);
+	});
+	rowTemplate.find("button.remove-product").click(function(event) {
+		//enable option in select list
+		var hrLine = $(this).closest(".product-entry-row").next(".separator-line");
+		hrLine.remove();
+		var productRow = rc.context(this).closest(".product-entry-row");
+		//empty slot as it wont be required anymore
+		var slot = productRow.attr("data-product-slot");
+		rc.emptyProductSlot(slot);
+		productRow.remove();
+		rc.context(that.component).trigger('recalculate-sum');
+		that.refreshEmptyCartMessage();
+		return false;
+	});
+	var productEntryRow = rowTemplate.filter(".product-entry-row")[0];
+	rc.context.data(productEntryRow,'product',product);
+	rowTemplate.find(".product-quantity").spinner({
+		spin: function(event, ui) {
+			if (ui.value < 0) {
+				rc.context( this ).spinner("value", 0);
+				return false;
+			}
+		},
+		change: function(event, ui) {
+			rc.context(this).trigger('change');
+		}
+	});
+	//select the create giving flag
+	rowTemplate.attr("create-giving-product",product.creatGivingProduct);
+	//initialize toggle and cascade value
+	rowTemplate.find('.rc-toggle-primary').on('click', rc.ui.togglePrimary);
+	rowTemplate.find('.rc-cascade-value').on('click', rc.ui.cascadeValue);
+	rowTemplate.attr("product-description-hidden", product.hideProductDescription);
+	rowTemplate.find('.rc-toggle-description').on('click', rc.ui.toggleDescription);
+	rowTemplate.attr("discount-code-hidden",product.hideDiscountCode);
+	rowTemplate.find('.rc-toggle-discount-code').on('click',rc.ui.toggleDisountCode);
+	component.find(".panel-body").append(rowTemplate);
+	rc.context(that.component).trigger('recalculate-sum');
+	return false;
+};
+
+//populate data to be saved to server
+rc.components.Cart.populateSetupSaveData = function(component,data) {
+	var selectedProducts = [];
+	var givingPostfix = '_Giving';
+	rc.context(component).find(".product-entry-row").each(function(index,productRow) {
+		var productRow = rc.context(productRow);
+		var product = {};
+		product.id = productRow.attr("data-product-id");
+		if (!product.id) {return true;}
+		product.def_quantity = productRow.find("input.product-quantity").val();
+		product.productSlot = productRow.attr("data-product-slot");
+		product.creatGivingProduct = productRow.attr("data-create-giving-product");
+		product.hideProductDescription = productRow.attr("product-description-hidden");
+		product.hideDiscountCode = productRow.attr("discount-code-hidden");
+		selectedProducts.push(product);
+	});
+	data['selectedProducts'] = JSON.stringify(selectedProducts);
+	return data;
+};
+
+rc.components.Cart.populateUpsertData = function(send) {
+	if (!send) {return;}
+	var productElemList = rc.context(".rc-component .rc-component-cart-content .product-entry-row");
+	rc.context(productElemList).each(function(index,productElem) {
+		var product = rc.context.data(productElem,'product');
+		productElem = rc.context(productElem);
+		var productSlot = productElem.attr("data-product-slot");
+		if (!productSlot) {return true;}
+		var fieldNamePrefix = rc.prodMap[productSlot];
+		var productId = productElem.attr("data-product-id");
+		if (!productId) {return true;}
+		var productType = productElem.attr("data-product-type");
+		//if create giving flag is true, postfix type with _Giving
+		var isCreateGiving = productElem.attr("data-create-giving-product");
+		if (isCreateGiving=="true") {productType+='_Giving';}
+		var productQuantity = productElem.find("input.product-quantity").val();
+		var productDiscountCode = rc.context(productElem).find(".product-discount-code");
+		var productDiscountedAmount = rc.context(productDiscountCode).data('discountedAmount');
+		var productPurchasePrice = product.purchasePrice || 0;
+		productPurchasePrice = parseFloat(productPurchasePrice);
+		send[productSlot] = productId;
+		send[fieldNamePrefix+'_quantity__c'] = productQuantity;
+		send[fieldNamePrefix+'_type__c'] = productType;
+		if (productDiscountedAmount != 0) {
+			send[fieldNamePrefix+'_discounted_amount__c'] = (productPurchasePrice - productDiscountedAmount);
+		} else {
+			send[fieldNamePrefix+'_discounted_amount__c'] = '';
+		}
+		send[fieldNamePrefix+'_discount_code__c'] = productDiscountCode.val();
+	});
+
+	//also populate the amount as the payment processing may happen in another context/page
+	var cartPaymentDetails = rc.components.Cart.getPaymentDetails();
+	if (cartPaymentDetails && cartPaymentDetails['finalAmount'] && cartPaymentDetails['finalAmount'] != '') {
+		send[rc.ns+'event_purchase_giving_amount__c'] =cartPaymentDetails['finalAmount'];
+	}
+	return send;
+};
+
+//load product data from batch-upload object
+rc.components.Cart.renderUpsertData = function(send) {
+	var productSlotList = rc.getKeys(rc.prodMap);
+	for (var index=0;index<productSlotList.length;++index) {
+		var productSlot = productSlotList[index];
+		var prefix = rc.prodMap[productSlot];
+		var productId = send[productSlot];
+		//if type to be managed by cart
+		if (!!productId	&& send[prefix+'_type__c']!='Session' && send[prefix+'_type__c']!='Product'	&& send[prefix+'_type__c']!='Attribute') {
+			//find product row
+			var productElem = rc.context(".rc-component .rc-component-cart-content .product-entry-row[data-product-id='"+productId+"']");
+			if (!productElem || productElem.length==0) {continue;}
+			var product = rc.context.data(productElem[0],'product');
+			var quantity = send[prefix+'_quantity__c'] || 0;
+			quantity = parseInt(quantity,10);
+			var discountCode = send[prefix+'_discount_code__c'];
+			productElem.find(".product-discount-code").val(discountCode);
+			var discountedAmount = send[prefix+'_discounted_amount__c'] || 0.0;
+			var purchasePrice = product.purchasePrice || 0;
+			var discountedAmountPerProduct = 0.0;
+			if (discountedAmount != 0) {
+				discountedAmountPerProduct = (purchasePrice - discountedAmount) || 0.0;
+			}
+			var discountCodeElement = productElem.find(".product-discount-code");
+			rc.context(discountCodeElement).data('discountedAmount',discountedAmountPerProduct);
+
+			//trigger change so total re-calculation takes place
+			productElem.find("input.default-quantity").val(quantity).trigger("change");
+
+			//if create giving is true toggle to create giving button
+			if (send[prefix+'_type__c'].indexOf("_Giving") > -1) {
+				productElem.find('[data-cascade="create-giving-product"][data-value="true"]').click();
+			}
+		} else {
+			continue;
+		}
+	}
+};
+
+rc.components.Cart.calculateProductDiscountCode = function(row, send, deferred) {
+	if (!row || row.length==0) {return;}
+	var product = rc.context.data(row[0],'product');
+	var productRow = rc.context(row);
+	deferred = deferred || new jQuery.Deferred();
+	var productId = productRow.attr("data-product-id");
+	var quantity = productRow.find(".product-quantity").val();
+	send = send || {};
+	send.__product = productId;
+	send.__discountCode = productRow.find(".product-discount-code").val();
+	send.__purchasePrice = product.purchasePrice || 0;
+	//if discount code is blank
+	if (send.__discountCode == null || send.__discountCode == '') {
+		var discountCode = rc.context(productRow).find(".product-discount-code");
+		var discountedAmount = 0.0;
+		rc.context(discountCode).data('discountedAmount',discountedAmount);
+		rc.context(productRow).trigger('recalculate-sum');
+		return;
+	}
+	//check if quantity is greater than 0
+	if (quantity == 0) {
+		rc.ui.showMessagePopup(rc.ui.ERROR, rc.zeroQuantityError);
+		productRow.find(".product-discount-code").val('');
+		return;
+	}
+	rc.ui.showMessagePopup(rc.ui.INFO, 'Applying discount code...');
+	send.__action = rc.actions.selectDiscountCodeList;
+	this.row = productRow;
+	// Done and fail
+	rc.components.remoting.send(deferred, send, rc.context.proxy(rc.components.Cart.calculateProductDiscountCode.done,this) , rc.components.Cart.calculateProductDiscountCode.fail);
+	// Done
+	return deferred.promise();
+};
+
+rc.components.Cart.calculateProductDiscountCode.done = function(deferred, send, recv, meta) {
+	var discountCodeResponse = recv['__error'];
+	if (discountCodeResponse) {
+		rc.ui.showMessagePopup(rc.ui.ERROR, discountCodeResponse);
+		rc.context(this.row).find(".product-discount-code").val('');
+	} else {
+		rc.ui.showMessagePopup(rc.ui.SUCCESS, rc.validMessageDiscountCode);
+	}
+	var discountedAmount = recv['__discount'];
+	var discountCode = rc.context(this.row).find(".product-discount-code");
+	rc.context(discountCode).data('discountedAmount',discountedAmount);
+	var that = this;
+	rc.context(that.row).trigger('recalculate-sum');
+};
+
+rc.components.Cart.calculateProductDiscountCode.fail = function(deferred, send, recv, meta) {
+	rc.console.debug('rc.components.Cart.calculateProductDiscountCode.fail..');
+	rc.console.debug('.. this', this);
+	rc.console.debug('.. send', send);
+	rc.console.debug('.. recv', recv);
+	rc.console.debug('.. meta', meta);
+};
+/* end event javascript */
+
 rc.components.validateCampaignAskSection = function() {
 	var paymentProcessor = rc.context('.rc-component-workflow-action[data-method="send-payment"]').attr('data-value');
 	var monthlyFrequency = rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "Monthly"]');
@@ -2183,6 +2887,227 @@ rc.components.insertLitleProfilingTag = function() {
 	return fraudDetectTokenGenEl;
 }
 
+rc.components.Session = function(container, data) {
+	this.container = container;
+	this.type = 'session';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-session', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	//static view component data
+	var selectDataArray = [{id:'title',text:'Title'}, {id:'description',text:'Description'},
+		{id:'from-date',text:'From Date'}, {id:'to-date',text:'To Date'}];
+	rc.initializeViewSelector(this,selectDataArray,['title','description','from-date','to-date']);
+	data.header = data.header || "Event Session";
+	this.component.find('.session-header-text').text(data.header);
+	// Actions: Required as properties here so that they can access the "this" value
+	this.send = rc.components.Session.send;
+	this.done = rc.components.Session.done;
+	this.appendSessionRow = rc.components.Session.appendSessionRow;
+	this.idProductMap = {};
+	this.component.find('.input-group').attr('data-required', data.required);
+};
+
+rc.components.Session.validate = function() {
+	var messageTypeElement = rc.context("#rc-container-list .rc-component-session .message-header");
+	var isRequired = rc.context("#rc-container-list .rc-component-session-content").find('.input-group').attr('data-required');
+	var isRegistered = false;
+	//if no session component added to the page then skip the validation
+	if (rc.context("#rc-container-list .rc-component-session-content").length == 0) {return true;}
+	rc.context("#rc-container-list .rc-component-session-content .register-link").each(function(index, obj) {
+		if (rc.context(obj).hasClass('selected-session') == true) {isRegistered = true;}
+	});
+	var present = isRegistered == false ? false : true;
+	var messageText = "Please register for atleast one session and resubmit.";
+	var componentElem = rc.context("#rc-container-list .rc-component-session-content");
+	if (isRequired == "true" && isRegistered == false) {
+		rc.context('#rc-container-list .rc-component-session-content .register-link').closest('.form-group').toggleClass('has-error', present == false);
+		messageTypeElement.text(rc.ui.MessageHeaders[rc.ui.ERROR] + ' ');
+		componentElem.find(".session-validation-error").show();
+		rc.ui.showMessagePopup(rc.ui.ERROR,messageText);
+		return present;
+	} else {
+		rc.context('#rc-container-list .rc-component-session-content .register-link').closest('.form-group').toggleClass('has-error', false);
+		messageTypeElement.text('');
+		var exist=rc.context(componentElem).find(".component-alert .message-text:contains("+messageText+")");
+		if (exist.length) {exist.closest(".component-alert ").remove();}
+		return true;
+	}
+};
+
+rc.components.Session.send = function(deferred, send) {
+	deferred = deferred || new jQuery.Deferred();
+	send = send || {};
+	send.__action = rc.actions.selectProductList;
+	rc.components.remoting.send(deferred, send, rc.context.proxy(this.done,this),this.fail);
+	return deferred.promise();
+};
+
+rc.components.Session.done = function(deferred, send, recv, meta) {
+	//empty out all existing slots on the sessions
+	this.component.find("[data-session-slot]").each(function(index,row) {
+		rc.emptyProductSlot( rc.context(row).attr("data-session-slot") );
+	});
+	var campaignEvent = recv;
+	for (var index=0;index<campaignEvent.sessionList.length;++index) {
+		var session = campaignEvent.sessionList[index];
+		//search for the campaignId
+		////1. Read the json, query for the session id, get the productSlot
+		//// At the time of creation of the form, there will be no json
+		//// and no selectedSessions json tag will exist, at that point the if
+		//// condition will stop getting into the loop, after the json is created
+		//// selectedSessions will be populated with values.
+		var selectedSessionArr;
+		var savedSessionText = this.data["selectedSessions"];
+		if (!!savedSessionText) {
+			selectedSessionArr = JSON.parse(savedSessionText);
+			for (var idx=0;idx<selectedSessionArr.length;idx++) {
+				var sessionSavedData = selectedSessionArr[idx];
+				if (!sessionSavedData) {continue;}
+				//2. attach productSlot to the session
+				if (session.campaignId == sessionSavedData.id) {
+					session.productSlot = sessionSavedData.productSlot;
+					session.id = sessionSavedData.id;
+					break;
+				}
+			}
+		}
+		//3. call appendSessionRow
+		this.appendSessionRow(session);
+	}
+	rc.context(this.component).find(".register-link").click(function(event) {
+		var isSelected = !rc.context(this).hasClass("selected-session");
+		rc.components.Session.toggleRegisterButton(isSelected,this);
+		return false;
+	});
+	rc.initializeViewSelector.rerender(this);
+};
+
+rc.components.Session.toggleRegisterButton =function(value, button) {
+	if (value==true) {
+		rc.context(button).removeClass("btn-primary").addClass("btn-success").addClass("selected-session").find('.register-link-text').text("Registered");
+		rc.context(button).find(".glyphicon-remove").show();
+	} else {
+		rc.context(button).removeClass("btn-success").addClass("btn-primary").removeClass("selected-session").find('.register-link-text').text("Register");
+		rc.context(button).find(".glyphicon-remove").hide();
+	}
+}
+
+rc.components.Session.isSessionAlreadyAdded = function(session) {
+	var sessionElem = rc.context(".rc-component .rc-component-session-content .session-entry-row[data-session-id='"+session.Id+"']");
+	if (sessionElem.length>0) {return sessionElem;}
+	return null;
+};
+
+rc.components.Session.appendSessionRow = function(session) {
+	if (!session) {return;}
+	var that = this;
+	var component = rc.context(this.component);
+	var rowTemplate = rc.context(rc.context("#rc-component-session-row-template").html());
+	//session-batch start
+	var foundRow = rc.components.Session.isSessionAlreadyAdded(session);
+	if (foundRow!=null) {
+		rc.ui.showMessagePopup(rc.ui.INFO,'Session already added to form');
+		return;
+	}
+	var productSlotId = null;
+	if (session.productSlot && session.productSlot!='') {
+		rc.emptyProductSlot(session.productSlot);
+		productSlotId = session.productSlot;
+	} else {
+		productSlotId = rc.getProductSlot();
+	}
+	if (!productSlotId) {
+		rc.ui.showMessagePopup(rc.ui.ERROR,'Maximum allowed products added !');
+		return;
+	}
+	rowTemplate.attr("data-session-type",'session');
+	rowTemplate.attr("data-session-id",session.campaignId);
+	rowTemplate.attr("data-session-slot",productSlotId);
+	rowTemplate.find(".session-name").text(session.name);
+	rowTemplate.find(".session-description").text(session.description);
+	var startDate = moment(session.StartDateTime).format('MM/DD/YYYY h:mm a');
+	var endDate = moment(session.EndDateTime).format('MM/DD/YYYY h:mm a');
+	rowTemplate.find(".session-startDate").text(startDate);
+	rowTemplate.find(".session-endDate").text(endDate);
+	var sessionEntryRow = rowTemplate.filter(".session-entry-row")[0];
+	rc.context.data(sessionEntryRow,'session',session);
+	component.find(".session-panel-body").append(rowTemplate);
+	return false;
+};
+
+//populate data to be saved to server
+rc.components.Session.populateSetupSaveData = function(component,data) {
+	var selectedSessions = [];
+	var selectedValuesArr = rc.context(component).find(".view-component-select").val();
+	if (selectedValuesArr && selectedValuesArr.length>0) {
+		var selectedViewComponents = selectedValuesArr.join(",");
+		data['selectedViewComponents'] = selectedViewComponents;
+	}
+	rc.context(component).find(".session-entry-row").each(function(index,sessionRow) {
+		var sessionRow = rc.context(sessionRow);
+		var session = {};
+		session.id = sessionRow.attr("data-session-id");
+		if (!session.id) {
+			return true;
+		}
+		session.productSlot = sessionRow.attr("data-session-slot");
+		selectedSessions.push(session);
+	});
+	data['selectedSessions'] = JSON.stringify(selectedSessions);
+	return data;
+};
+
+rc.components.Session.populateUpsertData = function(send) {
+	if (!send) {return;}
+	var rowTemplate = rc.context(rc.context("#rc-component-session-row-template").html());
+	var sessionElemList = rc.context(".rc-component .rc-component-session-content .session-entry-row");
+	rc.context(sessionElemList).each(function(index,sessionElem) {
+		sessionElem = rc.context(sessionElem);
+		var sessionSlot = sessionElem.attr("data-session-slot");
+		var fieldNamePrefix = rc.productSlotPrefixMap[sessionSlot];
+		var sessionId = sessionElem.attr("data-session-id");
+		var sessionType = sessionElem.attr("data-session-type");
+		if (sessionElem.find(".register-link").hasClass("selected-session")) {
+			send[sessionSlot] = sessionId;
+			send[fieldNamePrefix+'_type__c'] = sessionType;
+			send[fieldNamePrefix+'_quantity__c'] = 1;
+		} else if (sessionElem.attr("data-register-flag") == '1') {
+			var sessionId = sessionElem.attr("data-session-id");
+			var sessionType = sessionElem.attr("data-session-type");
+			send[sessionSlot] = sessionId;
+			send[fieldNamePrefix+'_type__c'] = sessionType;
+			send[fieldNamePrefix+'_quantity__c'] = -1;
+		}
+	});
+	return send;
+};
+
+rc.components.Session.renderUpsertData = function(send) {
+	var productSlotList = rc.getKeys(rc.productSlotPrefixMap);
+	for (var index=0;index<productSlotList.length;++index) {
+		var productSlot = productSlotList[index];
+		var prefix = rc.productSlotPrefixMap[productSlot];
+		var sessionId = send[productSlot];
+		//if type to be managed by session component.
+		if (!!sessionId && send[prefix+'_type__c']=='Session') {
+			var sessionElem = rc.context(".rc-component .rc-component-session-content .session-entry-row[data-session-id='"+sessionId+"']");
+			if (!sessionElem || sessionElem.length==0) {continue;}
+			if (sessionElem.attr("data-session-slot")!=productSlot) {
+				sessionElem.attr("data-session-slot",productSlot);
+				rc.emptyProductSlot(sessionElem.attr("data-session-slot"));
+			}
+			var regButton = sessionElem.find(".register-link");
+			var registerFlag = send[prefix+'_quantity__c'];
+			registerFlag = parseInt(registerFlag);
+			sessionElem.attr('data-register-flag',registerFlag);
+			if (registerFlag==1) {
+				rc.components.Session.toggleRegisterButton(true,regButton);
+			}
+		}
+	}
+};
+
 
 /* Data Model - used in all modes */
 rc.dataModal.BatchUploadModel = {};
@@ -2491,8 +3416,8 @@ rc.workflow.process.LoadPage = function(deferred, action, data) {
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	console.log('campaignFormId after blank check = ' + campaignFormId);
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
-		+ '&' + 'formCampaignId=' + campaignFormId
-		+ '&' + 'form=' + action.attr('data-value') + '&' + 'data=' + rc.getParam('data');
+		+ '&formCampaignId=' + campaignFormId + '&form=' + action.attr('data-value')
+		+ '&data=' + rc.getParam('data');
 	window.location = redirectTo;
 };
 
@@ -2502,8 +3427,8 @@ rc.workflow.process.TrafficController = function(deferred, action, data) {
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	console.log('campaignFormId after blank check = ' + campaignFormId);
 	var redirectTo = rc.pageCampaignTrafficControllerRoute + '?id=' + rc.campaignId
-		+ '&' + 'formCampaignId=' + campaignFormId
-		+ '&' + 'form=' + rc.getParam('form') + '&' + 'data=' + rc.getParam('data');
+		+ '&formCampaignId=' + campaignFormId + '&form=' + rc.getParam('form')
+		+ '&data=' + rc.getParam('data');
 	window.location = redirectTo;
 };
 
@@ -3433,15 +4358,5 @@ rc.validateInput.validatorMap = {
 };
 }(window.jQuery));
 
-
-
-rc.initializeParams();// todo: find a better place for this
+rc.initializeParams();
 rc.initializeFormApp();
-/*
-$(document).on('keyup keypress', 'form input[type="text"]', function(e) {
-	if (e.keyCode == 13) {
-		e.preventDefault();
-		return false;
-	}
-});
-*/

@@ -23,7 +23,7 @@ rc.initializeFormAppInDesignMode = function() {
 };
 
 rc.rollupPlaceholderValues = function(event, placeholderValues) {
-	rc.console.debug('rc.rollupPlaceholderValues');
+	console.log('rc.rollupPlaceholderValues');
 	var placeholderValueComponents = rc.context('[placeholder]');
 	if (!placeholderValueComponents.length) {return;}
 	rc.context(placeholderValueComponents).each(function(index, field) {
@@ -121,7 +121,7 @@ rc.validateGivingPaymentFields = function() {
 };
 
 rc.selectFieldInfoList = function() {
-	rc.console.debug('rc.selectFieldInfoList');
+	console.log('rc.selectFieldInfoList');
 	rc.remoting.invokeAction(rc.actions.selectFieldInfoList, rc.selectFieldInfoList.done);
 	rc.ui.markProcessing();
 };
@@ -143,14 +143,14 @@ rc.selectFieldInfoList.done = function(response) {
 };
 
 rc.selectFieldInfo = function() {
-	rc.console.debug('rc.selectFieldInfo');
+	console.log('rc.selectFieldInfo');
 	// find the first set of items without a type
 	var list = rc.context('#rc-modal-insert-component--merge-field-list');
 	var data_list = [];
 	list.find('.list-group-item[data-loaded="false"]').each(function() {
 		if (data_list.length < 50) {data_list.push({Name:rc.context(this).attr('data-api-name')});}
 	});
-	rc.console.debug('.. requesting for', data_list);
+	console.log('requesting for ', data_list);
 	if (data_list.length > 0) {
 		rc.remoting.invokeAction(rc.actions.selectFieldInfo, data_list, rc.selectFieldInfo.done);
 		rc.ui.markProcessing();
@@ -158,7 +158,7 @@ rc.selectFieldInfo = function() {
 };
 
 rc.selectFieldInfo.done = function(response) {
-	rc.console.debug('rc.selectFieldInfo.done', response);
+	console.log('rc.selectFieldInfo.done', response);
 	var list = rc.context('#rc-modal-insert-component--merge-field-list');
 	rc.context(response).each(function() {
 		var item = list.find('[data-api-name="' + this.Name + '"]');
@@ -179,7 +179,7 @@ rc.selectFieldInfo.done = function(response) {
 
 rc.toggleMergeFieldSelected = function() {
 	// When one of the field info links is clicked, copy the values down to the siblings
-	rc.console.debug('rc.toggleMergeFieldSelected', this);
+	console.log('rc.toggleMergeFieldSelected', this);
 	var item = rc.context(this);
 	var form = item.closest('.rc-component-overview');
 	form.find('.form-control[data-cascade="data-merge-field-text"]').val(item.attr('data-text'));
@@ -190,7 +190,7 @@ rc.toggleMergeFieldSelected = function() {
 };
 
 rc.deleteFormData = function() {
-	rc.console.debug('rc.deleteFormData');
+	console.log('rc.deleteFormData');
 	// Toggle the button
 	rc.context('.page-header [data-action="rc-action-save"]').button('deleting');
 	rc.context('.page-header [data-action="rc-action-save"]').addClass('btn-danger');
@@ -201,7 +201,7 @@ rc.deleteFormData = function() {
 };
 
 rc.deleteFormData.done = function(data) {
-	rc.console.debug('rc.deleteFormData.done', data);
+	console.log('rc.deleteFormData.done', data);
 	// Toggle the buttons
 	rc.context('.page-header [data-action="rc-action-save"]').button('save');
 	rc.context('.page-header [data-action="rc-action-save"]').removeClass('btn-danger');
@@ -235,13 +235,12 @@ rc.ui.releaseProcessingModal = function() {
 }
 rc.ui.showProcessingModal.queue = [];
 
-
 rc.modal.loadContainerCSS = function() {
-	rc.console.debug('rc.modal.loadContainerCSS', this);
+	console.log('rc.modal.loadContainerCSS', this);
 	var component = rc.context('.rc-selected').filter(':first');
 	var context = rc.context(this).find('.rc-cascade-value-target');
-	rc.console.debug('.. using component:', component);
-	rc.console.debug('.. using context:', context);
+	console.log('using component:', component);
+	console.log('using context:', context);
 	// Reset any current items
 	context.find('[data-cascade^="css-"]').filter('.btn-primary').removeClass('btn-primary');
 	context.find('[data-cascade^="css-"]').filter('input').val('');
@@ -255,7 +254,7 @@ rc.modal.loadContainerCSS = function() {
 	// Copy assigned CSS attributes from component to modal context
 	rc.context(component.get(0).attributes).each(function(index, attr) {
 		if (attr.name.match('css-') == null) {return;}
-		rc.console.log('.. match', attr);
+		console.log('match', attr);
 		var controls = context.find('[data-cascade^="' + attr.name + '"]');
 		//controls.filter('.btn-default').click();
 		//trigger change event so cascade input will cascade value to parent target-data
@@ -265,11 +264,11 @@ rc.modal.loadContainerCSS = function() {
 };
 
 rc.modal.saveContainerCSS = function() {
-	rc.console.debug('rc.modal.saveContainerCSS', this);
+	console.log('rc.modal.saveContainerCSS', this);
 	var component = rc.context('.rc-selected').filter(':first');
 	var context = rc.context(this).closest('.rc-cascade-value-target');
-	rc.console.debug('.. using component:', component);
-	rc.console.debug('.. using context:', context);
+	console.log('using component:', component);
+	console.log('using context:', context);
 	// Delete any form attributes starting with css-
 	rc.context(component.get(0).attributes).each(function(index, attr) {
 		if (attr.name.match('css-')) {component.removeAttr(attr.name);}
@@ -295,7 +294,7 @@ rc.modal.saveContainerCSS = function() {
 };
 
 rc.modal.loadContainerColumns = function() {
-	rc.console.debug('rc.modal.loadContainerColumns', this);
+	console.log('rc.modal.loadContainerColumns', this);
 	var item = rc.context('.rc-selected').filter(':first');// Working container
 	// Set the right number of columns
 	var form = rc.context(this);
@@ -311,7 +310,7 @@ rc.modal.loadContainerColumns = function() {
 };
 
 rc.modal.saveContainerColumns = function() {
-	rc.console.debug('rc.modal.saveContainerColumns', this);
+	console.log('rc.modal.saveContainerColumns', this);
 	// Find the container
 	var form = rc.context(this).closest('.modal');
 	// Set the right number of columns
@@ -339,7 +338,7 @@ rc.modal.saveContainerColumns = function() {
 };
 
 rc.modal.loadInsertComponent = function() {
-	rc.console.debug('rc.modal.loadInsertComponent', this);
+	console.log('rc.modal.loadInsertComponent', this);
 	var modal = rc.context(this);
 	modal.find('.rc-toggle-primary.btn-primary').removeClass('btn-primary');
 	modal.find('.rc-toggle-active.active').removeClass('active');
@@ -366,7 +365,7 @@ rc.modal.loadInsertComponent = function() {
 };
 
 rc.modal.saveInsertComponent = function() {
-	rc.console.debug('rc.modal.saveInsertComponent', this);
+	console.log('rc.modal.saveInsertComponent', this);
 	var form = rc.context(this).closest('.rc-cascade-value-target');
 	var form_type = form.attr('data-component');
 	var form_data = form.find('.rc-component-overview[data-component="' + form_type + '"]');
@@ -448,7 +447,7 @@ rc.modal.nextHelpWizard = function() {
 };
 
 rc.modal.confirmClone = function() {
-	rc.console.debug('rc.modal.confirmClone', this);
+	console.log('rc.modal.confirmClone', this);
 	var component = rc.context('.rc-selected');
 	var component_clone = component.clone();
 	component.after(component_clone);
@@ -459,7 +458,7 @@ rc.modal.confirmClone = function() {
 };
 
 rc.modal.confirmDelete = function() {
-	rc.console.debug('rc.modal.confirmDelete', this);
+	console.log('rc.modal.confirmDelete', this);
 	//when component is deleted free-up product slots it was using
 	rc.updateProductSlots(rc.context('.rc-selected'));
 	rc.context('.rc-selected').remove();// Apply event
@@ -500,7 +499,7 @@ rc.modal.confirmInsertForm = function() {
 
 
 rc.upsertFormData = function(send, deferred) {
-	rc.console.debug('rc.upsertFormData send..',send);
+	console.log('rc.upsertFormData send:',send);
 	//validate campaign ask merge fields: Giving payment frequency, Giving amount
 	rc.validateGivingPaymentFields();
 	// Options
@@ -552,11 +551,11 @@ rc.upsertFormData = function(send, deferred) {
 };
 
 rc.upsertFormData.done = function(deferred, send, recv, meta) {
-	rc.console.debug('rc.upsertFormData.done');
-	rc.console.debug('.. deferred', deferred);
-	rc.console.debug('.. send', send);
-	rc.console.debug('.. recv', recv);
-	rc.console.debug('.. meta', meta);
+	console.log('rc.upsertFormData.done');
+	console.log('deferred', deferred);
+	console.log('send', send);
+	console.log('recv', recv);
+	console.log('meta', meta);
 	recv = recv || {};
 	rc.context('.page-header [data-action="rc-action-save"]').button('save');// Toggle the button
 	rc.ui.markProcessingDone({modified:false});// Unmark processing
@@ -683,7 +682,7 @@ rc.upsertFormData.exportFormComponent = function(list, item) {
 		data.data['text'] = item.find('.rc-text').text();
 	}
 	if (data.type == 'merge-field') {
-		rc.console.debug('.. rc.upsertFormData.exportFormComponent - default : ', item.attr("data-field-default"));
+		console.log('rc.upsertFormData.exportFormComponent - default : ', item.attr("data-field-default"));
 		data.data['default'] = item.find('.rc-field-name').attr('data-field-default');
 		data.data['hidden'] = item.attr('data-hidden');
 		data.data['name'] = item.find('.rc-field-name').attr('name');
@@ -772,7 +771,6 @@ rc.upsertFormData.exportFormWorkflow = function(list, item) {
 rc.upsertFormData.exportFormWorkflowAction = function(list, item) {
 	var list = list || [];
 	var item = rc.context(item);
-	// Setup data
 	var data = {};
 	data.context = item.attr('data-context') || 'then';
 	data.method = item.attr('data-method') || '';
@@ -826,7 +824,7 @@ rc.upsertFormData.exportformDefaultValues = function(defaultValues, item) {
 };
 
 rc.upsertFormData.exportFormPlaceholderValues = function(placeholderValues, item) {
-	rc.console.debug('rc.upsertFormData.exportFormPlaceholderValues');
+	console.log('rc.upsertFormData.exportFormPlaceholderValues');
 	placeholderValues = placeholderValues || {};
 	item = rc.context(item) || '';
 	var name = item.attr('name') || '';
