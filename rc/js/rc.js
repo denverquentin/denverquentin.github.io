@@ -70,8 +70,6 @@ rc.initializeParams = function() {
 	});
 };
 
-rc.initializeParams();// todo: find a better place for this
-
 // todo: move to edit only
 rc.initializeModals = function() {
 	// Bind modal : confirm clone
@@ -1116,3 +1114,12 @@ rc.html_encode = function(text) {
 	return text;
 };
 console.log('FINISHED LOADING rc.js');
+
+rc.initializeParams();// todo: find a better place for this
+rc.initializeFormApp();
+$(document).on('keyup keypress', 'form input[type="text"]', function(e) {
+	if (e.keyCode == 13) {
+		e.preventDefault();
+		return false;
+	}
+});
