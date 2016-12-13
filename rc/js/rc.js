@@ -1006,6 +1006,192 @@ rc.components.importContentCSS = function(component, styles) {
 	for (var name in styles) {component.attr('css-' + name, styles[name]);}
 };
 
+rc.components.insertWorkflow = function(container, container_data) {
+	rc.console.debug('rc.components.insertWorkflow', container_data);
+	container_data = container_data || {};
+	container_data.actions = container_data.actions || [];
+	container_data.data = container_data.data || {};
+	container_data.data['guid'] = container_data.data['guid'] || rc.guid();
+	// Set attributes
+	var item = rc.components.insert('#rc-container-workflow', container, container_data.data);
+	var item_content = item.find('.rc-container-workflow-content');
+	// Process
+	item.find('.rc-workflow-name').val(container_data.data['name']);
+	item.find('.rc-workflow-active').prop('checked', container_data.data['active'] == 'true');
+	// Data
+	item.attr('id', container_data.data['guid']);
+	// Actions
+	item.find('[data-action="insert"]').on('click', function() {
+		var data = {context:'then'};
+		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
+	});
+	// Process data
+	rc.context(container_data.actions).each(function(at, data) {
+		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
+	});
+
+	// No actions? Insert at least one
+	if (container_data.actions.length == 0) {
+		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), { guid: rc.guid() });
+	}
+	// Sortable
+	item.find('.rc-container-workflow-content').sortable({handle:'.rc-container-handle',opacity:0.5,placeholder:'rc-state-highlight well',revert:true});
+	//add event listener to dropdown to detect overflow and flip drop direction
+	item.find(".dropdown").on('show.bs.dropdown',rc.ui.flipOverflownDropdown);
+	return item;
+};
+
+rc.components.insertWorkflowAction = function(container, container_data) {
+	rc.console.debug('rc.components.insertWorkflowAction', container_data);
+	// Sanity
+	container_data = container_data || {};
+	container_data.context = container_data.context || 'then';
+	container_data.data = container_data.data || {};
+	container_data.data['guid'] = container_data.data['guid'] || rc.guid();
+	// Javascript: Clean up data?
+	if (container_data.method == 'javascript') {
+		container_data.data['data'] = rc.html_decode(container_data.data['data']);
+	}
+	// Set attributes
+	var item = rc.components.insert('#rc-component-workflow-action', container, container_data.data);
+	item.attr('id', container_data.data['guid']);
+	item.on('cascade-value-changed', rc.components.validateWorkflowAction);
+	// Disable send payment option if already payment processor is added
+	if (container_data.method != 'send-payment' && rc.workflow.hasPaymentProcessor()) {
+		item.find('.dropdown-menu a[data-value="send-payment"]').attr("disabled","disabled");
+	}
+	// Manage content
+	var item_content = item.find('.rc-component-workflow-action-content');
+	item_content.find('.label[data-value="' + container_data.context + '"]').click();
+	item_content.find('[data-cascade="data-method"][data-value="' + container_data.method + '"]').click();
+	var item_details = item_content.find('.rc-fg[data-method="' + container_data.method + '"]');
+	//refresh copy parameter merge fields list
+	rc.components.CopyParameterAction.refreshMergeFieldPicklist(container);
+	// what details to process?
+	if (container_data.method == 'send-mail') {
+		item_details.find('[data-cascade="data-mail-to"]').val(container_data.data['mail-to']);
+		item_details.find('[data-cascade="data-mail-reply-to"]').val(container_data.data['mail-reply-to']);
+		item_details.find('[data-cascade="data-mail-subject"]').val(container_data.data['mail-subject']);
+		item_details.find('[data-cascade="data-mail-body"]').val(container_data.data['mail-body']);
+		item_details.find('[data-cascade]').change();
+		rc.components.registerMergeFieldAutoComplete(item_details.find('[data-cascade="data-mail-to"]'), rc.getKeys(rc.ui.MergeFieldMap));
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'corduro') {
+		item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+		item_details.find('[data-cascade="data-auth-token"]').val(container_data.data['auth-token']);
+		item_details.find('[data-cascade="data-auth-only"][data-value="' + container_data.data['auth-only'] + '"]').click();
+		item_details.find('[data-cascade="data-test-only"][data-value="' + container_data.data['test-only'] + '"]').click();
+		item_details.find('[data-cascade]').change();
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'sage') {
+		if (rc.isSageConfigured) {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'heartland') {
+		if (rc.isHeartlandConfigured) {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'iATS') {
+		if (rc.isIATSConfigured) {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'PayPal') {
+		if (rc.isPayPalConfigured) {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Litle') {
+		if (rc.isLitleConfigured) {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+			if (rc.isLitleConfiguredForAdvancedFraudDetection) {
+				var isAdvancedFraudetection = container_data.data['advanced-fraud-detection'];
+				if (isAdvancedFraudetection == undefined) {
+					item_details.find('[data-cascade="data-advanced-fraud-detection"][data-value="false"]').click();
+				} else {
+					item_details.find('[data-cascade="data-advanced-fraud-detection"][data-value="' + isAdvancedFraudetection + '"]').click();
+				}
+				//check if form is configured for litle fraud check
+				var isViewMode = rc.getCurrentMode() == 'view';
+				if (isAdvancedFraudetection) {
+					var isAdvancedFraudDetectionTestMode = container_data.data['advanced-fraud-detection-test-mode'];
+					if (isAdvancedFraudDetectionTestMode == undefined) {
+						item_details.find('[data-cascade="data-advanced-fraud-detection-test-mode"][data-value="false"]').click();
+					} else {
+						item_details.find('[data-cascade="data-advanced-fraud-detection-test-mode"][data-value="' + isAdvancedFraudDetectionTestMode + '"]').click();
+					}
+					if (isAdvancedFraudDetectionTestMode == 'true') {
+						item_details.find('[data-cascade="data-sessionId"]').val(container_data.data['sessionId']).change();
+					}
+				}
+				rc.initializeSessionId(container_data.data['advanced-fraud-detection-test-mode'],container_data.data['sessionId']);
+				if (isViewMode && isAdvancedFraudetection) {
+					//Add profiling tag to form body
+					rc.components.insertLitleProfilingTag();
+				}
+			}
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Authorize.net') {
+		if (rc.isAuthDotNetConfigured) {
+		item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+		item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Cybersource') {
+		if (rc.isCybersourceConfigured) {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'copy-param') {
+		item_details.find('.form-control').val(container_data.data['parameter']).change();
+		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
+	} else if (container_data.method == 'send-data') {
+		//if undefined or null default value will be true
+		if (container_data.data['exclude-giving']==null || container_data.data['exclude-giving']===undefined ){
+			container_data.data['exclude-giving'] = false;
+			//for backward compatibility, is old record which may have exclude giving flag unset on batch-upload
+			item_details.find('[data-cascade="exclude-giving"]').attr("is-old","true");
+		}
+		if (container_data.data['exclude-events']==null || container_data.data['exclude-events']===undefined ){
+			container_data.data['exclude-events'] = true;
+		}
+		item_details.find('[data-cascade="exclude-giving"][data-value="' + container_data.data['exclude-giving'] + '"].btn').click();
+		item_details.find('[data-cascade="exclude-events"][data-value="' + container_data.data['exclude-events'] + '"].btn').click();
+	} else {
+		item_details.find('.form-control').val(container_data.data['data']);
+		item_details.find('.form-control').val(container_data.data['data']).change();
+		item_details.find('a[data-value="' + container_data.data['data'] + '"]').click();
+	}
+
+	if (rc.isPaymentTransactional) {
+		item_content.find('.rc-payment[data-value="corduro"]').attr('disabled', 'disabled');
+	}
+	if (rc.isSageConfigured) {
+		item_content.find('.rc-payment[data-value="sage"]').removeAttr('disabled');
+	}
+	if (rc.isHeartlandConfigured) {
+		item_content.find('.rc-payment[data-value="heartland"]').removeAttr('disabled');
+	}
+	if (rc.isIATSConfigured) {
+		item_content.find('.rc-payment[data-value="iATS"]').removeAttr('disabled');
+	}
+	if (rc.isPayPalConfigured) {
+		item_content.find('.rc-payment[data-value="PayPal"]').removeAttr('disabled');
+	}
+	if (rc.isLitleConfigured) {
+		item_content.find('.rc-payment[data-value="Litle"]').removeAttr('disabled');
+		if (rc.isLitleConfiguredForAdvancedFraudDetection) {
+			rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('[data-name="Litle"] [data-cascade="data-advanced-fraud-detection"]').removeAttr('disabled');
+		}
+	}
+	if (rc.isAuthDotNetConfigured) {
+		item_content.find('.rc-payment[data-value="Authorize.net"]').removeAttr('disabled');
+	}
+	if (rc.isCybersourceConfigured) {
+		item_content.find('.rc-payment[data-value="Cybersource"]').removeAttr('disabled');
+	}
+};
+
 
 /* Data Model - used in all modes */
 rc.dataModal.BatchUploadModel = {};
