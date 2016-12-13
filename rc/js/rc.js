@@ -1272,6 +1272,21 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 	}
 };
 
+rc.components.validateWorkflowAction = function(event,details) {
+	if (details.attribute=="data-method") {
+		if (details.value=='send-payment') {
+			rc.context('#rc-workflows-list .dropdown-menu a[data-value="send-payment"]').not(rc.context(details.source)).attr("disabled","disabled");
+		} else if (details.oldvalue=='send-payment') {
+			rc.context('#rc-workflows-list .dropdown-menu a[data-value="send-payment"]').removeAttr("disabled");
+		}
+	}
+	if (details.attribute=="data-value") {
+		if (rc.context(this).attr('data-method') == 'send-payment') {
+			rc.components.validateCampaignAskSection();
+		}
+	}
+};
+
 rc.components.insertColumnList = function(container, container_data) {
 	container_data = container_data || {};
 	container_data.data = container_data.data || {};
@@ -1460,6 +1475,62 @@ rc.components.updateContentCSS = function(component) {
 	// Remove redundant casecaded opacity
 	rc.ui.removeRedundantOpacity();
 };
+
+rc.components.Button = function(container, data) {
+	rc.console.debug('rc.components.Button');
+	rc.console.debug('.. container', container);
+	rc.console.debug('.. data', data);
+	this.container = container;
+	this.type = 'Button';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-button', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.content.find('.rc-name').text(data.text);
+	this.content.find('.rc-icon').addClass(data.icon);
+	var workflow_list = this.content.find('.dropdown-menu');// Populate the list of workflows
+	rc.context('#rc-workflows-list').find('.rc-container-workflow').each(function() {
+		var context = rc.context(this);
+		var item = rc.context('<li><a class="rc-cursor-pointer rc-cascade-value rc-cascade-dropdown-text"></a></li>');
+		item.find('a').attr('data-cascade', 'data-workflow');
+		item.find('a').attr('data-value', context.attr('id')); // guid
+		item.find('a').text(context.find('.rc-workflow-name').val());
+		// Manually bind
+		item.find('a').on('click', rc.ui.cascadeValue);
+		item.find('a').on('click', rc.ui.cascadeDropdownText);
+		// Add to list
+		workflow_list.append(item);
+	});
+	// Bind to submit to kick off the authorization
+	this.content.find('.btn-execute').on('click', rc.components.Button.execute);
+	//stop bubble on toggle button
+	// Find the specified workflow option and click it
+	this.content.find('[data-cascade="data-workflow"][data-value="' + data.workflow + '"]').click();
+};
+
+rc.components.Button.execute = function() {
+	// Nothing goes above this
+	var actionButtonContext = rc.context(this);
+	actionButtonContext.prop("disabled",true);
+	// All of the below validations should be independent statements, ensuring that each
+	// validation method is called, and providing all errors after one click of the button.
+	// TODO This would be more de-coupled if the attached components could be iterated for validation
+	var v0 = rc.validateInput.isFormValid();
+	var v1 = rc.components.CampaignAsk.validateAskValue();
+	var v2 = rc.components.Cart.validate();
+	var v3 = rc.components.Session.validate();
+	var formValid = v0 && v1 && v2 && v3;
+	//reenable the local only fields, which were disabled for validation purpose
+	//workflows should send local only data to server
+	// TODO Perhaps this call should be in rc.validateInput.isFormValid()
+	rc.enableLocalOnly(true);
+	var workflowToExecuteId = rc.context.trim(rc.context(this).closest('[data-workflow]').attr('data-workflow'));
+	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
+		rc.workflow.execute(workflowToExecuteId, actionButtonContext);
+	} else {
+		reenable(actionButtonContext);
+	}
+}
 
 rc.components.insertLitleProfilingTag = function() {
 	//create profiling element, find form body, add profiling element to form body
