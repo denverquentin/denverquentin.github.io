@@ -8,7 +8,8 @@ That way we can reference variables set in our VF Page that we wouldn't have acc
 rc = rc || {};
 rc.ui = rc.ui || {};
 rc.components = rc.components || {};
-rc.dataModal = rc.dataModal || {}
+rc.dataModal = rc.dataModal || {};
+rc.workflow = rc.workflow || {};
 
 rc.initializeFormApp = function() {
 	console.log('rc.initializeFormApp');
@@ -1611,6 +1612,10 @@ rc.getKeys = function (obj) {
 	return r;
 };
 
+rc.isNumericOrNull = function(str) {
+	return (!str || /^[-+]?[0-9]*\.?[0-9]+$/.test(str));
+}
+
 Number.prototype.formatMoney = function(c, d, t) {/* utils/library extensions */
 	var n = this, 
 	c = isNaN(c = Math.abs(c)) ? 2 : c, 
@@ -1708,8 +1713,6 @@ rc.html_encode = function(text) {
 	return text;
 };
 
-// Execute workflow
-rc.workflow = {};
 // This is used to determine which workflows are still executing. When this is empty, we reactivate the disabled button.
 rc.workflow.executingMap = {};
 /* This is to allow the SendPayment 'fail' workflow to be called separately during the SaveData workflow, since the existing
@@ -1808,21 +1811,20 @@ rc.workflow.process = function(type, guid, data, actionButtonContext) {
 	var deferred = new jQuery.Deferred();
 	deferred.workflowGuid = data.workflowGuid;
 	var action = rc.context('#' + guid);
-	//#NOTE : All workflow actions are defined here : Campaign_Design_Form_Workflow_Actions.component
 	var method_map = {};
 	method_map['copy-param'] = rc.workflow.process.CopyParameter;
 	method_map['javascript'] = rc.workflow.process.Javascript;
 	method_map['load-data'] = rc.workflow.process.LoadData;
 	method_map['load-href'] = rc.workflow.process.LoadHref;
 	method_map['load-page'] = rc.workflow.process.LoadPage;
-	method_map['send-address'] = rc.workflow.process.SendAddress;
-	method_map['send-chatter'] = rc.workflow.process.SendChatter;
+	//method_map['send-address'] = rc.workflow.process.SendAddress;
+	//method_map['send-chatter'] = rc.workflow.process.SendChatter;
 	method_map['send-data'] = rc.workflow.process.SendData;
 	method_map['send-mail'] = rc.workflow.process.SendMail;
 	method_map['send-payment'] = rc.workflow.process.SendPayment;
-	method_map['send-text'] = rc.workflow.process.SendText;
-	method_map['send-twitter'] = rc.workflow.process.SendTwitter;
-	method_map['show-alert'] = rc.workflow.process.ShowAlert;
+	//method_map['send-text'] = rc.workflow.process.SendText;
+	//method_map['send-twitter'] = rc.workflow.process.SendTwitter;
+	//method_map['show-alert'] = rc.workflow.process.ShowAlert;
 	method_map['traffic-controller'] = rc.workflow.process.TrafficController;
 	method_map['workflow'] = rc.workflow.process.Workflow;
 	// Execute method
@@ -1836,6 +1838,237 @@ rc.workflow.process = function(type, guid, data, actionButtonContext) {
 	}
 	return deferred.promise();
 };
+
+rc.workflow.process.CopyParameter = function(deferred, action, data) {
+	var parameter = rc.context(action).attr('data-parameter');
+	var toField = rc.context(action).attr('data-value');
+	// Copy parameter data
+	rc.context('.form-control[name="' + toField + '"]').val(rc.getParam(parameter) || '');
+	deferred.resolve();
+};
+
+rc.workflow.process.Javascript = function(deferred, action, data) {
+	deferred = deferred || new jQuery.Deferred();
+	action = action || rc.context();
+	var action_data = action.find('.rc-fg[data-method="javascript"] .form-control').val();
+	var action_function = eval('(function(deferred, data) { ' + action_data + ' })');
+	var action_eval = action_function.call(action, deferred, data);
+	if (action_eval == false) {
+		deferred.reject();
+	} else {
+		deferred.resolve();
+	}
+};
+
+rc.workflow.process.LoadData = function(deferred, action, data) {
+	rc.selectData(deferred, null);
+};
+
+
+rc.workflow.process.LoadPage = function(deferred, action, data) {
+	var redirectTo = '{!$Page.Campaign_DesignForm}' + '?' + 'id={!$CurrentPage.Parameters.Id}'
+		+ '&' + 'formCampaignId={!BLANKVALUE($CurrentPage.Parameters.FormCampaignId, $CurrentPage.Parameters.Id)}'
+		+ '&' + 'form=' + action.attr('data-value') + '&' + 'data=' + rc.getParam('data');
+	window.location = redirectTo;// Full redirect to that page
+};
+
+rc.workflow.process.TrafficController = function(deferred, action, data) {
+	var redirectTo = '{!$Page.Campaign_TrafficControllerRoute}' + '?' + 'id={!$CurrentPage.Parameters.Id}'
+		+ '&' + 'formCampaignId={!BLANKVALUE($CurrentPage.Parameters.FormCampaignId, $CurrentPage.Parameters.Id)}'
+		+ '&' + 'form=' + rc.getParam('form') + '&' + 'data=' + rc.getParam('data');
+	window.location = redirectTo;// Full redirect to that page
+};
+
+rc.workflow.process.LoadHref = function(deferred, action, data) {
+	var href = rc.context(action).attr('data-value');
+	if (href == null || href == '') {return;}
+	if (href.match('(http:|https:)?(/?)/.+')) {
+		window.location = href;
+	} else {
+		window.location = '//' + href;
+	}
+	return false;
+};
+
+rc.workflow.process.SendData = function(deferred, action, data) {
+	rc.upsertData(deferred, data);
+};
+
+rc.workflow.process.SendMail = function(deferred, action, data) {
+	deferred = deferred || new jQuery.Deferred();
+	action = action || rc.context();
+	var mailSendTo = action.attr("data-mail-to") || '';
+	var mailReplyTo = action.attr("data-mail-reply-to") || '';
+	var mailSubject = action.attr("data-mail-subject") || '';
+	var mailBody = action.attr("data-mail-body") || '';
+	var sendToArray = rc.workflow.process.SendMail.getFilteredMailArray(mailSendTo);
+	var replyToArray = rc.workflow.process.SendMail.getFilteredMailArray(mailReplyTo);
+	if (!sendToArray || !sendToArray.length) {deferred.reject();}
+	var email = {};
+	email.__action = rc.actions.sendMail;
+	email.toList = sendToArray.join();
+	email.replyTo = replyToArray.length ? replyToArray[0] : '';
+	email.subject = mailSubject;
+	email.body = mailBody;
+	this.done = rc.workflow.process.SendMail.done;
+	rc.components.remoting.send(deferred, email, this.done, this.fail);
+	var data = {};
+};
+
+rc.workflow.process.SendMail.done = function(deferred, send, recv, meta) {};
+rc.workflow.process.SendMail.getFilteredMailArray = function(emails) {
+	var resultArray = [];
+	var emailsArray = emails.split(",");
+	//replace merge fields with actual values.
+	for (var index=0; index < emailsArray.length; index++) {
+		var emailText = rc.context.trim(emailsArray[index]);
+		if (emailText && rc.workflow.process.SendMail.isValidMergeField(emailText)) {
+			//find the merge field value
+			var fieldName = rc.ui.MergeFieldMap[emailText].field || '';
+			var mailText = rc.context('input[name="'+fieldName+'"]:first').val() || '';
+			var controlField = rc.ui.MergeFieldMap[emailText].control || '';
+			var controlValue = controlField ? rc.context('input[name="'+controlField+'"]:first').is(':checked') : false;
+			//if control is set then dont send email : opt out option
+			if (controlValue == true) {continue;}
+			if (mailText) {resultArray.push(mailText);}
+		} else if (emailText && rc.workflow.process.SendMail.isValidEmail(emailText)) {
+			resultArray.push(emailText);
+		}
+	}
+	return resultArray;
+}
+
+rc.workflow.process.SendMail.isValidEmail = function(emailText) {
+	return emailText.match(/.+@.+\..+/i)!==null;
+}
+
+rc.workflow.process.SendMail.isValidMergeField = function(mergeFieldText) {
+	if (!mergeFieldText) {return false;}
+	var regex = new RegExp("^(<Contact Mail [1|2]>)$");
+	return regex.test(mergeFieldText);
+}
+
+rc.workflow.process.SendPayment = function(deferred, action, data) {
+	// Validate fields in the payment processor?
+	// Do not validate the fields for discount codes
+	rc.context('.form-control').filter(':visible:NOT(input.product-discount-code)').change();
+	if (rc.context('.form-group.has-error').length != 0) {return;}
+	var cartPaymentDetails = rc.components.Cart.getPaymentDetails() || {finalAmount:0};
+	var askPaymentDetails = rc.components.CampaignAsk.getAskValue() || {finalAmount:0};
+	//if nothing to process, pass the processing
+	if (cartPaymentDetails.finalAmount == 0 && askPaymentDetails.finalAmount == 0) {
+		//if no data found then skip payment processing but create payment method
+		rc.workflow.integrations.populateDefaultFields(action, data);
+		//and resolve the workflow action so that payment process action is green
+		return deferred.resolve();
+	}
+	action.paymentDetails = rc.components.CampaignAsk.getAskValue();
+	if (action.paymentDetails) {
+		action.paymentDetails = action.paymentDetails || {};
+		action.paymentDetails.isGiving = true;
+		action.paymentDetails.givingAmount = action.paymentDetails.finalAmount || 0.0;
+	} else {
+		action.paymentDetails = action.paymentDetails || { };
+		action.paymentDetails.isGiving = action.paymentDetails.isGiving || false;
+	}
+
+	//Events
+	//clone the object, so that it wont update giving action object and let giving call back to update it
+	var eventsAction = jQuery.extend(true, {}, action);
+	//get rcEvent related payment data
+	eventsAction.paymentDetails = rc.components.Cart.getPaymentDetails();
+	if (eventsAction.paymentDetails) {
+		eventsAction.paymentDetails = eventsAction.paymentDetails || {};
+		action.paymentDetails.isEvent = true;
+		action.paymentDetails.eventAmount = eventsAction.paymentDetails.finalAmount || 0.0;
+	} else {
+		action.paymentDetails.isEvent = action.paymentDetails.isEvent || false;
+	}
+	var givingAmountIsValid = rc.isNumericOrNull(action.paymentDetails.givingAmount);
+	var eventAmountIsValid = rc.isNumericOrNull(action.paymentDetails.eventAmount);
+	if (!givingAmountIsValid || !eventAmountIsValid) {
+		return deferred.reject('Invalid amount format: '+action.paymentDetails.givingAmount+' | '+action.paymentDetails.eventAmount);
+	}
+	rc.ui.showProcessingModal();
+	action.paymentDetails.eventGivingAmount = ((parseFloat(action.paymentDetails.givingAmount) || 0.0) + (parseFloat(action.paymentDetails.eventAmount) || 0.0)) || 0.0;
+	if (rc.isPaymentTransactional) {
+		// In transactional mode, we must send the card data to the server; so, this must be disabled.
+		// Turning this off at this point presumes that the workflow will continue to upsertData, where these
+		// fields will be included in the request. This is a design assumption of TAOS-774.
+		rc.enableLocalOnly(false);
+		// Populate some payment-related data on the BU fields to be submitted
+		if (action.paymentDetails.isGiving == true) {
+			rc.context('input[name="{!nameSpaceLowerCase}giving_giving_frequency__c"]').val(action.paymentDetails.frequency);
+			rc.context('input[name="{!nameSpaceLowerCase}giving_giving_amount__c"]').val(action.paymentDetails.givingAmount);
+		}
+		if (action.paymentDetails.isEvent == true) {
+			rc.context('input[name="{!nameSpaceLowerCase}event_purchase_giving_amount__c"]').val(action.paymentDetails.eventAmount);
+		}
+		// Store params for processing the pending payment within the next SendData RemoteAction
+		rc.pendingPayment = {};
+		// This section is intended for processor-specific params that will be copied over verbatim to the unified request.
+		// At this time, these are only required for Litle
+		// 'isAdvancedFraudDetection' indicates whether the admin enabled AFD during form design; it's not only the merchant setting.
+		rc.pendingPayment.processorParams = {};
+		rc.pendingPayment.processorParams['isAdvancedFraudDetection'] = rc.context(action).attr("data-advanced-fraud-detection");
+		rc.pendingPayment.processorParams['sessionId'] = rc.sessionId;
+		// Copy the payment alternate flow related to the current SendPayment action. This will be used during a future SaveData workflow.
+		// An alternative attempted was to clone the failure flow from the deferred passed to this method; however, that deferred refers only to the
+		// SendPayment action, and not the larger workflow on which the onFailure actions are defined. Consequently, we refer here to a failure
+		// flow that was copied when the current workflow was initially parsed.
+		rc.pendingPayment.deferred = rc.workflow.retroactiveFailure;
+		return deferred.resolve();
+	} else {
+		// Non-transactional / client-side handling: send payment request immediately
+		var paymentDeferred = new jQuery.Deferred();
+		paymentDeferred.done(function() {
+			deferred.resolve();
+		}).fail(function() {
+			rc.ui.releaseProcessingModal();
+			deferred.reject();
+		});
+		return rc.workflow.process.SendPayment.send(paymentDeferred, action, data);
+	}
+};
+
+rc.workflow.process.SendPayment.send = function(deferred, action, data) {
+	if (action.attr('data-value') == 'corduro') {
+		if (rc.context('#corduro_snap #maskcorduro_snap').length == 0) {rc.workflow.integrations.Corduro(deferred, action);}
+		return rc.workflow.integrations.Corduro.send(deferred, action);
+	}
+	if (action.attr('data-value') == 'iATS') {
+		return rc.workflow.integrations.IATS(deferred, action);
+	}
+	if (action.attr('data-value') == 'Cybersource') {
+		return rc.workflow.integrations.Cybersource(deferred, action);
+	}
+	if (action.attr('data-value') == 'PayPal') {
+		return rc.workflow.integrations.PayPal(deferred, action);
+	}
+	if (action.attr('data-value') == 'Litle') {
+		return rc.workflow.integrations.Litle(deferred, action);
+	}
+	if (action.attr('data-value') == 'sage') {
+		return rc.workflow.integrations.Sage(deferred, action);
+	}
+	if (action.attr('data-value') == 'Authorize.net') {
+		return rc.workflow.integrations.AuthDotNet(deferred, action);
+	}
+	if (action.attr('data-value') == 'heartland') {
+		return rc.workflow.integrations.Sage(deferred, action);
+	}
+	return deferred.reject('No payment processor found!');
+}
+
+rc.workflow.hasPaymentProcessor = function() {
+	return rc.context('#rc-workflows-list .rc-component-workflow-action[data-method="send-payment"]').length > 0;
+};
+
+rc.workflow.process.Workflow = function(deferred, action, data, actionButtonContext) {
+	rc.workflow.execute(rc.context(action).attr('data-value'),actionButtonContext);
+	deferred.resolve();
+};
+
 
 rc.upsertData = function(deferred, send) {
 	rc.console.debug('rc.upsertData');
