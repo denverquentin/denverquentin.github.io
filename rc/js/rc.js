@@ -12,8 +12,8 @@ rc.dataModal = rc.dataModal || {}
 
 rc.initializeFormApp = function() {
 	console.log('rc.initializeFormApp');
-	rc.components.initialize('.modal');// Copy data templates in modal templates
-	rc.components.initialize('.page-header');// Initialize actions in the page header
+//	rc.components.initialize('.modal');// Copy data templates in modal templates
+//	rc.components.initialize('.page-header');// Initialize actions in the page header
 	// Component list sorting
 	rc.context('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
 	// Make sure the body tag has a css target
@@ -31,6 +31,7 @@ rc.initializeFormApp = function() {
 		}
 	});
 	rc.selectFormInfoList();// Load the form data
+/*
 	// Which page mode is set?
 	rc.context('#rc-page-container').find('.page-header [data-value="' + rc.getParam('mode') + '"]').click();
 	//on view change refresh html block elements to toggle between html<->text views
@@ -39,6 +40,7 @@ rc.initializeFormApp = function() {
 	rc.events.on('view-change',rc.rollupPlaceholderValues);// todo: changed view-cahnge to view-change
 	// on view change, toggle default values shown in fields
 	rc.events.on('view-change',rc.rollupDefaultValues);
+*/
 	rc.events.on('form-loaded-with-data',function(event) {
 		//functions to initialize components which depends on all components + data load
 		//here we have guarantee all components and data is loaded
@@ -49,13 +51,16 @@ rc.initializeFormApp = function() {
 	});
 	// todo: only call the next 2 if in edit mode
 	// also only make these methods visible if in edit mode - they're only called from right here
+/*
 	console.log('rc.isEditMode = ' + rc.isEditMode);
 	if (rc.isEditMode) {
 		console.log('bout to initializeModals & initializeHeaderButtons');
 		rc.initializeModals();
 		rc.initializeHeaderButtons();
 	}
+*/
 };
+
 
 rc.initializeParams = function() {
 	console.log('rc.initializeParams');
