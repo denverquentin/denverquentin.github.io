@@ -6,6 +6,7 @@ console.log('LOADED rc.form.edit.js - MUST BE IN EDIT MODE!!!!');
 rc = rc || {};
 rc.ui = rc.ui || {};
 rc.modal = rc.modal || {};
+rc.components = rc.components || {};
 
 rc.ui.markUnsavedChanges = function() {
 	rc.context('#rc-ui-icon-unsaved-changes').show();
@@ -286,3 +287,468 @@ rc.modal.confirmInsertForm = function() {
 	rc.selectFormInfoList();// Reselect form name list
 	rc.context(this).closest('.modal').modal('hide');// Dismiss modal
 };
+
+rc.components.Button = function(container, data) {
+	rc.console.debug('rc.components.Button');
+	rc.console.debug('.. container', container);
+	rc.console.debug('.. data', data);
+	this.container = container;
+	this.type = 'Button';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-button', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.content.find('.rc-name').text(data.text);
+	this.content.find('.rc-icon').addClass(data.icon);
+	var workflow_list = this.content.find('.dropdown-menu');// Populate the list of workflows
+	rc.context('#rc-workflows-list').find('.rc-container-workflow').each(function() {
+		var context = rc.context(this);
+		var item = rc.context('<li><a class="rc-cursor-pointer rc-cascade-value rc-cascade-dropdown-text"></a></li>');
+		item.find('a').attr('data-cascade', 'data-workflow');
+		item.find('a').attr('data-value', context.attr('id')); // guid
+		item.find('a').text(context.find('.rc-workflow-name').val());
+		// Manually bind
+		item.find('a').on('click', rc.ui.cascadeValue);
+		item.find('a').on('click', rc.ui.cascadeDropdownText);
+		// Add to list
+		workflow_list.append(item);
+	});
+	// Bind to submit to kick off the authorization
+	this.content.find('.btn-execute').on('click', rc.components.Button.execute);
+	//stop bubble on toggle button
+	// Find the specified workflow option and click it
+	this.content.find('[data-cascade="data-workflow"][data-value="' + data.workflow + '"]').click();
+};
+
+rc.components.Button.execute = function() {
+	// Nothing goes above this
+	var actionButtonContext = rc.context(this);
+	actionButtonContext.prop("disabled",true);
+	// All of the below validations should be independent statements, ensuring that each
+	// validation method is called, and providing all errors after one click of the button.
+	// TODO This would be more de-coupled if the attached components could be iterated for validation
+	var v0 = rc.validateInput.isFormValid();
+	var v1 = rc.components.CampaignAsk.validateAskValue();
+	var v2 = rc.components.Cart.validate();
+	var v3 = rc.components.Session.validate();
+	var formValid = v0 && v1 && v2 && v3;
+	//reenable the local only fields, which were disabled for validation purpose
+	//workflows should send local only data to server
+	// TODO Perhaps this call should be in rc.validateInput.isFormValid()
+	rc.enableLocalOnly(true);
+	var workflowToExecuteId = rc.context.trim(rc.context(this).closest('[data-workflow]').attr('data-workflow'));
+	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
+		rc.workflow.execute(workflowToExecuteId, actionButtonContext);
+	} else {
+		reenable(actionButtonContext);
+	}
+}
+
+// todo: probably edit only method
+// Workflows - It's like a column list but different
+rc.components.insertWorkflow = function(container, container_data) {
+	rc.console.debug('rc.components.insertWorkflow', container_data);
+	container_data = container_data || {};
+	container_data.actions = container_data.actions || [];
+	container_data.data = container_data.data || {};
+	container_data.data['guid'] = container_data.data['guid'] || rc.guid();
+	// Set attributes
+	var item = rc.components.insert('#rc-container-workflow', container, container_data.data);
+	var item_content = item.find('.rc-container-workflow-content');
+	// Process
+	item.find('.rc-workflow-name').val(container_data.data['name']);
+	item.find('.rc-workflow-active').prop('checked', container_data.data['active'] == 'true');
+	// Data
+	item.attr('id', container_data.data['guid']);
+	// Actions
+	item.find('[data-action="insert"]').on('click', function() {
+		var data = {context:'then'};
+		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
+	});
+	// Process data
+	rc.context(container_data.actions).each(function(at, data) {
+		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
+	});
+
+	// No actions? Insert at least one
+	if (container_data.actions.length == 0) {
+		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), { guid: rc.guid() });
+	}
+	// Sortable
+	item.find('.rc-container-workflow-content').sortable({handle:'.rc-container-handle',opacity:0.5,placeholder:'rc-state-highlight well',revert:true});
+	//add event listener to dropdown to detect overflow and flip drop direction
+	item.find(".dropdown").on('show.bs.dropdown',rc.ui.flipOverflownDropdown);
+	return item;
+};
+
+// todo: probably edit only method
+// todo: replace java variables below
+rc.components.insertWorkflowAction = function(container, container_data) {
+	rc.console.debug('rc.components.insertWorkflowAction', container_data);
+	// Sanity
+	container_data = container_data || {};
+	container_data.context = container_data.context || 'then';
+	container_data.data = container_data.data || {};
+	container_data.data['guid'] = container_data.data['guid'] || rc.guid();
+	// Javascript: Clean up data?
+	if (container_data.method == 'javascript') {
+		container_data.data['data'] = rc.html_decode(container_data.data['data']);
+	}
+	// Set attributes
+	var item = rc.components.insert('#rc-component-workflow-action', container, container_data.data);
+	item.attr('id', container_data.data['guid']);
+	item.on('cascade-value-changed', rc.components.validateWorkflowAction);
+	// Disable send payment option if already payment processor is added
+	if (container_data.method != 'send-payment' && rc.workflow.hasPaymentProcessor()) {
+		item.find('.dropdown-menu a[data-value="send-payment"]').attr("disabled","disabled");
+	}
+	// Manage content
+	var item_content = item.find('.rc-component-workflow-action-content');
+	item_content.find('.label[data-value="' + container_data.context + '"]').click();
+	item_content.find('[data-cascade="data-method"][data-value="' + container_data.method + '"]').click();
+	var item_details = item_content.find('.rc-fg[data-method="' + container_data.method + '"]');
+	//refresh copy parameter merge fields list
+	rc.components.CopyParameterAction.refreshMergeFieldPicklist(container);
+	// what details to process?
+	if (container_data.method == 'send-mail') {
+		item_details.find('[data-cascade="data-mail-to"]').val(container_data.data['mail-to']);
+		item_details.find('[data-cascade="data-mail-reply-to"]').val(container_data.data['mail-reply-to']);
+		item_details.find('[data-cascade="data-mail-subject"]').val(container_data.data['mail-subject']);
+		item_details.find('[data-cascade="data-mail-body"]').val(container_data.data['mail-body']);
+		item_details.find('[data-cascade]').change();
+		rc.components.registerMergeFieldAutoComplete(item_details.find('[data-cascade="data-mail-to"]'), rc.getKeys(rc.ui.MergeFieldMap));
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'corduro') {
+		item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+		item_details.find('[data-cascade="data-auth-token"]').val(container_data.data['auth-token']);
+		item_details.find('[data-cascade="data-auth-only"][data-value="' + container_data.data['auth-only'] + '"]').click();
+		item_details.find('[data-cascade="data-test-only"][data-value="' + container_data.data['test-only'] + '"]').click();
+		item_details.find('[data-cascade]').change();
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'sage') {
+		if ('{!isSageConfigured}' == 'true') {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'heartland') {
+		if ('{!isHeartlandConfigured}' == 'true') {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'iATS') {
+		if ('{!isIATSConfigured}' == 'true') {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'PayPal') {
+		if ('{!isPayPalConfigured}' == 'true') {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Litle') {
+		if ('{!isLitleConfigured}' == 'true') {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+			if ('{!isLitleConfiguredForAdvancedFraudDetection}' == 'true') {
+				var isAdvancedFraudetection = container_data.data['advanced-fraud-detection'];
+				if (isAdvancedFraudetection == undefined) {
+					item_details.find('[data-cascade="data-advanced-fraud-detection"][data-value="false"]').click();
+				} else {
+					item_details.find('[data-cascade="data-advanced-fraud-detection"][data-value="' + isAdvancedFraudetection + '"]').click();
+				}
+				//check if form is configured for litle fraud check
+				var isViewMode = rc.getCurrentMode() == 'view';
+				if (isAdvancedFraudetection) {
+					var isAdvancedFraudDetectionTestMode = container_data.data['advanced-fraud-detection-test-mode'];
+					if (isAdvancedFraudDetectionTestMode == undefined) {
+						item_details.find('[data-cascade="data-advanced-fraud-detection-test-mode"][data-value="false"]').click();
+					} else {
+						item_details.find('[data-cascade="data-advanced-fraud-detection-test-mode"][data-value="' + isAdvancedFraudDetectionTestMode + '"]').click();
+					}
+					if (isAdvancedFraudDetectionTestMode == 'true') {
+						item_details.find('[data-cascade="data-sessionId"]').val(container_data.data['sessionId']).change();
+					}
+				}
+				rc.initializeSessionId(container_data.data['advanced-fraud-detection-test-mode'],container_data.data['sessionId']);
+				if (isViewMode && isAdvancedFraudetection) {
+					//Add profiling tag to form body
+					rc.components.insertLitleProfilingTag();
+				}
+			}
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Authorize.net') {
+		if ('{!isAuthDotNetConfigured}' == 'true') {
+		item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+		item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Cybersource') {
+		if ('{!isCybersourceConfigured}' == 'true') {
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
+		}
+	} else if (container_data.method == 'copy-param') {
+		item_details.find('.form-control').val(container_data.data['parameter']).change();
+		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
+	} else if (container_data.method == 'send-data') {
+		//if undefined or null default value will be true
+		if (container_data.data['exclude-giving']==null || container_data.data['exclude-giving']===undefined ){
+			container_data.data['exclude-giving'] = false;
+			//for backward compatibility, is old record which may have exclude giving flag unset on batch-upload
+			item_details.find('[data-cascade="exclude-giving"]').attr("is-old","true");
+		}
+		if (container_data.data['exclude-events']==null || container_data.data['exclude-events']===undefined ){
+			container_data.data['exclude-events'] = true;
+		}
+		item_details.find('[data-cascade="exclude-giving"][data-value="' + container_data.data['exclude-giving'] + '"].btn').click();
+		item_details.find('[data-cascade="exclude-events"][data-value="' + container_data.data['exclude-events'] + '"].btn').click();
+	} else {
+		item_details.find('.form-control').val(container_data.data['data']);
+		item_details.find('.form-control').val(container_data.data['data']).change();
+		item_details.find('a[data-value="' + container_data.data['data'] + '"]').click();
+	}
+
+	if (rc.isPaymentTransactional) {
+		item_content.find('.rc-payment[data-value="corduro"]').attr('disabled', 'disabled');
+	}
+	if (rc.isSageConfigured) {
+		item_content.find('.rc-payment[data-value="sage"]').removeAttr('disabled');
+	}
+	if (rc.isHeartlandConfigured) {
+		item_content.find('.rc-payment[data-value="heartland"]').removeAttr('disabled');
+	}
+	if (rc.isIATSConfigured) {
+		item_content.find('.rc-payment[data-value="iATS"]').removeAttr('disabled');
+	}
+	if (rc.isPayPalConfigured) {
+		item_content.find('.rc-payment[data-value="PayPal"]').removeAttr('disabled');
+	}
+	if (rc.isLitleConfigured) {
+		item_content.find('.rc-payment[data-value="Litle"]').removeAttr('disabled');
+		if (rc.isLitleConfiguredForAdvancedFraudDetection) {
+			rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('[data-name="Litle"] [data-cascade="data-advanced-fraud-detection"]').removeAttr('disabled');
+		}
+	}
+	if (rc.isAuthDotNetConfigured) {
+		item_content.find('.rc-payment[data-value="Authorize.net"]').removeAttr('disabled');
+	}
+	if (rc.isCybersourceConfigured) {
+		item_content.find('.rc-payment[data-value="Cybersource"]').removeAttr('disabled');
+	}
+};
+
+// todo: probably edit only
+rc.components.validateWorkflowAction = function(event,details) {
+	if (details.attribute=="data-method") {
+		if (details.value=='send-payment') {
+			rc.context('#rc-workflows-list .dropdown-menu a[data-value="send-payment"]').not(rc.context(details.source)).attr("disabled","disabled");
+		} else if (details.oldvalue=='send-payment') {
+			rc.context('#rc-workflows-list .dropdown-menu a[data-value="send-payment"]').removeAttr("disabled");
+		}
+	}
+	if (details.attribute=="data-value") {
+		if (rc.context(this).attr('data-method') == 'send-payment') {
+			rc.components.validateCampaignAskSection();
+		}
+	}
+};
+
+rc.components.registerMergeFieldAutoComplete = function(field,dataArray) {
+	function split(val) {return val.split( /,\s*/ );}
+	function extractLast(term) {return split( term ).pop();}
+	// don't navigate away from the field on tab when selecting an item
+	$(field).bind( "keydown", function(event) {
+		if (event.keyCode === $.ui.keyCode.TAB && $(this).data("ui-autocomplete").menu.active) {
+			event.preventDefault();
+		}
+	}).autocomplete({
+		minLength: 0,
+		source: function(request,response) {
+		// delegate back to autocomplete, but extract the last term
+		response($.ui.autocomplete.filter(dataArray,extractLast(request.term)));
+		},
+		focus:function() {return false;},
+		select: function(event,ui) {
+			var terms = split(this.value);
+			// remove the current input
+			terms.pop();
+			// add the selected item
+			terms.push(ui.item.value);
+			// add placeholder to get the comma-and-space at the end
+			terms.push("");
+			this.value = terms.join(", ");
+			return false;
+		}
+	});
+};
+
+// todo: probably only edit
+// Column List
+rc.components.insertColumnList = function(container, container_data) {
+	container_data = container_data || {};
+	container_data.data = container_data.data || {};
+	container_data.data.columns = parseInt(container_data.data.columns || '1');
+	container_data.data['guid'] = container_data.data['guid'] || rc.guid();
+	// Set attributes
+	var item = rc.components.insert('#rc-container-column-list', container, container_data.data);
+	var item_content = item.find('.rc-container-column-list-content');
+	item.attr('id', container_data.data['guid']);
+	item.attr('data-columns', container_data.data.columns);
+	// Apply CSS
+	rc.components.importContentCSS(item, container_data.styles);
+	rc.components.updateContentCSS(item);
+	// Delete columns over a certain position
+	rc.components.deleteColumnListColumns(item_content, container_data.data.columns);
+	// Insert new columns
+	rc.components.upsertColumnListColumns(item_content, container_data.data.columns, container_data.columns);
+	// Now, with everything in place, loop over the column data and insert components
+	rc.components.upsertColumnListComponents(item_content, container_data.columns);
+	// Hide the empty alert message
+	rc.context('#rc-container-list-messages').hide();
+	return item;
+};
+
+// todo: probably only edit
+rc.components.deleteColumnListColumns = function(container, max_position) {
+	rc.context(container).find('.rc-container-column').each(function() {
+		var position = parseInt(rc.context(this).attr('data-position') || '999');
+		if (max_position < position) {rc.context(this).remove();};
+	});
+}
+
+// todo: probably only edit
+rc.components.upsertColumnListColumns = function(container, max_position, column_data) {
+	rc.console.debug('rc.components.upsertColumnListColumns', max_position);
+	// Check column data
+	column_data = column_data || [];
+	// Add new items
+	rc.context(new Array(max_position)).each(function(position) {
+		// Find the old item, if it exists
+		var item_selector = '.rc-container-column[data-position="' + position + '"]';
+		var item = container.find(item_selector);
+		// Sanity check the data
+		var data = column_data[position] || {};
+		data.data = data.data || {};
+		// Insert if needed
+		if (item.length == 0) {
+			rc.console.debug('.. upserting position', position, 'as', data);
+			// Create
+			item = rc.components.insert('#rc-container-column', container, data.data);
+			container.append(item);
+			// Sortable
+			item.find('.rc-container-column-content').sortable({
+				connectWith:'.rc-container-column-content',handle:'.rc-component-handle',
+				opacity:0.5,placeholder:'rc-state-highlight well',revert:true
+			});
+		}
+		// Data properties
+		item.attr('data-position', position);
+		item.attr('data-size', parseInt(data.data.size) || (12 / max_position));
+		// Clean out the old sizes
+		item.removeClass('col-sm-1 col-sm-2 col-sm-3 col-sm-4 col-sm-5 col-sm-6 col-sm-7 col-sm-8 col-sm-9 col-sm-10 col-sm-11 col-sm-12');
+		item.removeClass('col-md-1 col-md-2 col-md-3 col-md-4 col-md-5 col-md-6 col-md-7 col-md-8 col-md-9 col-md-10 col-md-11 col-md-12');
+		item.removeClass('col-lg-1 col-lg-2 col-lg-3 col-lg-4 col-lg-5 col-lg-6 col-lg-7 col-lg-8 col-lg-9 col-lg-10 col-lg-11 col-lg-12');
+		// Set the new size
+		item.addClass('col-sm-' + item.attr('data-size'));
+	});
+};
+
+// todo: probably only edit
+rc.components.upsertColumnListComponents = function(container, column_data) {
+	rc.context(column_data).each(function(position, data) {
+		rc.console.debug('.. updating column components', data);
+		//filter component Data
+		data.components = rc.filterComponentData(data.components);
+		// Find column
+		var data = data || {};
+		var item_selector = '.rc-container-column[data-position="' + position + '"]';
+		var item = container.find(item_selector);
+		var item_content = item.find('.rc-container-column-content');
+		// Update contents
+		rc.context(data.components).each(function(index, component_data) {
+			rc.components.upsertComponent(item_content, component_data);
+		});
+		rc.components.pickListValues.fillPickListValues();
+	});
+};
+
+// todo: probably only edit
+rc.components.upsertComponent = function(container, component_data) {
+	// Sanity
+	var data = component_data || {};
+	data.data = data.data || {};
+	data.data['guid'] = data.data['guid'] || rc.guid();
+	data.data['customHidden'] = data.data['customHidden'] || false;
+	data.type = data.type || '';
+	data.styles = data.styles || {};
+	data.defaultValues = data.defaultValues || {};
+	data.placeholderValues = data.placeholderValues || {};
+	// Matching component types
+	var insert_map = {};
+	insert_map['address'] = rc.components.Address;
+	insert_map['advanced-css'] = rc.components.AdvancedCSS;
+	insert_map['button'] = rc.components.Button;
+	insert_map['campaign-ask'] = rc.components.CampaignAsk;
+	insert_map['campaign-product'] = rc.components.CampaignProduct;
+	insert_map['campaign-progress'] = rc.components.CampaignProgress;
+	insert_map['credit-card'] = rc.components.CreditCard;
+	insert_map['internal-javascript'] = rc.components.InternalJavascript;
+	insert_map['external-javascript'] = rc.components.ExternalJavascript;
+	insert_map['external-stylesheet'] = rc.components.ExternalStylesheet;
+	insert_map['html-block'] = rc.components.HtmlBlock;
+	insert_map['image'] = rc.components.Image;
+	insert_map['jumbotron'] = rc.components.Jumbotron;
+	insert_map['merge-field'] = rc.components.MergeField;
+	insert_map['simple-header'] = rc.components.SimpleHeader;
+	insert_map['simple-text'] = rc.components.SimpleText;
+	insert_map['url-link'] = rc.components.URLLink;
+	//rcEvents Components
+	insert_map['cart'] = rc.components.Cart;
+	insert_map['session'] = rc.components.Session;
+	insert_map['attribute'] = rc.components.Attribute;
+	// Found a match?
+	var item_insert = insert_map[data.type] || function() {};
+	var item = new item_insert(container, data.data);
+	// Apply component placeholder values
+	rc.ui.initializePlaceholder(item.component);
+	rc.ui.initializePlaceholderEvents(item.component);
+	rc.applyPlaceholderAttributeValues(item.component, data.placeholderValues);
+	// Apply component default values
+	rc.applyDefaultAttributeDefaultValues(item.component, data.defaultValues);
+	// Set hidden field attribute and value
+	rc.setHiddenFieldAttribute(item.component, data.data['customHidden']);
+	// Apply CSS
+	rc.components.importContentCSS(item.component, data.styles);
+	rc.components.updateContentCSS(item.component);
+	// Add to "copy-param" data
+	if (data.type == 'merge-field') {
+		rc.context('#rc-workflows-list').find('[data-template="#rc-component-workflow-action--copy-param"]').each(function() {
+			var template = rc.context('<li><a class="rc-cursor-pointer rc-cascade-dropdown-text rc-cascade-value" data-value=""></a></li>');
+			template.find('.rc-cascade-value').on('click', rc.ui.cascadeValue);
+			template.find('.rc-cascade-value').attr('data-value', data.data.name);
+			template.find('.rc-cascade-value').text(data.data.text);
+			template.find('.rc-cascade-dropdown-text').on('click', rc.ui.cascadeDropdownText);
+			rc.context(this).find('[data-dropdown-menu="target-fields"]').append(template);
+			rc.console.debug('.. adding to copy-param list');
+		});
+	}
+	//initialize validation data
+	rc.validateInput.initializeComponentData(container,data);
+	// Request remote data?
+	if (item.send) {item.send();}
+};
+
+rc.components.importContentCSS = function(component, styles) {
+	rc.console.debug('rc.components.importContentCSS', component, styles);
+	styles = styles || {};
+	// Import
+	var component = rc.context(component);
+	// Remove any existing css attributes from the component
+	// Delete any form attributes starting with css-
+	if (component && component.length>0 && component.get(0)) {
+		rc.context(component.get(0).attributes).each(function(index, attr) {
+			if (attr.name.match('css-')) {
+				component.removeAttr(attr.name);
+			}
+		});
+	}
+	for (var name in styles) {component.attr('css-' + name, styles[name]);}
+};
+
