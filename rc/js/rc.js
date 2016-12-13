@@ -8,8 +8,12 @@ That way we can reference variables set in our VF Page that we wouldn't have acc
 rc = rc || {};
 rc.ui = rc.ui || {};
 rc.components = rc.components || {};
+rc.components.remoting = rc.components.remoting || {};
 rc.dataModal = rc.dataModal || {};
 rc.workflow = rc.workflow || {};
+rc.upsertData = rc.upsertData || {};
+rc.sessionId;/* litle Session Id */
+var sessionList = {};
 
 rc.initializeFormApp = function() {
 	console.log('rc.initializeFormApp');
@@ -1465,6 +1469,402 @@ rc.components.updateContentCSS = function(component) {
 	rc.ui.removeRedundantOpacity();
 };
 
+rc.components.MergeField = function(container, data) {
+	this.container = container;
+	this.type = 'MergeField';
+	this.data = data;
+	if (data['type'] == 'PICKLIST') {
+		this.component = rc.components.insert('#rc-component-merge-field-picklist', this.container, this.data);
+		var selectList = this.component.find('.rc-field-name');
+		selectList.attr("data-field-name",data.name);
+		rc.components.pickListValues.populatePicklistValue(selectList,data.name);
+	} else if (data['type'] == 'MULTIPICKLIST') {
+		this.component = rc.components.insert('#rc-component-merge-field-picklist', this.container, this.data);
+		var selectList = this.component.find('.rc-field-name');
+		selectList.attr("data-field-name",data.name);
+		selectList.prop('multiple',true);
+		rc.components.pickListValues.populatePicklistValue(selectList,data.name);
+	} else if (data['type'] == 'BOOLEAN') {
+		this.component = rc.components.insert('#rc-component-merge-field-checkbox', this.container, this.data);
+	} else {
+		this.component = rc.components.insert('#rc-component-merge-field', this.container, this.data);
+	}
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	// Update
+	this.component.find('.rc-field-text').text(data.text);
+	this.component.find('.rc-field-name').attr('name', data.name);
+	this.component.find('.rc-field-name').val(data.placeholder);
+	this.component.find('.rc-field-menu').remove();
+	// Other stuff
+	this.component.attr('data-hidden', data['hidden'] ? 'true' : 'false');
+	this.component.attr('data-type', data['type']);
+	this.component.find('.input-group').attr('data-required', data.required);
+};
+
+rc.components.Address = function(container, data) {
+	this.container = container;
+	this.type = 'Address';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-address', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	for (var name in this.data) {// Update
+		if (!name.match('req-')) {continue;}
+		var key = name.replace('req-','');
+		rc.context(this.component).find("[data-field-name='"+key+"'] [data-required]").filter(":first").attr("data-required",this.data[name]);
+	}
+	this.component.find('[name="'+rc.ns+'address_state__c"]').change(rc.components.Address.populateCountryBasedOnState);
+};
+
+rc.components.Address.populateCountryBasedOnState = function(event) {
+	var countryInputElem = $(this).closest("div.rc-component-address-content").find('[name="'+rc.ns+'address_country__c"]');
+	if (!countryInputElem.length) {return;}
+	var stateValue = $.trim($(this).val());
+	if (!stateValue) {countryInputElem.val("");return;}
+	var isFromPicklist = $(this).closest("div.rc-field-menu-group").find(".dropdown-menu a[data-value='"+stateValue+"']").length;
+	if (isFromPicklist>0) {countryInputElem.val("US");} else {countryInputElem.val("");}
+};
+
+rc.components.CampaignAsk = function(container, data) {
+	this.container = container;
+	this.type = 'CampaignAsk';
+	this.data = data || {};
+	this.data.data = this.data.data || {};
+	this.component = rc.components.insert('#rc-component-campaign-ask', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	// Copy text values
+	this.component.find('.text-1').text(data['text-1']);
+	this.component.find('.text-2').text(data['text-2']);
+	// Actions: Required as properties here so that they can access the "this" value
+	this.send = rc.components.CampaignAsk.send;
+	this.done = rc.components.CampaignAsk.done;
+	this.component.find('.input-group').attr('data-required', data.required);
+};
+
+rc.components.CampaignAsk.send = function(deferred, send) {
+	deferred = deferred || new jQuery.Deferred();
+	send = send || {};
+	send.__action = rc.actions.selectCampaignAskList;
+	rc.components.remoting.send(deferred, send, this.done, this.fail);
+	return deferred.promise();
+};
+
+rc.components.CampaignAsk.frequencyAmountMinThreshold = { };
+
+rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
+	//ask amounts
+	var html = rc.context('#rc-component-campaign-ask-item').html();
+	var list = rc.context('.rc-component-campaign-ask-item-list');
+	var campaignAskContainer = list.closest(".rc-component-campaign-ask > .rc-component-campaign-ask-content");
+	//frequency
+	var freqArray = [];
+	var freqHtml = rc.context('#rc-component-campaign-ask-freq-item').html();
+	var freqList = campaignAskContainer.find(".rc-toggle-primary-container.rc-campaign-ask-frequency-list");
+	//other text field
+	var askOtherArray = [];
+	var otherHtml = rc.context('#rc-component-campaign-ask-other-item').html();
+	var otherContainer = campaignAskContainer.find(".rc-component-campaign-ask-other");
+	list.empty();
+	// Define show/hide functions
+	var showOther = function() {
+		rc.context('.rc-component-campaign-ask-other').show();
+	};
+	var hideOther = function() {
+		rc.context('.rc-component-campaign-ask-other').hide();
+		rc.context('.rc-component-campaign-ask-other input').val('');
+		rc.context('.rc-component-campaign-ask-other .rc-error-label').remove();
+	};
+	// Load results
+	rc.context(recv).each(function() {
+		var content = rc.cleanKeysToLower(this);
+		var givingFrequency = content[rc.ns+'giving_frequency__c'] || '';
+		var givingType = content[rc.ns+'giving_type__c'] || '';
+		var freq = rc.context(freqHtml);
+		freq.removeAttr("id");
+		freq.attr("data-show",".rc-amount[data-giving-frequency='" + givingFrequency + "']");
+		freq.attr("data-hide",".rc-amount[data-giving-frequency]");
+		freq.attr('data-value', givingFrequency);
+		freq.text(givingFrequency);
+		freq.on('click', hideOther);
+		campaignAskContainer.find(".note[data-giving-frequency='" + givingFrequency + "']").show();
+		if (!freqArray.length) { freq.removeClass("rc-margin-xs"); }
+		freqArray.push(freq);
+		if (content[rc.ns+'ask_1_amount__c']) {
+			var item = rc.context(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_1_amount__c']);
+			item.text('$' + content[rc.ns+'ask_1_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_2_amount__c']) {
+			var item = rc.context(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_2_amount__c']);
+			item.text('$' + content[rc.ns+'ask_2_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_3_amount__c']) {
+			var item = rc.context(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_3_amount__c']);
+			item.text('$' + content[rc.ns+'ask_3_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_4_amount__c']) {
+			var item = rc.context(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_4_amount__c']);
+			item.text('$' + content[rc.ns+'ask_4_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_5_amount__c']) {
+			var item = rc.context(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_5_amount__c']);
+			item.text('$' + content[rc.ns+'ask_5_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_other__c']) {
+			var item = rc.context(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.text('Other..');
+			item.addClass('rc-editSelection');
+			item.on('click', showOther);
+			list.append(item);
+			var otherElem = rc.context(otherHtml);
+			otherElem.attr('data-giving-frequency', givingFrequency);
+			otherElem.attr('data-giving-type', givingType);
+			askOtherArray.push(otherElem);
+		}
+		//Note: Keeping minimum threshold amound in map to validate other amount when submitting the form.
+		rc.components.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
+	});
+	freqList.empty();
+	otherContainer.empty();
+	if (freqArray && freqArray.length > 0) {freqArray[0].removeClass('');}
+	freqList.append(freqArray);
+	otherContainer.append(askOtherArray);
+	if (recv.length == 0) {list.append('<div class="alert alert-warning">No ask values configured!</div>');}
+	rc.components.initialize(campaignAskContainer);
+	// Set the first one active
+	rc.context('.rc-campaign-ask-frequency-list .btn').filter(':first').click();
+	// Validate CampaignAsk section against payment Processor
+	rc.components.validateCampaignAskSection();
+};
+
+rc.components.CampaignAsk.getAskValueFromMergeFields = function(result) {
+	result['finalAmount'] = 0;
+	//check if giving frequenncy field is exist on the page
+	var isGivingFrequencyMergeField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_frequency__c"]').val() != undefined ? true : false;
+	//check if giving amount field is exist on the page
+	var isGivingAmountMergeField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_amount__c"]').val() != undefined ? true : false;
+	if ((isGivingFrequencyMergeField == true && isGivingAmountMergeField == false) || (isGivingFrequencyMergeField == false && isGivingAmountMergeField == true)) {
+		return null;
+	}
+	var givingMergeFieldsPresent = isGivingFrequencyMergeField && isGivingAmountMergeField ? true : false;
+	//NOTE: checking givingMergeFieldsPresent flag in else case if required giving merge fields are present on the page to make payment 
+	if (givingMergeFieldsPresent == true) { 
+		result['finalAmount'] = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_amount__c"]').val() || "0.0";
+		result['frequency'] = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_frequency__c"]').val() || '';
+		return result;
+	} else {
+		return null;
+	}
+};
+
+rc.components.CampaignAsk.populateUpsertData = function(send) {
+	var askAmount = rc.components.CampaignAsk.getAskValue();
+	if (askAmount && askAmount.frequency) {
+		send[rc.ns+'giving_giving_frequency__c'] = askAmount.frequency;
+		if (askAmount.finalAmount) {send[rc.ns+'giving_giving_amount__c'] = askAmount.finalAmount;}
+		if (askAmount.frequency != rc.givingFreqOnePymt) {
+			send[rc.ns+'giving_is_sustainer__c'] = 'true';
+		} else {
+			send[rc.ns+'giving_is_sustainer__c'] = 'false';
+		}
+	}
+	return send;
+};
+
+rc.components.CampaignAsk.getAskValue = function() {
+	var campaignAsk = rc.components.CampaignAsk.getComponentAskValue();
+	//if component is not on the page, read data from the model
+	if ((campaignAsk==null || !campaignAsk) && rc.dataModal.BatchUploadModel) {
+		campaignAsk = {};
+		campaignAsk['frequency'] = rc.dataModal.BatchUploadModel[rc.ns+'giving_giving_frequency__c'];
+		campaignAsk['finalAmount'] = rc.dataModal.BatchUploadModel[rc.ns+'giving_giving_amount__c'];
+	} 
+	//if data not defined return null
+	if (!campaignAsk['frequency'] || campaignAsk['frequency'] == '' || !campaignAsk['finalAmount'] || campaignAsk['finalAmount']=='') {
+		return null;
+	}
+	return campaignAsk;
+};
+
+rc.components.CampaignAsk.getComponentAskValue = function() {
+	var result = {};
+	result['finalAmount'] = 0;
+	var frequencyList = rc.context('#rc-container-list .rc-campaign-ask-frequency-list');
+	if (!frequencyList || frequencyList.length==0) {
+		//Check merge fields if campaign ask is not present. The priority will always be remained for Campaign ask even if giving fields are exist.
+		result = rc.components.CampaignAsk.getAskValueFromMergeFields(result);
+		return result;
+	}
+	if (frequencyList) {
+		var frequency = frequencyList.find('.btn-primary').attr('data-value');
+		result['frequency'] = frequency;
+		var amountList = rc.context('.rc-component-campaign-ask-item-list');
+		var finalAmount = 0;
+		if (amountList) {
+			var amount = amountList.find('[data-giving-frequency="'+frequency+'"]').parent().find('[data-giving-frequency="'+frequency+'"].btn-primary').attr('data-value');
+			if (amount) {
+				finalAmount = amount;
+			} else {
+				var amountOtherSelected = amountList.find('[data-giving-frequency="'+frequency+'"]').parent().find('[data-giving-frequency="'+frequency+'"].btn-primary');
+				if (amountOtherSelected.length) {
+					var otherAmount = rc.context('.rc-component-campaign-ask-other').find('[data-giving-frequency="'+frequency+'"].input-group').find('.form-control').val();
+					if (otherAmount) {finalAmount = otherAmount;}
+				}
+			}
+			result['finalAmount'] = finalAmount;
+		}
+	}
+	return result;
+};
+
+rc.components.CampaignAsk.validateMergeFieldsAskValue = function() {
+	//check if giving frequenncy field is exist on the page
+	var isGivingFrequencyMergeField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_frequency__c"]').val() != undefined ? true : false;
+	//check if giving amount field is exist on the page
+	var isGivingAmountMergeField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_amount__c"]').val() != undefined ? true : false;
+	//if fields are not present on the form
+	if (isGivingFrequencyMergeField == false && isGivingAmountMergeField == false) {return true;}
+	var isGivingAmountRequired = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_amount__c"]').closest('.input-group').attr('data-required');
+	var amount = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_amount__c"]').val();
+	if (isGivingAmountRequired == "true" && parseInt(amount) == 0) {
+		rc.ui.showMessagePopup(rc.ui.ERROR, 'Please enter giving amount and retry.');
+		return false;
+	}
+	return true;
+};
+
+// Validate Campaign Ask amount entered
+rc.components.CampaignAsk.validateAskValue = function() {
+	var askValue = rc.components.CampaignAsk.getAskValue();
+	var componentElem = rc.context("#rc-container-list .rc-component-campaign-ask");
+	var messageTypeElement = rc.context("#rc-container-list .rc-component-campaign-ask .message-header");
+	var messageText = "Donation amount is not selected. Please select and resubmit.";
+	var isRequired = rc.context("#rc-container-list .rc-component-campaign-ask").find('.input-group').attr('data-required');
+	//if no ask amount field added dont throw error
+	if (componentElem.length == 0) {return true;}
+	if (isRequired == "true" && (askValue == null || askValue.finalAmount==0)) {
+		messageTypeElement.text(rc.ui.MessageHeaders[rc.ui.ERROR] + ' ');
+		componentElem.find(".ask-validation-error").show(); //show error message
+		rc.ui.showMessagePopup(rc.ui.ERROR,messageText);
+		return false;
+	} else {
+		messageTypeElement.text('');
+		componentElem.find(".ask-validation-error").hide();// hide error messages
+		var exist = rc.context(componentElem).find(".component-alert .message-text:contains("+messageText+")");
+		if (exist.length) {exist.closest(".component-alert ").remove();}
+	}
+	return true;
+};
+
+rc.components.CampaignAsk.populateData = function(data) {
+	var frequency = data[rc.ns+'giving_giving_frequency__c'];
+	var amount = data[rc.ns+'giving_giving_amount__c'];
+	amount = parseFloat(amount,10);
+	var frequencyList = rc.context('#rc-container-list .rc-campaign-ask-frequency-list');
+	if (!frequencyList.length || !frequency) {return;}
+	frequencyList.find("[data-value='"+frequency+"']").click();
+	var amountList = rc.context('.rc-component-campaign-ask-item-list');
+	amountList.find('[data-giving-frequency="'+frequency+'"][data-value="'+amount+'"]').click();
+}
+
+rc.components.validateCampaignAskSection = function() {
+	var paymentProcessor = rc.context('.rc-component-workflow-action[data-method="send-payment"]').attr('data-value');
+	var monthlyFrequency = rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "Monthly"]');
+	if (paymentProcessor == 'corduro') {
+		rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "One Payment"]').addClass('disabled');
+		rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value = "One Payment"]').trigger('click');
+		if (monthlyFrequency.size() != 0) {rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find(".note[data-giving-frequency='Monthly']").hide();}
+	} else {
+		rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "One Payment"]').removeClass('disabled');
+		if (monthlyFrequency.size() != 0) {rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find(".note[data-giving-frequency='Monthly']").show();}
+	}
+};
+
+rc.components.CreditCard = function(container, data) {
+	this.container = container;
+	this.type = 'CreditCard';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-credit-card', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.component.attr('data-payment-processor', data['payment-processor']);
+	this.component.attr('data-auth-only', data['auth-only']);
+	this.component.attr('data-test-only', data['test-only']);
+	this.component.attr('data-merchant-id', data['merchant-id']);
+	this.component.attr('data-advanced-fraud-detection', data['advanced-fraud-detection']);
+	this.component.attr('data-advanced-fraud-detection-test-mode', data['advanced-fraud-detection-test-mode']);
+	// Attach listener to reformat CC
+	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.components.CreditCard.format);
+	//prepopulate values for hidden fields saved along with the form
+	this.component.find('[data-field-hidden="true"]').each(function(index,hiddenField) {
+		var formControlInput = rc.context(hiddenField).find(".form-control");
+		//if field has a default value populate the same
+		var defaultValue = rc.context(hiddenField).attr("data-default-value");
+		if (defaultValue && defaultValue!='') {formControlInput.val(defaultValue);}
+		var fieldName = formControlInput.attr("name");
+		if (!fieldName || fieldName=='') {return true;}
+		var fieldValue = data[fieldName];
+		if (!fieldValue || fieldValue=='') {return true;}
+		if (formControlInput.attr("type") == "text") {
+			formControlInput.val(fieldValue);
+		} else if (formControlInput.attr("type") == "checkbox") {
+			var value = fieldValue=="true" ? true : false;
+			formControlInput.prop("checked",value);
+		}
+	});
+};
+
+rc.components.CreditCard.format = function() {
+	var oldData = rc.context(this).val();
+	var data = rc.context(this).val();
+	data = data.replace(/[^\d]+/g, '');
+	data = data.substring(0, 16);
+	data = data.match(/.{1,4}/g);
+	data = data ? data.join(' ') : '';
+	if (oldData==data) {return;}
+	rc.context(this).val(data);// Save data back to input
+	rc.validateInput.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
+};
+
 rc.components.Button = function(container, data) {
 	rc.console.debug('rc.components.Button');
 	rc.console.debug('.. container', container);
@@ -1520,6 +1920,223 @@ rc.components.Button.execute = function() {
 		reenable(actionButtonContext);
 	}
 }
+
+rc.components.Jumbotron = function(container, data) {
+	this.container = container;
+	this.type = 'Jumbotron';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-jumbotron', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.component.find('.rc-header').text(data.header);
+	this.component.find('.rc-text').text(data.text);
+};
+
+rc.components.SimpleHeader = function(container, data) {
+	this.container = container;
+	this.type = 'SimpleHeader';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-simple-header', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.component.find('.rc-component-content .rc-value').html(data.text);
+};
+
+rc.components.CopyParameterAction = function(container,data) {};
+rc.components.CopyParameterAction.refreshMergeFieldPicklist = function(container) {
+	var copyParamAction = rc.context(container).find('[data-template="#rc-component-workflow-action--copy-param"]');
+	var listItemsArray = []; //find all merge fields on the page
+	$("#rc-page-container .rc-component-merge-field-content").each(function(index,mergeField) {
+		var mergeFieldName  = $(mergeField).find(".rc-field-name").attr("name") || '';
+		if (!mergeFieldName) {return true;}
+		var mergeFieldLabel = $(mergeField).find("label.control-label").text() || mergeFieldName;
+		var listItem = rc.context('<li><a class="rc-cursor-pointer rc-cascade-dropdown-text rc-cascade-value" data-value=""></a></li>');
+		listItem.find('.rc-cascade-value').attr('data-value', mergeFieldName);
+		listItem.find('.rc-cascade-value').text(mergeFieldLabel);
+		listItemsArray.push(listItem);
+	});
+	copyParamAction.find('[data-dropdown-menu="target-fields"]').html('').append(listItemsArray);
+	copyParamAction.find('.rc-cascade-value').on('click', rc.ui.cascadeValue);
+	copyParamAction.find('.rc-cascade-dropdown-text').on('click', rc.ui.cascadeDropdownText);
+};
+
+rc.components.Image = function(container, data) {
+	this.container = container;
+	this.type = 'Image';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-image', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.component.find('img').attr('src', data['data']);
+};
+
+rc.components.URLLink = function(container, data) {
+	this.container = container;
+	this.type = 'URLLink';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-url-link', this.container, this.data);
+	this.component.find(".rc-url-label .form-control").val(data['label']);
+	this.component.find(".rc-url-link .form-control").val(data['link']);
+	this.component.find("input.form-control").on("blur", function(event) {
+		var componentElem = rc.context(this).closest(".rc-component");
+		var labelValue = componentElem.find(".rc-url-label .form-control").val() || 'Untitled Link';
+		var linkValue = componentElem.find(".rc-url-link .form-control").val();
+		//if error 1. show error, 2. dont allow save
+		linkValue = rc.context.trim(linkValue);
+		//check if url starts with protocol or //
+		if (linkValue) {
+			var startWithProtoRegex = new RegExp("^((https?|ftp)://)|//", "i");
+			if (!startWithProtoRegex.test(linkValue)) {linkValue = '//'+linkValue;}
+		}
+		var isValidBool = rc.components.URLLink.isValidURL(linkValue);
+		var messageText = 'Invalid URL.';
+		rc.context(this).closest('.form-group.rc-url-link').toggleClass("has-error",!isValidBool);
+		if (!isValidBool) {
+			rc.ui.addMessageToComponent(componentElem,messageText,rc.ui.ERROR);
+		} else {
+			rc.ui.getComponentMessages(componentElem,messageText).remove();
+			linkValue = linkValue || 'javascript:void(0)';
+			var widthNumber = rc.context(window).width();
+			var heightNumber = rc.context(window).height();
+			var onclickText ="window.open('"+linkValue+"', 'newwindow', 'menubar=1, resizable=1, width="+widthNumber+", height="+heightNumber+"'); return false;";
+			componentElem.find('.rc-component-url-link-view-content a.rc-url-link-anchor').text(labelValue).attr("href",linkValue).attr("onclick",onclickText);
+		}
+	});
+	this.component.find(".form-control").trigger('blur');//trigger now to populate data
+};
+
+rc.components.URLLink.isValidURL = function(urlText) {
+	if (!urlText) {return false;}
+	var regex = new RegExp("^((https?:)|(ftp:))?//(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?", "i");
+	return regex.test(urlText);
+}
+
+rc.components.SimpleText = function(container, data) {
+	this.container = container;
+	this.type = 'SimpleText';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-simple-text', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.component.find('.rc-component-content .rc-value').html(data.text);
+};
+
+rc.components.InternalJavascript = function(container, data) {
+	this.container = container;
+	this.type = 'InternalJavascript';
+	this.data = data || {};
+	this.component = rc.components.insert('#rc-component-internal-javascript', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.component.find('.rc-component-content .form-control').val(rc.html_decode(this.data.text));
+	// Update the script element in the future
+	var self = this.component.find('.rc-component-content script');
+	setTimeout(function() {
+		self.html('$(document).ready(function() { ' + rc.html_decode((data || {}).text) + ' });');
+	}, 10);
+};
+
+rc.components.ExternalJavascript = function(container, data) {
+	this.container = container;
+	this.type = 'ExternalJavascript';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-external-javascript', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.component.find('.rc-component-content .form-control').val(data.text);
+	this.component.find('.rc-component-content script').attr('src', data.text);
+};
+
+rc.components.ExternalStylesheet = function(container, data) {
+	this.container = container;
+	this.type = 'ExternalStylesheet';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-external-stylesheet', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.component.find('.rc-component-content .form-control').val(data.text);
+	this.component.find('.rc-component-content link').attr('href', data.text);
+};
+
+rc.components.HtmlBlock = function(container, data) {
+	var that = this;
+	this.container = container;
+	this.type = 'HtmlBlock';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-html-block', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	var htmlContainer = this.component.find('.rc-component-content .rc-value');
+	var viewContainer = this.component.find('.rc-component-html-view-content .rc-value');
+	rc.context.data(htmlContainer[0],"html-content",data.text);
+	var styleAttrText = htmlContainer.attr("style");
+	viewContainer.html(data.text).attr("style",styleAttrText);
+	rc.components.HtmlBlock.initializeHTMLEditor(this.component,data.text);
+};
+
+rc.components.HtmlBlock.initializeHTMLEditor = function(component, dataText) {
+	var htmlContainer = component.find('.rc-component-content .rc-value');
+	var htmlViewContainer = component.find('.rc-component-html-view-content .rc-value');
+	var editor = CodeMirror(function(elt) {component.find(".rc-component-html-editor").append(elt);},
+		{lineNumbers:true,
+			value:dataText,
+			mode:{name:"htmlmixed"},
+			indentUnit:4,
+			lineWrapping:true,
+			foldGutter:true,
+			gutters:["CodeMirror-linenumbers","CodeMirror-foldgutter"],
+			extraKeys:{"Ctrl-Space":"autocomplete",
+			"F11":function(cm) {
+				cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+			},
+			"Esc": function(cm) {
+				if (cm.getOption("fullScreen")) {cm.setOption("fullScreen", false);}
+		}
+	}});
+
+	editor.on("change",function(editor, changeObj) {
+		rc.context.data(htmlContainer[0],"html-content",editor.getValue());
+		htmlViewContainer.html(editor.getValue());
+	});
+
+	if (rc.getCurrentMode() == 'edit') {
+		component.find(".rc-component-html-editor:first").show();
+	} else {
+		component.find(".rc-component-html-editor:first").hide();
+	}
+};
+
+//refresh view when changed from editable to noneditable and vice a versa
+rc.components.HtmlBlock.refreshView = function(event, editable) {
+	var htmlBlockCompnents = rc.context('#rc-container-list').find('.rc-component-html-block');
+	if (!htmlBlockCompnents.length) {return;}
+	rc.context(htmlBlockCompnents).each(function(index,component) {
+		component = rc.context(component);
+		var dataText = rc.context.data(component.find(".rc-component-html-content .rc-value")[0],"html-content");
+		dataText = rc.stripTags(dataText,"script");
+		component.find('.rc-component-html-view-content .rc-value').html(dataText);
+		if (rc.getCurrentMode() == 'edit') {
+			component.find(".rc-component-html-editor:first").show();
+		} else {
+			component.find(".rc-component-html-editor:first").hide();
+		}
+	});
+};
+
+rc.components.AdvancedCSS = function(container, data) {
+	this.container = container;
+	this.type = 'AdvancedCSS';
+	this.data = data;
+	this.component = rc.components.insert('#rc-component-advanced-css', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	this.component.find('style').html(data.text);
+	this.component.find('textarea').val(data.text);
+	var that = this;
+	this.component.find('textarea').on('keyup', function(event) {
+		that.component.find('style').html(rc.context(this).val());
+	});
+};
 
 rc.components.registerMergeFieldAutoComplete = function(field,dataArray) {
 	function split(val) {return val.split( /,\s*/ );}
@@ -1868,19 +2485,26 @@ rc.workflow.process.LoadData = function(deferred, action, data) {
 	rc.selectData(deferred, null);
 };
 
-
 rc.workflow.process.LoadPage = function(deferred, action, data) {
-	var redirectTo = '{!$Page.Campaign_DesignForm}' + '?' + 'id={!$CurrentPage.Parameters.Id}'
-		+ '&' + 'formCampaignId={!BLANKVALUE($CurrentPage.Parameters.FormCampaignId, $CurrentPage.Parameters.Id)}'
+	var campaignFormId = rc.paramFormCampaignId;
+	console.log('campaignFormId = ' + campaignFormId);
+	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
+	console.log('campaignFormId after blank check = ' + campaignFormId);
+	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
+		+ '&' + 'formCampaignId=' + campaignFormId
 		+ '&' + 'form=' + action.attr('data-value') + '&' + 'data=' + rc.getParam('data');
-	window.location = redirectTo;// Full redirect to that page
+	window.location = redirectTo;
 };
 
 rc.workflow.process.TrafficController = function(deferred, action, data) {
-	var redirectTo = '{!$Page.Campaign_TrafficControllerRoute}' + '?' + 'id={!$CurrentPage.Parameters.Id}'
-		+ '&' + 'formCampaignId={!BLANKVALUE($CurrentPage.Parameters.FormCampaignId, $CurrentPage.Parameters.Id)}'
+	var campaignFormId = rc.paramFormCampaignId;
+	console.log('campaignFormId = ' + campaignFormId);
+	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
+	console.log('campaignFormId after blank check = ' + campaignFormId);
+	var redirectTo = rc.pageCampaignTrafficControllerRoute + '?id=' + rc.campaignId
+		+ '&' + 'formCampaignId=' + campaignFormId
 		+ '&' + 'form=' + rc.getParam('form') + '&' + 'data=' + rc.getParam('data');
-	window.location = redirectTo;// Full redirect to that page
+	window.location = redirectTo;
 };
 
 rc.workflow.process.LoadHref = function(deferred, action, data) {
@@ -2002,11 +2626,11 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 		rc.enableLocalOnly(false);
 		// Populate some payment-related data on the BU fields to be submitted
 		if (action.paymentDetails.isGiving == true) {
-			rc.context('input[name="{!nameSpaceLowerCase}giving_giving_frequency__c"]').val(action.paymentDetails.frequency);
-			rc.context('input[name="{!nameSpaceLowerCase}giving_giving_amount__c"]').val(action.paymentDetails.givingAmount);
+			rc.context('input[name="'+rc.ns+'giving_giving_frequency__c"]').val(action.paymentDetails.frequency);
+			rc.context('input[name="'+rc.ns+'giving_giving_amount__c"]').val(action.paymentDetails.givingAmount);
 		}
 		if (action.paymentDetails.isEvent == true) {
-			rc.context('input[name="{!nameSpaceLowerCase}event_purchase_giving_amount__c"]').val(action.paymentDetails.eventAmount);
+			rc.context('input[name="'+rc.ns+'event_purchase_giving_amount__c"]').val(action.paymentDetails.eventAmount);
 		}
 		// Store params for processing the pending payment within the next SendData RemoteAction
 		rc.pendingPayment = {};
@@ -2299,6 +2923,516 @@ rc.upsertData.fail = function(deferred, send, recv, meta) {
 	rc.pendingPayment = null;
 	rc.ui.releaseProcessingModal();
 };
+
+
+//Form validation framework start
+rc.validateInput = function() { };
+
+rc.validateInput.populateUpsertFormData = function(component) {
+	var validateInfo = {};
+	var validatorDisableFlags = {};
+	if (!component) {
+		return validateInfo;
+	}
+	component = rc.context(component);
+	var fieldName;
+	var validators;
+	component.find('.rc-component-content .form-control[name],.rc-component-content .form-control[data-name]').each(function(index,field) {
+		field = rc.context(field);
+		fieldName = field.attr("name") || field.attr("data-name") || "";
+		validators = field.attr("data-validate-type") || "";
+		if (!fieldName) {
+			return true;
+		}
+		if (field.hasClass("validate-field")) {
+			validateInfo[fieldName] = validators;
+		}
+		//check if all validations for this field are disabled ? 
+		if (rc.context(field).closest("[data-validatation-disabled]").attr("data-validatation-disabled") == "true") {
+			validatorDisableFlags[fieldName] = true;
+		} else {
+			validatorDisableFlags[fieldName] = false;
+		}
+	});
+	return { "validatorInfo":validateInfo, "validatorDisableFlags":validatorDisableFlags };
+};
+
+rc.validateInput.initializeComponentData = function(component,data) {
+	if (!data.validatorDisableFlags || !data.validatorInfo) {
+		return;
+	}
+	var keyList = rc.getKeys(data.validatorDisableFlags);
+	var fieldName;
+	var field;
+	var isDisabled;
+	for (var index = 0; index < keyList.length; ++index) {
+		fieldName = keyList[index];
+		if (data.validatorInfo) {
+			validators = data.validatorInfo[fieldName];
+		} else {
+			validators = "";
+		}
+		if (data.validatorDisableFlags) {
+			isDisabled = data.validatorDisableFlags[fieldName] == true ? "true" : "false";
+		} else {
+			isDisabled = "false";
+		}
+		field = rc.context(component).find('.form-control[name="'+fieldName+'"],.form-control[data-name="'+fieldName+'"]');
+		if (isDisabled == "true") {
+			rc.context(field).closest("[data-validatation-disabled]").attr("data-validatation-disabled", isDisabled);
+			rc.context(field).closest("[data-validatation-disabled]").find('[data-cascade="data-validatation-disabled"]').trigger('click');
+		} else {
+			rc.context(field).closest("[data-validatation-disabled]").attr("data-validatation-disabled", "false");
+		}
+		rc.context(field).attr("data-validate-type", validators);
+	}
+};
+
+//disable the local only feature, to allow validations to be fired on fields
+rc.enableLocalOnly = function(enableLocalOnly) {
+	var localFieldList = rc.context('#rc-page-container [data-local-only="true"] input.rc-field-name[data-name]');
+	localFieldList.each(function(index,field) {
+		if (false == enableLocalOnly) {
+			field = rc.context(field);
+			field.attr("name",field.attr("data-name"));
+		} else if (true == enableLocalOnly) {
+			field = rc.context(field);
+			field.removeAttr("name");
+		}
+	});
+};
+
+//temporary disable the local only feature, to allow validations to be fired on such fields
+rc.validateInput.initialize = function() {
+	rc.enableLocalOnly(false);
+	//add default validator classes to each field configured for validation, add validator to form once
+	rc.context('#rc-page-container').bootstrapValidator({
+		framework: 'bootstrap',
+		feedbackIcons: {
+			valid: 'glyphicon glyphicon-ok',
+			invalid: 'glyphicon glyphicon-remove',
+			validating: 'glyphicon glyphicon-refresh'
+		}
+	});
+	rc.context('#rc-page-container .rc-component-content .form-control[name]').each(function(index,field) {
+		field = rc.context(field);
+		rc.validateInput.initializeFieldValidator(field);
+	});
+};
+
+rc.validateInput.isFieldValidatorsDisabled = function(field) {
+	return field.closest("[data-validatation-disabled]").attr("data-validatation-disabled") == "true";
+};
+
+rc.validateInput.isFieldRequired = function(field) {
+	return field.closest("[data-required]").attr("data-required") == "true";
+};
+
+//accepts form-control input dom component/element
+rc.validateInput.initializeFieldValidator = function(component) {
+	var fieldName;
+	var validatorTypesArray;
+	var validateTypeAttr;
+	var validatorRuleSet;
+	var validatorRule;
+	var component = rc.context(component);
+	var fieldName = component.attr("name");
+	if (!fieldName) {
+		return true;
+	}
+	//check if validate flag already set (via json data load) if field validator is not disabled
+	if (component.hasClass("validate-field")) {
+		validateTypeAttr = component.attr('data-validate-type');
+		//instead of array store to json genarate validation rule accordingly
+		//currently only supporting standard validations stored as attributes
+		//which are populated via json
+		if (validateTypeAttr) {
+			validatorTypesArray = validateTypeAttr.split(";");
+		}
+	} else if (rc.validateInput.fieldValidator[fieldName]
+		&& rc.validateInput.fieldValidator[fieldName].length > 0) {
+		//check if there is a default validate entry
+		validatorTypesArray = rc.validateInput.fieldValidator[fieldName];
+		validateTypeAttr = validatorTypesArray.join(";");
+		component.attr('data-validate-type',validateTypeAttr);
+		component.addClass("validate-field");
+	}
+
+	//if system/custom validators are disabled
+	if (rc.validationsEnabled != "true" || !validatorTypesArray
+		|| rc.validateInput.isFieldValidatorsDisabled(component) == true) {
+		validatorTypesArray = [];
+	}
+	var nonEmptyValidatorIndex = rc.context.inArray("notEmpty",validatorTypesArray);
+	//check if the component is required
+	if (rc.validateInput.isFieldRequired(component) == true) {
+		if (nonEmptyValidatorIndex == -1) {
+			validatorTypesArray.push("notEmpty");
+		}
+	} else if (nonEmptyValidatorIndex != -1) {
+		//array still has the nonEmpty or required rule, but the field is no longer required
+		//remove the same from array
+		validatorTypesArray.splice( validatorTypesArray, 1);
+	}
+	return rc.validateInput.initializeFieldValidatorRules(fieldName,validatorTypesArray);
+};
+
+rc.validateInput.initializeFieldValidatorRules = function(fieldName, validatorTypesArray) {
+	if (!validatorTypesArray || !validatorTypesArray.length) {
+		return false;
+	}
+	var validatorRule;
+	var validatorRuleSet = {};
+	for (var index = 0; index< validatorTypesArray.length; ++index) {
+		validatorRule = validatorTypesArray[index];//if standard
+		if (!validatorRule) {
+			continue;
+		}
+		//add code for custom validators
+		validatorRule = rc.validateInput.getValidator(validatorRule);
+		//merge all validation rules together into validatorRuleSet
+		validatorRuleSet = rc.context.extend( validatorRuleSet, validatorRule );
+	}
+	validatorRuleSet = {"validators":validatorRuleSet};
+	//try removing the field first to clear all existing validators if any
+	try {
+		rc.context('#rc-page-container').bootstrapValidator('removeField',fieldName);
+	} catch (exception){ }
+	rc.context('#rc-page-container').bootstrapValidator('addField',fieldName,validatorRuleSet);
+	return true;
+};
+
+rc.validateInput.getValidator = function(validatorType) {
+	return rc.validateInput.validatorMap[validatorType];
+};
+
+rc.validateInput.isFormValid = function() {
+	var container = rc.context('#rc-page-container');
+	var form = container.data('bootstrapValidator');
+	form.validate();
+	return form.isValidContainer(container);
+};
+
+//manually validate the field 
+rc.validateInput.validateField = function(field) {
+	if (!field) {
+		return;
+	}
+	rc.context("#rc-page-container").bootstrapValidator('revalidateField',field);
+};
+
+rc.validatorsRequiringCountry = ["zipCode","iban","phone"];
+
+//use default validator for these fields
+//rc.validateInput.fieldWiseDefaultValidators = {}; // todo: remove - old name
+rc.validateInput.fieldValidator = {};
+rc.validateInput.fieldValidator[rc.ns+'address_country__c'] = ["countryCode"];
+rc.validateInput.fieldValidator[rc.ns+'address_country_name__c'] = ["country"];
+rc.validateInput.fieldValidator[rc.ns+'address_postal_code__c'] = ["zipCode"];
+rc.validateInput.fieldValidator[rc.ns+'address_state__c'] = ["state"];
+rc.validateInput.fieldValidator[rc.ns+'address_zip__c'] = ["zipCode"];
+rc.validateInput.fieldValidator[rc.ns+'address_2_city__c'] = ["city"];
+rc.validateInput.fieldValidator[rc.ns+'address_2_country__c'] = ["countryCode"];
+rc.validateInput.fieldValidator[rc.ns+'address_2_country_name__c'] = ["country"];
+rc.validateInput.fieldValidator[rc.ns+'address_2_postal_code__c'] = ["zipCode"];
+rc.validateInput.fieldValidator[rc.ns+'address_2_state__c'] = ["state"];
+rc.validateInput.fieldValidator[rc.ns+'address_2_zip__c'] = ["zipCode"];
+rc.validateInput.fieldValidator[rc.ns+'address_city__c'] = ["city"];
+rc.validateInput.fieldValidator[rc.ns+'contact_1_email__c'] = ["email"];
+rc.validateInput.fieldValidator[rc.ns+'contact_2_email__c'] = ["email"];
+rc.validateInput.fieldValidator[rc.ns+'contact_1_phone_1__c'] = ["phone"];
+rc.validateInput.fieldValidator[rc.ns+'contact_1_phone_2__c'] = ["phone"];
+rc.validateInput.fieldValidator[rc.ns+'contact_2_phone_1__c'] = ["phone"];
+rc.validateInput.fieldValidator[rc.ns+'contact_2_phone_2__c'] = ["phone"];
+rc.validateInput.fieldValidator[rc.ns+'event_purchase_giving_amount__c'] = ["amount"];
+rc.validateInput.fieldValidator[rc.ns+'giving_check_date__c'] = ["date"];
+rc.validateInput.fieldValidator[rc.ns+'giving_close_date__c'] = ["date"];
+rc.validateInput.fieldValidator[rc.ns+'giving_close_date_time__c'] = ["datetime"];
+rc.validateInput.fieldValidator[rc.ns+'giving_giving_amount__c'] = ["amount"];
+rc.validateInput.fieldValidator[rc.ns+'giving_giving_years__c'] = ["year"];
+rc.validateInput.fieldValidator[rc.ns+'giving_record_amount__c'] = ["amount"];
+rc.validateInput.fieldValidator[rc.ns+'payment_method_billing_email__c'] = ["email"];
+rc.validateInput.fieldValidator[rc.ns+'payment_method_billing_phone__c'] = ["phone"];
+rc.validateInput.fieldValidator[rc.ns+'payment_method_card_expiration_date__c'] = ["date"];
+rc.validateInput.fieldValidator[rc.ns+'payment_method_card_expiration_month__c'] = ["monthExpiration"];
+rc.validateInput.fieldValidator[rc.ns+'payment_method_card_expiration_year__c'] = ["yearExpiration"];
+rc.validateInput.fieldValidator[rc.ns+'payment_method_card_last_four_digits__c'] = ["numeric"];
+rc.validateInput.fieldValidator[rc.ns+'payment_method_card_number__c'] = ["creditCard"];
+rc.validateInput.fieldValidator[rc.ns+'payment_method_card_security_code__c'] = ["cvv"];
+rc.validateInput.fieldValidator[rc.ns+'preferences_1_end_date__c'] = ["date"];
+rc.validateInput.fieldValidator[rc.ns+'preferences_1_start_date__c'] = ["date"];
+rc.validateInput.fieldValidator[rc.ns+'preferences_2_end_date__c'] = ["date"];
+rc.validateInput.fieldValidator[rc.ns+'preferences_2_start_date__c'] = ["date"];
+rc.validateInput.fieldValidator[rc.ns+'recipient_city__c'] = ["city"];
+rc.validateInput.fieldValidator[rc.ns+'recipient_country__c'] = ["country"];
+rc.validateInput.fieldValidator[rc.ns+'recipient_email__c'] = ["email"];
+rc.validateInput.fieldValidator[rc.ns+'recipient_phone__c'] = ["phone"];
+rc.validateInput.fieldValidator[rc.ns+'recipient_postal_code__c'] = ["zipCode"];
+rc.validateInput.fieldValidator[rc.ns+'recipient_preferred_email__c'] = ["email"];
+rc.validateInput.fieldValidator[rc.ns+'recipient_preferred_phone__c'] = ["phone"];
+rc.validateInput.fieldValidator[rc.ns+'recipient_state_province__c'] = ["state"];
+
+/* keep for reference until tested
+rc.validateInput.fieldWiseDefaultValidators = {
+	"{!nameSpaceLowerCase}contact_1_email__c":["email"],
+	"{!nameSpaceLowerCase}payment_method_card_number__c":["creditCard"],
+	"{!nameSpaceLowerCase}address_2_city__c":["city"],
+	"{!nameSpaceLowerCase}address_2_country__c":["countryCode"],
+	"{!nameSpaceLowerCase}address_2_city__c":["city"],
+	"{!nameSpaceLowerCase}address_2_country__c":["countryCode"],
+	"{!nameSpaceLowerCase}address_2_country_name__c":["country"],
+	"{!nameSpaceLowerCase}address_2_postal_code__c":["zipCode"],
+	"{!nameSpaceLowerCase}address_2_state__c":["state"],
+	"{!nameSpaceLowerCase}address_2_zip__c":["zipCode"],
+	"{!nameSpaceLowerCase}address_city__c":["city"],
+	"{!nameSpaceLowerCase}address_country__c":["countryCode"],
+	"{!nameSpaceLowerCase}address_country_name__c":["country"],
+	"{!nameSpaceLowerCase}address_postal_code__c":["zipCode"],
+	"{!nameSpaceLowerCase}address_state__c":["state"],
+	"{!nameSpaceLowerCase}address_zip__c":["zipCode"],
+	"{!nameSpaceLowerCase}contact_1_phone_1__c":["phone"],
+	"{!nameSpaceLowerCase}contact_1_phone_2__c":["phone"],
+	"{!nameSpaceLowerCase}contact_2_email__c":["email"],
+	"{!nameSpaceLowerCase}contact_2_phone_1__c":["phone"],
+	"{!nameSpaceLowerCase}contact_2_phone_2__c":["phone"],
+	"{!nameSpaceLowerCase}event_purchase_giving_amount__c":["amount"],
+	"{!nameSpaceLowerCase}giving_check_date__c":["date"],
+	"{!nameSpaceLowerCase}giving_close_date__c":["date"],
+	"{!nameSpaceLowerCase}giving_close_date_time__c":["datetime"],
+	"{!nameSpaceLowerCase}giving_giving_amount__c":["amount"],
+	"{!nameSpaceLowerCase}giving_giving_years__c":["year"],
+	"{!nameSpaceLowerCase}giving_record_amount__c":["amount"],
+	"{!nameSpaceLowerCase}payment_method_billing_email__c":["email"],
+	"{!nameSpaceLowerCase}payment_method_billing_phone__c":["phone"],
+	"{!nameSpaceLowerCase}payment_method_card_expiration_date__c":["date"],
+	"{!nameSpaceLowerCase}payment_method_card_expiration_month__c":["monthExpiration"],
+	"{!nameSpaceLowerCase}payment_method_card_expiration_year__c":["yearExpiration"],
+	"{!nameSpaceLowerCase}payment_method_card_last_four_digits__c":["numeric"],
+	"{!nameSpaceLowerCase}payment_method_card_security_code__c":["cvv"],
+	"{!nameSpaceLowerCase}preferences_1_end_date__c":["date"],
+	"{!nameSpaceLowerCase}preferences_1_start_date__c":["date"],
+	"{!nameSpaceLowerCase}preferences_2_end_date__c":["date"],
+	"{!nameSpaceLowerCase}preferences_2_start_date__c":["date"],
+	"{!nameSpaceLowerCase}recipient_city__c":["city"],
+	"{!nameSpaceLowerCase}recipient_country__c":["country"],
+	"{!nameSpaceLowerCase}recipient_email__c":["email"],
+	"{!nameSpaceLowerCase}recipient_phone__c":["phone"],
+	"{!nameSpaceLowerCase}recipient_postal_code__c":["zipCode"],
+	"{!nameSpaceLowerCase}recipient_preferred_email__c":["email"],
+	"{!nameSpaceLowerCase}recipient_preferred_phone__c":["phone"],
+	"{!nameSpaceLowerCase}recipient_state_province__c":["state"]
+}
+*/
+//standard validators
+rc.validateInput.validatorMap = {
+	"notEmpty" : {
+		notEmptyRC: {
+			message: 'This field is required'
+		}
+	},
+	"email" : {
+		regexp: {
+			regexp: '^[^@\\s]+@([^@\\s]+\\.)+[^@\\s]+$',
+			message: 'Please enter a valid email address' 
+		} 
+	},
+	"phone" : {
+		phone_US_RC: {
+			message: 'The value is not valid US phone number',
+			transformer: function($field, validatorName, validator) {
+				var value = $field.val();
+				value = value.replace(/\D/g, '');
+				// Check if the value has format of XXX XXX XXXX
+				if (/^(\d){3}(\s+)(\d){3}(\s+)(\d){4}$/.test(value)) {
+					return value.replace(/\s/g, '');// Remove all spaces
+				}
+				// Otherwise, return the original value
+				return value;
+			}
+		}
+	},
+	"city" : {
+		regexp: {
+			regexp: /^([a-zA-Z\u0080-\u024F]+(?:. |-| |'|,))*[a-zA-Z\u0080-\u024F]*([a-zA-Z]{1}\.[a-zA-Z]{1}\.)*$/,
+			message: 'Please enter a valid City name'
+		}
+	},
+	"country" : {
+		regexp: {
+			regexp: /^([a-zA-Z\u0080-\u024F]+(?:. |-| |'))*[a-zA-Z\u0080-\u024F]*$/,
+			message: 'Please enter a valid Country name'
+		}
+	},
+	"state" : {
+		regexp: {
+			regexp: /\b([A-Za-z]{2})\b/,
+			message: 'Please enter a valid State abbreviation'
+		},
+		stringLength: {
+			min: 2,
+			max: 2,
+			message: 'A valid State abbreviation can have only two characters'
+		}
+	},
+	"countryCode" : {
+		regexp: {
+			regexp: /\b([A-Za-z]{2}|[A-Za-z]{3})\b/,
+			message: 'Please enter a valid Country abbreviation'
+		},
+		stringLength: {
+			min: 2,
+			max: 3,
+			message: 'A valid Country abbreviation can have only two or three characters'
+		}
+	},
+	"creditCard" : {
+		creditCard: {
+			message: 'Please enter a valid Credit Card number',
+			transformer: function($field, validatorName, validator) {
+				var value = $field.val();
+				// Remove all spaces
+				return value.replace(/\s/g, '');
+			}
+		}
+	},
+	"zipCode" : {
+		zipCode: {
+			country: 'US',
+			message: 'The value is not a valid zipcode'
+		}
+	},
+	"date" :{
+		date: {
+			format: 'YYYY-MM-DD',
+			message: 'The value is not a valid date, must in format YYYY-MM-DD'
+		}
+	},
+	"cvv" : {
+		cvv: {
+			creditCardField: rc.ns+"payment_method_card_number__c",
+			message: 'The CVV number is not valid'
+		}
+	},
+	"monthExpiration" : {
+		between: {
+			min: 1,
+			max: 12,
+			inclusive: true,
+			message: 'The month must be between 01 and 12'
+		},
+		digits: {
+			message: 'The expiration month can contain digits only'
+		},
+		callback: {
+			message: 'Expired',
+			callback: function(value, validator, $field) {
+				value = parseInt(value, 10);
+				var year = rc.context('[name="'+rc.ns+'payment_method_card_expiration_year__c"]').val(),
+					currentMonth = new Date().getMonth() + 1,
+					currentYear  = new Date().getFullYear();
+				if (value < 0 || value > 12) {
+					return false;
+				}
+				if (year == '') {
+					return true;
+				}
+				year = parseInt(year, 10);
+				if (year > currentYear || (year == currentYear && value >= currentMonth)) {
+					validator.updateStatus(rc.ns+'payment_method_card_expiration_year__c', 'VALID');
+					return true;
+				} else {
+					return false;
+				}
+			}
+		}
+	},
+	"yearExpiration" : {
+		numeric: {
+			message: 'The year must be a number'
+		},
+		callback: {
+			message: 'Expired',
+			callback: function(value, validator, $field) {
+				value = parseInt(value, 10);
+				var month = rc.context('[name="'+rc.ns+'payment_method_card_expiration_month__c"]').val(),
+					currentMonth = new Date().getMonth() + 1,
+					currentYear  = new Date().getFullYear();
+				if (value < currentYear) {
+					return false;
+				}
+				if (month == '') {
+					return false;
+				}
+				month = parseInt(month, 10);
+				if (value > currentYear || (value == currentYear && month >= currentMonth)) {
+					validator.updateStatus(rc.ns+'payment_method_card_expiration_month__c', 'VALID');
+					return true;
+				} else {
+					return false;
+				}
+			}
+		}
+	},
+	"amount" : {
+		/*,
+		numeric: {
+			message: 'The amount must be a number',
+			transformer: function($field, validatorName, validator) {
+				var value = $field.val();
+				return value.replace(',', '');// strip out commas
+			}
+		},new validation below for TAOS-1509*/
+		regexp: {
+			regexp: /^\d+\.?\d{0,2}$/,
+			message: 'The Amount must be a number with only 2 decimal places'
+		}
+	}
+};
+
+//Custom non empty validator for turning off the same in the edit mode
+(function($) {
+	$.fn.bootstrapValidator.i18n.notEmptyRC = $.extend($.fn.bootstrapValidator.i18n.notEmptyRC || {}, {
+		'default': 'Please enter a value'
+	});
+	$.fn.bootstrapValidator.validators.notEmptyRC = {
+		enableByHtml5: function($field) {
+			var required = $field.attr('required') + '';
+			return ('required' === required || 'true' === required);
+		},
+		validate: function(validator, $field, options) {
+			//Always validate in the edit mode
+			if ( rc.getCurrentMode() == 'edit') {
+				return true;
+			}
+			var type = $field.attr('type');
+			if ('radio' === type || 'checkbox' === type) {
+				return validator.getFieldElements($field.attr('data-bv-field')).filter(':checked').length > 0;
+			}
+			if ('number' === type && $field.get(0).validity && $field.get(0).validity.badInput === true) {
+				return true;
+			}
+			return $.trim($field.val()) !== '';
+		}
+	};
+}(window.jQuery));
+
+(function($) {
+	$.fn.bootstrapValidator.i18n.phone_US_RC = $.extend($.fn.bootstrapValidator.i18n.phone_US_RC || {}, {
+		'default': 'Please enter a valid phone number'
+	});
+	$.fn.bootstrapValidator.validators.phone_US_RC = {
+		validate: function(validator, $field, options) {
+		var value = $field.val();
+		if (value === '') {
+			return true;
+		}
+		value = value.replace(/\D/g, '');
+		var isValid = (/^(?:(1\-?)|(\+1 ?))?\(?(\d{3})[\)\-\.]?(\d{3})[\-\.]?(\d{4})$/).test(value) && (value.length === 10 || value.length === 11);
+		return isValid;
+	}
+};
+}(window.jQuery));
+
 
 
 rc.initializeParams();// todo: find a better place for this
