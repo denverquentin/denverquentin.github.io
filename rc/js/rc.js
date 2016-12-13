@@ -77,80 +77,6 @@ rc.initializeParams = function() {
 	});
 };
 
-// todo: move to edit only
-rc.initializeModals = function() {
-	// Bind modal : confirm clone
-	rc.context('#rc-modal-confirm-clone').find('[data-action="confirm"]').on('click', rc.modal.confirmClone);
-	// Bind modal : confirm delete
-	rc.context('#rc-modal-confirm-delete').find('[data-action="confirm"]').on('click', rc.modal.confirmDelete);
-	// Bind modal : confirm delete form
-	rc.context('#rc-modal-confirm-delete-form').find('[data-action="confirm"]').on('click', rc.modal.confirmDeleteForm);
-	// Bind modal : confirm insert form
-	rc.context('#rc-modal-confirm-insert-form').find('[data-action="confirm"]').on('click', rc.modal.confirmInsertForm);
-	// Bind modal : confirm rename form
-	rc.context('#rc-modal-confirm-rename-form').find('[data-action="confirm"]').on('click', rc.modal.confirmRenameForm);
-	// Bind modal : configure layout
-	rc.context('#rc-modal-edit-columns').on('show.bs.modal', rc.modal.loadContainerColumns);
-	rc.context('#rc-modal-edit-columns').find('[data-action="save"]').on('click', rc.modal.saveContainerColumns);
-	// Bind modal : configure css
-	rc.context('#rc-modal-edit-css').on('show.bs.modal', rc.modal.loadContainerCSS);
-	rc.context('#rc-modal-edit-css').find('[data-action="save"]').on('click', rc.modal.saveContainerCSS);
-	// Bind modal : insert component
-	rc.context('#rc-modal-insert-component').on('show.bs.modal', rc.modal.loadInsertComponent);
-	rc.context('#rc-modal-insert-component').find('[data-action="save"]').on('click', rc.modal.saveInsertComponent);
-	// Bind modal : help wizard
-	rc.context('#rc-modal-help-wizard').on('show.bs.modal', rc.modal.loadHelpWizard);
-	rc.context('#rc-modal-help-wizard').find('[data-action="prev"]').on('click', rc.modal.prevHelpWizard);
-	rc.context('#rc-modal-help-wizard').find('[data-action="next"]').on('click', rc.modal.nextHelpWizard);
-	// Bind modal : help wizard : Remove the youtube link from it stops playing
-	rc.context('#rc-modal-help-wizard').find('[data-action="undo"]').on('click', function() {
-		rc.context('#rc-modal-help-wizard').find('iframe[src]').attr('src', '');
-	});
-	// Bind modal : help wizard : Bind clicks on the buttons to load those body sections
-	rc.context('#rc-modal-help-wizard').find('.modal-header .btn[data-value]').on('click', function() {
-		var form = rc.context(this).closest('.modal');
-		var step = rc.context(this).attr('data-value');
-		var body = form.find('.modal-body[data-step="' + step + '"]');
-		// Set the youtube video
-		form.find('iframe').attr('src', body.attr('data-video-source'));
-		// Hide the rest of the body items
-		form.find('.modal-body').hide();
-		body.show();
-	});
-};
-
-// todo: only design/edit mode?
-rc.initializeHeaderButtons = function() {
-	// Bind page header buttons
-	rc.context('#rc-page-container').find('.page-header [data-value="view"]').on('click', rc.ui.toggleContentEditable);
-	rc.context('#rc-page-container').find('.page-header [data-value="view"]').on('click', rc.setModeView);
-	rc.context('#rc-page-container').find('.page-header [data-value="edit"]').on('click', rc.ui.toggleContentEditable);
-	rc.context('#rc-page-container').find('.page-header [data-value="edit"]').on('click', rc.setModeEdit);
-	rc.context('#rc-page-container').find('.page-header [data-value="flow"]').on('click', rc.ui.toggleContentEditable);
-	rc.context('#rc-page-container').find('.page-header [data-value="flow"]').on('click', rc.setModeFlow);
-	rc.context('#rc-page-container').find('.page-header [data-action="rc-action-save"]').on('click', function() {
-		rc.upsertFormData();
-	});
-	// Add sections
-	rc.context('#rc-page-container').find('.page-header [data-action="rc-action-insert-section"]').on('click', function() {
-		var data = {data:{columns:rc.context(this).attr('data-value')}};
-		rc.components.insertColumnList('#rc-container-list',data);
-		rc.ui.markUnsavedChanges();
-	});
-	// Add workflow
-	rc.context('#rc-page-container').find('.page-header [data-action="rc-action-insert-workflow"]').on('click', function() {
-		rc.components.insertWorkflow('#rc-workflows-list',{});
-		rc.ui.markUnsavedChanges();
-	});
-	// Theme selection
-	rc.context('#rc-theme-menu').find('a').on('click', function() {
-		var href = '//netdna.bootstrapcdn.com/bootswatch/3.0.2/#[href]/bootstrap.min.css'
-		var name = (rc.context(this).attr('data-value') || '').toLowerCase();
-		rc.context('#rc-theme-link').attr('href',href.replace('#[href]',name));
-		rc.context('#rc-theme-link').attr('data-name',name);
-	});
-};
-
 rc.applyDefaultAttributeDefaultValues = function(component, defaultValues) {
 	var component = rc.context(component) || {};
 	var defaultValues = defaultValues || {};
@@ -755,13 +681,6 @@ rc.ui.toggleActive = function() {
 	rc.context(this).addClass('active');
 };
 
-rc.ui.toggleContentEditable = function() {
-	var editable = 'edit' == rc.context(this).attr('data-value');
-	rc.context('#rc-container-list').find('[contenteditable]').attr('contenteditable', editable);
-	//trigger view changed events so all listeners to this event may take action
-	rc.events.trigger('view-change',editable);
-};
-
 rc.ui.togglePrimary = function() {
 	var parentContainer = rc.context(this).closest('.rc-toggle-primary-container');
 	rc.context(parentContainer).find('.rc-toggle-primary').removeClass('btn-primary');
@@ -872,6 +791,26 @@ rc.ui.initializePlaceholderEvents = function(component) {
 		if (event.which == 27) {rc.ui.discardPlaceholderPopover(event);}
 	});
 };
+
+rc.ui.savePlaceholderValue = function(event) {
+	rc.console.log('rc.ui.savePlaceholderValue');
+	var eventTarget = event.target || '';
+	var popover = rc.context(rc.context(eventTarget).closest(".popover"));
+	popover = popover || '';
+	rc.ui.setPlaceholderValue(popover);
+	return true;
+};
+
+rc.ui.setPlaceholderValue = function(popover) {
+	rc.console.debug('rc.ui.setPlaceholderValue');
+	var source = rc.context(popover) || '';
+	var placeholderField = source.find(".rc-placeholder-content");
+	var value = placeholderField.val() || '';
+	var targetInputField = source.closest(".rc-toggle-placeholder").next().find("[placeholder]") || '';
+	rc.context(targetInputField).attr("placeholder", value);
+	source.popover("hide");
+	return true;
+}
 
 rc.ui.discardPlaceholderPopover = function(event) {
 	rc.console.log('rc.ui.discardPlaceholderPopover');
