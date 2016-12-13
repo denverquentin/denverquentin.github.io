@@ -87,6 +87,33 @@ rc.applyDefaultAttributeDefaultValues = function(component, defaultValues) {
 	});
 }
 
+rc.applyPlaceholderAttributeValues = function(component, placeholderValues) {
+	rc.console.debug('rc.applyPlaceholderAttributeValues');
+	var component = rc.context(component) || {};
+	var placeholderValues = placeholderValues || {};
+	rc.context( rc.context(component).find('.form-control') ).each(function() {
+		var field = rc.context(this);
+		var defaultData = placeholderValues[field.attr('name')] || placeholderValues[field.attr('data-name')] || field.attr('placeholder') || '';
+		field.attr('placeholder', defaultData);
+	});
+}
+
+rc.rollupDefaultValues = function(event, defaultValues) {
+	rc.console.debug('..rc.rollupDefaultValues');
+	var defaultValueComponents = rc.context('[data-field-default]');
+	if (!defaultValueComponents.length) {return;}
+	rc.context(defaultValueComponents).each(function(index, field) {
+		var field = rc.context(field);
+		var defaultData = field.attr('data-field-default') || '';
+		if (field.attr("type") == "checkbox") {
+			field.attr('data-field-default', defaultData);
+			field.prop('checked', defaultData == "true");
+		} else {
+			if (field.val() == false || field.val() == '') {field.val(defaultData);}
+		}
+	});
+}
+
 rc.reenable = function(el) {
 	if (el) {el.prop("disabled",false);}
 }
@@ -462,6 +489,21 @@ rc.ui.setDropdownVisible = function() {
 		}
 	});
 }
+
+rc.ui.setDefaultValue = function(event) {
+	rc.console.debug('..rc.ui.setDefaultValue');
+	if (rc.getCurrentMode() == 'view') {return true;}
+	var source = rc.context(this) || rc.context(event.target);
+	var value  = source.val() || '';
+	var attribute = source.attr('data-field-default');
+	if (source.attr("type") == "checkbox") {
+		var booleanValue = source.closest("[data-field-default]").is(":checked") ? true : false;
+		source.closest("[data-field-default]").attr("data-field-default", booleanValue);
+	} else {
+		source.closest("[data-field-default]").attr("data-field-default", value);
+	}
+	return true;
+};
 
 rc.ui.removeRedundantOpacity = function() {
 	rc.context("#rc-page-container .rc-default-hidden").each(function(index, element) {

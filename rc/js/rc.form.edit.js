@@ -122,6 +122,75 @@ rc.validateGivingPaymentFields = function() {/* this validation is only for the 
 	}
 };
 
+rc.selectFieldInfoList = function() {
+	rc.console.debug('rc.selectFieldInfoList');
+	rc.remoting.invokeAction(rc.actions.selectFieldInfoList, rc.selectFieldInfoList.done);
+	rc.ui.markProcessing();
+};
+
+rc.selectFieldInfoList.done = function(response) {
+	var list = rc.context('#rc-modal-insert-component--merge-field-list');
+	list.empty();
+	rc.context(response).each(function() {
+		var item = rc.context('<a class="list-group-item rc-toggle-active"></a>');
+		item.attr('data-api-name', this.Name);
+		item.attr('data-api-type', '');
+		item.attr('data-loaded', 'false');
+		list.append(item);
+	});
+	// Unmark processing
+	rc.ui.markProcessingDone();
+	// Kickoff the re-describe process
+	rc.selectFieldInfo();
+};
+
+rc.selectFieldInfo = function() {
+	rc.console.debug('rc.selectFieldInfo');
+	// find the first set of items without a type
+	var list = rc.context('#rc-modal-insert-component--merge-field-list');
+	var data_list = [];
+	list.find('.list-group-item[data-loaded="false"]').each(function() {
+		if (data_list.length < 50) {data_list.push({Name:rc.context(this).attr('data-api-name')});}
+	});
+	rc.console.debug('.. requesting for', data_list);
+	if (data_list.length > 0) {
+		rc.remoting.invokeAction(rc.actions.selectFieldInfo, data_list, rc.selectFieldInfo.done);
+		rc.ui.markProcessing();
+	}
+};
+
+rc.selectFieldInfo.done = function(response) {
+	rc.console.debug('rc.selectFieldInfo.done', response);
+	var list = rc.context('#rc-modal-insert-component--merge-field-list');
+	rc.context(response).each(function() {
+		var item = list.find('[data-api-name="' + this.Name + '"]');
+		item.attr('data-api-type', this.Type);
+		item.attr('data-text', this.Label);
+		item.attr('data-local-name', this.LocalName);
+		item.attr('data-loaded', 'true');
+		item.text(this.Label);
+		// Create the filter text so this can be searched
+		item.attr('data-filter-text', this.Name + '?' + this.Label)
+		// Bind events to clicking
+		item.on('click', rc.toggleMergeFieldSelected);
+	});
+	rc.ui.markProcessingDone();
+	// Kickoff the re-describe process
+	rc.selectFieldInfo();
+};
+
+rc.toggleMergeFieldSelected = function() {
+	// When one of the field info links is clicked, copy the values down to the siblings
+	rc.console.debug('rc.toggleMergeFieldSelected', this);
+	var item = rc.context(this);
+	var form = item.closest('.rc-component-overview');
+	form.find('.form-control[data-cascade="data-merge-field-text"]').val(item.attr('data-text'));
+	form.find('.form-control[data-cascade="data-merge-field-api-name"]').val(item.attr('data-api-name'));
+	form.find('.form-control[data-cascade="data-merge-field-api-type"]').val(item.attr('data-api-type'));
+	// Hide the dropdown menu
+	item.closest('.dropdown-menu').hide();
+};
+
 rc.deleteFormData = function() {
 	rc.console.debug('rc.deleteFormData');
 	// Toggle the button
