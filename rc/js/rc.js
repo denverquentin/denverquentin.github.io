@@ -11,6 +11,7 @@ rc.components = rc.components || {};
 rc.dataModal = rc.dataModal || {}
 
 rc.initializeFormApp = function() {
+	console.log('rc.initializeFormApp');
 	rc.components.initialize('.modal');// Copy data templates in modal templates
 	rc.components.initialize('.page-header');// Initialize actions in the page header
 	// Component list sorting
@@ -55,6 +56,7 @@ rc.initializeFormApp = function() {
 };
 
 rc.context(document).ready(function() { // TAOS-798
+	console.log('rc.context(document).ready');
 	rc.initializeFormApp();
 	$(document).on('keyup keypress', 'form input[type="text"]', function(e) {
 		if (e.keyCode == 13) {
@@ -65,6 +67,7 @@ rc.context(document).ready(function() { // TAOS-798
 });
 
 rc.initializeParams = function() {
+	console.log('rc.initializeParams');
 	rc.params = {};
 	var hash = (window.location.hash || '#!mode=view').substring(2);
 	if (hash == null) {return;}
@@ -1123,3 +1126,4 @@ rc.html_encode = function(text) {
 	text = text.replace(new RexExp('>', 'g'), '&' + 'gt;');
 	return text;
 };
+console.log('FINISHED LOADING rc.js');
