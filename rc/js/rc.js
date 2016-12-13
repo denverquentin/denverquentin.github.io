@@ -49,7 +49,9 @@ rc.initializeFormApp = function() {
 	});
 	// todo: only call the next 2 if in edit mode
 	// also only make these methods visible if in edit mode - they're only called from right here
+	console.log('rc.isEditMode = ' + rc.isEditMode);
 	if (rc.isEditMode) {
+		console.log('bout to initializeModals & initializeHeaderButtons');
 		rc.initializeModals();
 		rc.initializeHeaderButtons();
 	}
