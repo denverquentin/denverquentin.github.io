@@ -484,6 +484,18 @@ rc.ui.MergeFieldMap = {};
 rc.ui.MergeFieldMap[rc.ui.CONTACT_MAIL1] = {field:rc.ns + 'contact_1_email__c',control:rc.ns + 'contact_1_email_opt_out__c'};
 rc.ui.MergeFieldMap[rc.ui.CONTACT_MAIL2] = {field:rc.ns + 'contact_2_email__c',control:rc.ns + 'contact_2_email_opt_out__c'};
 
+rc.ui.markProcessing = function() {
+	rc.ui.markProcessing.queue.push(true);// Push onto list for tracking
+	rc.context('#rc-ui-icon-processing').show();// Update UI
+};
+
+rc.ui.markProcessingDone = function(data) {
+	if (rc.ui.markProcessing.queue.length == 1) {rc.context('#rc-ui-icon-processing').hide();}
+	if (data != null && data.modified == false) {rc.context('#rc-ui-icon-unsaved-changes').hide();}
+	rc.ui.markProcessing.queue.pop();
+};
+rc.ui.markProcessing.queue = [];
+
 rc.ui.setDropdownVisible = function() {
 	var mergeFieldsSelector = "  #rc-page-container .rc-component-content [data-field-hidden='true'] .rc-opacity-md "
 		+ ", #rc-page-container .rc-component-merge-field-content.rc-opacity-md ";
