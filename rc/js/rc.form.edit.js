@@ -424,30 +424,30 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 		item_details.find('[data-cascade="data-test-only"][data-value="' + container_data.data['test-only'] + '"]').click();
 		item_details.find('[data-cascade]').change();
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'sage') {
-		if ('{!isSageConfigured}' == 'true') {
+		if (rc.isSageConfigured) {
 			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
 			item_details.find('[data-cascade]').change();
 		}
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'heartland') {
-		if ('{!isHeartlandConfigured}' == 'true') {
+		if (rc.isHeartlandConfigured) {
 			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
 			item_details.find('[data-cascade]').change();
 		}
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'iATS') {
-		if ('{!isIATSConfigured}' == 'true') {
+		if (rc.isIATSConfigured) {
 			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
 			item_details.find('[data-cascade]').change();
 		}
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'PayPal') {
-		if ('{!isPayPalConfigured}' == 'true') {
+		if (rc.isPayPalConfigured) {
 			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
 			item_details.find('[data-cascade]').change();
 		}
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Litle') {
-		if ('{!isLitleConfigured}' == 'true') {
+		if (rc.isLitleConfigured) {
 			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
 			item_details.find('[data-cascade]').change();
-			if ('{!isLitleConfiguredForAdvancedFraudDetection}' == 'true') {
+			if (rc.isLitleConfiguredForAdvancedFraudDetection) {
 				var isAdvancedFraudetection = container_data.data['advanced-fraud-detection'];
 				if (isAdvancedFraudetection == undefined) {
 					item_details.find('[data-cascade="data-advanced-fraud-detection"][data-value="false"]').click();
@@ -475,12 +475,12 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 			}
 		}
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Authorize.net') {
-		if ('{!isAuthDotNetConfigured}' == 'true') {
+		if (rc.isAuthDotNetConfigured) {
 		item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
 		item_details.find('[data-cascade]').change();
 		}
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Cybersource') {
-		if ('{!isCybersourceConfigured}' == 'true') {
+		if (rc.isCybersourceConfigured) {
 			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
 			item_details.find('[data-cascade]').change();
 		}
