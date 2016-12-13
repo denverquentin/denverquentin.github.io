@@ -8,6 +8,45 @@ rc.ui = rc.ui || {};
 rc.modal = rc.modal || {};
 rc.components = rc.components || {};
 
+rc.validateGivingPaymentFields = function() {/* this validation is only for the form builder */
+	//is giving frequency field on the page
+	var hasGivingFrequencyField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_frequency__c"]').val() != undefined ? true : false;
+	//is giving amount field on the page
+	var hasGivingAmountField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_amount__c"]').val() != undefined ? true : false;
+	if (hasGivingFrequencyField == true && hasGivingAmountField == false) {
+		rc.ui.showMessagePopup(rc.ui.ERROR,"The Giving Amount field is not on the form. Please add and retry saving the form");
+		return;
+	}
+	if (hasGivingFrequencyField == false && hasGivingAmountField == true) {
+		rc.ui.showMessagePopup(rc.ui.ERROR,"The Giving frequency field is not on the form. Please add and retry saving the form");
+		return;
+	}
+};
+
+rc.deleteFormData = function() {
+	rc.console.debug('rc.deleteFormData');
+	// Toggle the button
+	rc.context('.page-header [data-action="rc-action-save"]').button('deleting');
+	rc.context('.page-header [data-action="rc-action-save"]').addClass('btn-danger');
+	// Send to salesforce
+	rc.remoting.invokeAction(rc.actions.deleteFormData, rc.campaignId, rc.getParam('form'), rc.deleteFormData.done);
+	// Mark processing
+	rc.ui.markProcessing();
+};
+
+rc.deleteFormData.done = function(data) {
+	rc.console.debug('rc.deleteFormData.done', data);
+	// Toggle the buttons
+	rc.context('.page-header [data-action="rc-action-save"]').button('save');
+	rc.context('.page-header [data-action="rc-action-save"]').removeClass('btn-danger');
+	// Unmark processing
+	rc.ui.markProcessingDone({ modified: false });
+	// Remove selected form ID
+	rc.setParam('form', null);
+	// Reselect names
+	rc.selectFormInfoList();
+};
+
 rc.ui.markUnsavedChanges = function() {
 	rc.context('#rc-ui-icon-unsaved-changes').show();
 };
@@ -388,6 +427,4 @@ rc.components.registerMergeFieldAutoComplete = function(field,dataArray) {
 		}
 	});
 };
-
-
 

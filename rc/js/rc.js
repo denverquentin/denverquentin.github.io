@@ -395,6 +395,14 @@ rc.selectData.fail = function(deferred, send, recv, meta) {
 	rc.console.debug('.. meta', meta);
 };
 
+rc.initializeSessionId = function(isTestMode,sessionId) {
+	if (isTestMode == "true") {
+		rc.sessionId = rc.litleSessionIdPrefix + '-' + sessionId;
+	} else {
+		rc.sessionId = rc.litleSessionId;
+	}
+}
+
 //Events component start
 //Product Slots Management
 rc.productSlots = [rc.ns+'product_1_product_code__c',rc.ns+'product_2_product_code__c',
@@ -1106,15 +1114,15 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
 			item_details.find('[data-cascade]').change();
 			if (rc.isLitleConfiguredForAdvancedFraudDetection) {
-				var isAdvancedFraudetection = container_data.data['advanced-fraud-detection'];
-				if (isAdvancedFraudetection == undefined) {
+				var isAdvancedFraudDetection = container_data.data['advanced-fraud-detection'];
+				if (isAdvancedFraudDetection == undefined) {
 					item_details.find('[data-cascade="data-advanced-fraud-detection"][data-value="false"]').click();
 				} else {
-					item_details.find('[data-cascade="data-advanced-fraud-detection"][data-value="' + isAdvancedFraudetection + '"]').click();
+					item_details.find('[data-cascade="data-advanced-fraud-detection"][data-value="' + isAdvancedFraudDetection + '"]').click();
 				}
 				//check if form is configured for litle fraud check
 				var isViewMode = rc.getCurrentMode() == 'view';
-				if (isAdvancedFraudetection) {
+				if (isAdvancedFraudDetection) {
 					var isAdvancedFraudDetectionTestMode = container_data.data['advanced-fraud-detection-test-mode'];
 					if (isAdvancedFraudDetectionTestMode == undefined) {
 						item_details.find('[data-cascade="data-advanced-fraud-detection-test-mode"][data-value="false"]').click();
@@ -1126,7 +1134,7 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 					}
 				}
 				rc.initializeSessionId(container_data.data['advanced-fraud-detection-test-mode'],container_data.data['sessionId']);
-				if (isViewMode && isAdvancedFraudetection) {
+				if (isViewMode && isAdvancedFraudDetection) {
 					//Add profiling tag to form body
 					rc.components.insertLitleProfilingTag();
 				}
@@ -1341,6 +1349,61 @@ rc.components.upsertComponent = function(container, component_data) {
 	// Request remote data?
 	if (item.send) {item.send();}
 };
+
+rc.components.updateContentCSS = function(component) {
+	rc.console.debug('rc.components.updateContentCSS', component);
+	// Update from css data
+	var component = rc.context(component);
+	var component_content = component.find('.rc-content-css').filter(':first');
+	//clear the style attribute
+	component_content.attr("style","");
+	if (component && component.get(0)) {
+		rc.context(component.get(0).attributes).each(function(index, attr) {
+			if (attr.name.match('css-') && attr.name != 'css-background-image') {
+				var name = attr.name.replace('css-', '');
+				attr.value = attr.value || '';
+				component_content.css(name, attr.value);
+			}
+			if (attr.name.match('css-') && attr.name == 'css-background-image' && attr.value) {
+				component_content.css('background-image', 'url(' + attr.value + ')');
+				component_content.css('background-size', 'cover');
+				component_content.css('background-position', 'center center');
+			}
+			//clear background if no value specified for the attribute
+			if (attr.name.match('css-') && attr.name == 'css-background-image' && !attr.value) {
+				component_content.css('background-image', '');
+				component_content.css('background-size', '');
+				component_content.css('background-position', '');
+			}
+
+			//fix text-decoration not inherited to floated label container descendants
+			if (component.attr("css-orientation")==="horizontal" && attr.name==='css-text-decoration') {
+				var name = attr.name.replace('css-', '');
+				component_content.find('.rc-label-container').css(name, attr.value);
+			}
+		});
+	}
+	// Check for hidden fields
+	rc.ui.toggleHiddenFields(component);
+	// Remove redundant casecaded opacity
+	rc.ui.removeRedundantOpacity();
+};
+
+rc.components.insertLitleProfilingTag = function() {
+	//create profiling element, find form body, add profiling element to form body
+	var fraudDetectTokenGenHtml = rc.context("#rc-litle-advance-fraud-detection").html();
+	var fraudDetectTokenGenEl = rc.context(fraudDetectTokenGenHtml);
+	var scriptTag = fraudDetectTokenGenEl.filter("script");
+	var iFrameTag = fraudDetectTokenGenEl.filter("iframe");
+	var scriptTagUrl = scriptTag.attr("data-lib-src");
+	var iFrameTagUrl = iFrameTag.attr("data-lib-src");
+	scriptTagUrl += rc.sessionId;
+	iFrameTagUrl += rc.sessionId;
+	scriptTag.attr("src",scriptTagUrl).attr("data-lib-src","");
+	iFrameTag.attr("src",iFrameTagUrl).attr("data-lib-src","");
+	rc.context("body:first").prepend(fraudDetectTokenGenEl);
+	return fraudDetectTokenGenEl;
+}
 
 
 /* Data Model - used in all modes */
