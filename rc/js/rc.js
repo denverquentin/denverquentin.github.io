@@ -1735,6 +1735,10 @@ rc.workflow.retroactiveFailure during the SendPayment workflow action.
 This is a workaround to provide backwards-compatibility with the current form design model, in which SendPayment and SendData are separate. */
 rc.workflow.quenchByGuid = {};
 
+rc.workflow.hasPaymentProcessor = function() {
+	return rc.context('#rc-workflows-list .rc-component-workflow-action[data-method="send-payment"]').length > 0;
+};
+
 rc.workflow.forceFail = function(deferred, quenchGuid, msg) {
 	rc.workflow.quenchByGuid[quenchGuid] = true;
 	rc.console.log(msg);
@@ -2059,10 +2063,6 @@ rc.workflow.process.SendPayment.send = function(deferred, action, data) {
 	}
 	return deferred.reject('No payment processor found!');
 }
-
-rc.workflow.hasPaymentProcessor = function() {
-	return rc.context('#rc-workflows-list .rc-component-workflow-action[data-method="send-payment"]').length > 0;
-};
 
 rc.workflow.process.Workflow = function(deferred, action, data, actionButtonContext) {
 	rc.workflow.execute(rc.context(action).attr('data-value'),actionButtonContext);
