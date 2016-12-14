@@ -16,7 +16,7 @@ rc.sessionId;/* litle Session Id */
 var sessionList = {};
 
 rc.initializeFormApp = function() {
-	//rc.comp.initialize('.page-header');// Initialize actions in the page header
+	rc.comp.initialize('.page-header');// Initialize actions in the page header
 	// Component list sorting
 	$('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */

@@ -23,7 +23,6 @@ rc.initializeFormAppInDesignMode = function() {
 };
 
 rc.rollupPlaceholderValues = function(event, placeholderValues) {
-	console.log('rc.rollupPlaceholderValues');
 	var placeholderValueComponents = $('[placeholder]');
 	if (!placeholderValueComponents.length) {return;}
 	$(placeholderValueComponents).each(function(index, field) {
@@ -139,7 +138,6 @@ rc.validateGivingPaymentFields = function() {
 };
 
 rc.selectFieldInfoList = function() {
-	console.log('rc.selectFieldInfoList');
 	rc.remoting.invokeAction(rc.actions.selectFieldInfoList, rc.selectFieldInfoList.done);
 	rc.ui.markProcessing();
 };
@@ -161,14 +159,12 @@ rc.selectFieldInfoList.done = function(response) {
 };
 
 rc.selectFieldInfo = function() {
-	console.log('rc.selectFieldInfo');
 	// find the first set of items without a type
 	var list = $('#rc-modal-insert-component--merge-field-list');
 	var data_list = [];
 	list.find('.list-group-item[data-loaded="false"]').each(function() {
 		if (data_list.length < 50) {data_list.push({Name:$(this).attr('data-api-name')});}
 	});
-	console.log('requesting for', data_list);
 	if (data_list.length > 0) {
 		rc.remoting.invokeAction(rc.actions.selectFieldInfo, data_list, rc.selectFieldInfo.done);
 		rc.ui.markProcessing();
@@ -197,7 +193,6 @@ rc.selectFieldInfo.done = function(response) {
 
 rc.toggleMergeFieldSelected = function() {
 	// When one of the field info links is clicked, copy the values down to the siblings
-	console.log('rc.toggleMergeFieldSelected', this);
 	var item = $(this);
 	var form = item.closest('.rc-component-overview');
 	form.find('.form-control[data-cascade="data-merge-field-text"]').val(item.attr('data-text'));
@@ -252,7 +247,6 @@ rc.ui.releaseProcessingModal = function() {
 rc.ui.showProcessingModal.queue = [];
 
 rc.modal.loadContainerCSS = function() {
-	console.log('rc.modal.loadContainerCSS', this);
 	var component = $('.rc-selected').filter(':first');
 	var context = $(this).find('.rc-cascade-value-target');
 	console.log('using component:', component);
@@ -279,7 +273,6 @@ rc.modal.loadContainerCSS = function() {
 };
 
 rc.modal.saveContainerCSS = function() {
-	console.log('rc.modal.saveContainerCSS', this);
 	var component = $('.rc-selected').filter(':first');
 	var context = $(this).closest('.rc-cascade-value-target');
 	console.log('using component:', component);
@@ -325,7 +318,6 @@ rc.modal.loadContainerColumns = function() {
 };
 
 rc.modal.saveContainerColumns = function() {
-	console.log('rc.modal.saveContainerColumns', this);
 	// Find the container
 	var form = $(this).closest('.modal');
 	// Set the right number of columns
@@ -353,7 +345,6 @@ rc.modal.saveContainerColumns = function() {
 };
 
 rc.modal.loadInsertComponent = function() {
-	console.log('rc.modal.loadInsertComponent', this);
 	var modal = $(this);
 	modal.find('.rc-toggle-primary.btn-primary').removeClass('btn-primary');
 	modal.find('.rc-toggle-active.active').removeClass('active');
@@ -380,7 +371,6 @@ rc.modal.loadInsertComponent = function() {
 };
 
 rc.modal.saveInsertComponent = function() {
-	console.log('rc.modal.saveInsertComponent', this);
 	var form = $(this).closest('.rc-cascade-value-target');
 	var form_type = form.attr('data-component');
 	var form_data = form.find('.rc-component-overview[data-component="' + form_type + '"]');
@@ -399,7 +389,7 @@ rc.modal.saveInsertComponent = function() {
 	if (data.type == 'external-stylesheet') {data.data['text'] = form_data.find('.form-control').val();}
 	if (data.type == 'html-block') {
 		data.data['text'] = form_data.find('.form-control').val();
-		data.data['text'] = rc.stripTags( data.data['text'] , "script" );
+		data.data['text'] = rc.stripTags( data.data['text'], "script");
 	}
 	if (data.type == 'url-link') {
 		data.data['label'] = form_data.find('.form-control.rc-url-label').val();
@@ -592,7 +582,6 @@ rc.upsertFormData.exportFormContainer = function(list, item) {
 	data.data['columns'] = parseInt(item.attr('data-columns'));
 	data.data['guid'] = item.attr('id') || rc.guid();
 	data.styles = {};
-	// Styles
 	$(item.get(0).attributes).each(function(index, attr) {
 		if (attr.name.match('css-')) {
 			var name = attr.name.replace('css-', '');
@@ -694,7 +683,6 @@ rc.upsertFormData.exportFormComponent = function(list, item) {
 		data.data['text'] = item.find('.rc-text').text();
 	}
 	if (data.type == 'merge-field') {
-		console.log('rc.upsertFormData.exportFormComponent - default : ', item.attr("data-field-default"));
 		data.data['default'] = item.find('.rc-field-name').attr('data-field-default');
 		data.data['hidden'] = item.attr('data-hidden');
 		data.data['name'] = item.find('.rc-field-name').attr('name');
@@ -734,7 +722,6 @@ rc.upsertFormData.exportFormComponent = function(list, item) {
 		}
 	}
 	//rcEvents components
-	//export cart data
 	if (data.type == 'cart') {
 		data.data['header'] = item.find(".cart-header-text").text();
 		data.data['required'] = item.find('.input-group').attr('data-required') == 'true';
@@ -836,7 +823,6 @@ rc.upsertFormData.exportformDefaultValues = function(defaultValues, item) {
 };
 
 rc.upsertFormData.exportFormPlaceholderValues = function(placeholderValues, item) {
-	console.log('rc.upsertFormData.exportFormPlaceholderValues');
 	placeholderValues = placeholderValues || {};
 	item = $(item) || '';
 	var name = item.attr('name') || '';
