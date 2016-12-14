@@ -2631,7 +2631,6 @@ rc.comp.CreditCard.format = function() {
 };
 
 rc.comp.Button = function(container, data) {
-	console.log('rc.comp.Button');
 	this.container = container;
 	this.type = 'Button';
 	this.data = data;
@@ -2679,8 +2678,8 @@ rc.comp.Button.execute = function() {
 	rc.enableLocalOnly(true);
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
 
-	console.log('$(this) = ' + $(this));
-	console.log('$(this).closest([data-workflow]) = ' + $(this).closest('[data-workflow]'));
+	console.log('$(this) = ' + JSON.stringify($(this)));
+	console.log('$(this).closest([data-workflow]) = ' + JSON.stringify($(this).closest('[data-workflow]')));
 	console.log('workflowToExecuteId = ' + workflowToExecuteId);
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
 		rc.workflow.execute(workflowToExecuteId, actionButtonContext);
