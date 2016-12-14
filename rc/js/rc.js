@@ -2633,6 +2633,7 @@ rc.comp.CreditCard.format = function() {
 };
 
 rc.comp.Button = function(container, data) {
+	console.log('rc.comp.Button');
 	this.container = container;
 	this.type = 'Button';
 	this.data = data;
@@ -2665,6 +2666,7 @@ rc.comp.Button.execute = function() {
 	// Nothing goes above this
 	var actionButtonContext = $(this);
 	actionButtonContext.prop("disabled",true);
+	console.log('rc.comp.Button.execute');
 	// All of the below validations should be independent statements, ensuring that each
 	// validation method is called, and providing all errors after one click of the button.
 	// TODO This would be more de-coupled if the attached components could be iterated for validation
