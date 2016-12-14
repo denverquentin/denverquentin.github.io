@@ -17,8 +17,6 @@ var sessionList = {};
 
 rc.initializeFormApp = function() {
 	// Component list sorting
-	rc.comp.initialize('.modal');// Copy data templates in modal templates
-	rc.comp.initialize('.page-header');// Initialize actions in the page header
 	$('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
 	$('#rc-component-overview--attach-image').on('change',function() {/* Inline image data */
@@ -36,6 +34,7 @@ rc.initializeFormApp = function() {
 	rc.events.on('form-loaded-with-data',function(event) {
 		//functions to initialize components which depends on all components + data load
 		//here we have guarantee all components and data is loaded
+		console.log('form-loaded-with-data event fired');
 		rc.validateInput.initialize(); /* if validations enabled initialize the scene */
 		rc.ui.setDropdownVisible();
 		rc.ui.removeRedundantOpacity();
@@ -1217,6 +1216,7 @@ rc.comp.insertWorkflow = function(container, container_data) {
 };
 
 rc.comp.insertWorkflowAction = function(container, container_data) {
+	console.log('rc.comp.insertWorkflowAction');
 	container_data = container_data || {};
 	container_data.context = container_data.context || 'then';
 	container_data.data = container_data.data || {};
@@ -2678,6 +2678,10 @@ rc.comp.Button.execute = function() {
 	// TODO Perhaps this call should be in rc.validateInput.isFormValid()
 	rc.enableLocalOnly(true);
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
+
+	console.log('rc.getCurrentMode() = ' + rc.getCurrentMode());
+	console.log('formValid = ' + formValid);
+	console.log('workflowToExecuteId = ' + workflowToExecuteId);
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
 		rc.workflow.execute(workflowToExecuteId, actionButtonContext);
 	} else {
