@@ -34,7 +34,6 @@ rc.initializeFormApp = function() {
 	rc.events.on('form-loaded-with-data',function(event) {
 		//functions to initialize components which depends on all components + data load
 		//here we have guarantee all components and data is loaded
-		console.log('form-loaded-with-data event fired');
 		rc.validateInput.initialize(); /* if validations enabled initialize the scene */
 		rc.ui.setDropdownVisible();
 		rc.ui.removeRedundantOpacity();
@@ -1216,7 +1215,6 @@ rc.comp.insertWorkflow = function(container, container_data) {
 };
 
 rc.comp.insertWorkflowAction = function(container, container_data) {
-	console.log('rc.comp.insertWorkflowAction');
 	container_data = container_data || {};
 	container_data.context = container_data.context || 'then';
 	container_data.data = container_data.data || {};
