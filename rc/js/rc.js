@@ -2680,9 +2680,7 @@ rc.comp.Button.execute = function() {
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
 
 	console.log('$(this) = ' + $(this));
-	console.log('$(this).closest('[data-workflow]') = ' + $(this).closest('[data-workflow]'));
-
-	console.log('formValid = ' + formValid);
+	console.log('$(this).closest([data-workflow]) = ' + $(this).closest('[data-workflow]'));
 	console.log('workflowToExecuteId = ' + workflowToExecuteId);
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
 		rc.workflow.execute(workflowToExecuteId, actionButtonContext);
