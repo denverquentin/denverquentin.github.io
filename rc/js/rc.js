@@ -18,11 +18,11 @@ var sessionList = {};
 rc.initializeFormApp = function() {
 	//rc.components.initialize('.page-header');// Initialize actions in the page header
 	// Component list sorting
-	rc.context('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
-	rc.context('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
-	rc.context('#rc-component-overview--attach-image').on('change',function() {/* Inline image data */
+	$('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
+	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
+	$('#rc-component-overview--attach-image').on('change',function() {/* Inline image data */
 		var freader = new FileReader();
-		var context = rc.context('#rc-component-overview--attach-image');
+		var context = $('#rc-component-overview--attach-image');
 		context.removeAttr('data-image-data');
 		if (this.files && this.files[0]) {
 			freader.onloadend = function(event) {
@@ -46,7 +46,7 @@ rc.initializeParams = function() {
 	rc.params = {};
 	var hash = (window.location.hash || '#!mode=view').substring(2);
 	if (hash == null) {return;}
-	rc.context(hash.split('&')).each(function() {
+	$(hash.split('&')).each(function() {
 		var data = this.split('=');
 		if (data[0] == null || data[0] == '') {return;}
 		if (data[1] == 'true') {data[1] = true;}
@@ -57,10 +57,10 @@ rc.initializeParams = function() {
 };
 
 rc.applyDefaultAttributeDefaultValues = function(component, defaultValues) {
-	var component = rc.context(component) || {};
+	var component = $(component) || {};
 	var defaultValues = defaultValues || {};
-	rc.context(rc.context(component).find('.rc-field-name')).each(function() {
-		var field = rc.context(this);
+	$($(component).find('.rc-field-name')).each(function() {
+		var field = $(this);
 		var defaultData = defaultValues[field.attr('name')] || '';
 		field.attr('data-field-default', defaultData);
 	});
@@ -68,10 +68,10 @@ rc.applyDefaultAttributeDefaultValues = function(component, defaultValues) {
 
 rc.applyPlaceholderAttributeValues = function(component, placeholderValues) {
 	console.log('rc.applyPlaceholderAttributeValues');
-	var component = rc.context(component) || {};
+	var component = $(component) || {};
 	var placeholderValues = placeholderValues || {};
-	rc.context( rc.context(component).find('.form-control') ).each(function() {
-		var field = rc.context(this);
+	$($(component).find('.form-control')).each(function() {
+		var field = $(this);
 		var defaultData = placeholderValues[field.attr('name')] || placeholderValues[field.attr('data-name')] || field.attr('placeholder') || '';
 		field.attr('placeholder', defaultData);
 	});
@@ -79,10 +79,10 @@ rc.applyPlaceholderAttributeValues = function(component, placeholderValues) {
 
 rc.rollupDefaultValues = function(event, defaultValues) {
 	console.log('rc.rollupDefaultValues');
-	var defaultValueComponents = rc.context('[data-field-default]');
+	var defaultValueComponents = $('[data-field-default]');
 	if (!defaultValueComponents.length) {return;}
-	rc.context(defaultValueComponents).each(function(index, field) {
-		var field = rc.context(field);
+	$(defaultValueComponents).each(function(index, field) {
+		var field = $(field);
 		var defaultData = field.attr('data-field-default') || '';
 		if (field.attr("type") == "checkbox") {
 			field.attr('data-field-default', defaultData);
@@ -98,8 +98,8 @@ rc.reenable = function(el) {
 }
 
 rc.reInitProductSlots = function() {
-	rc.context(".rc-component").each(function(index,component) {
-		rc.updateProductSlots(rc.context(component));
+	$(".rc-component").each(function(index,component) {
+		rc.updateProductSlots($(component));
 	});
 };
 
@@ -144,20 +144,20 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 	console.log('recv', recv);
 	console.log('meta', meta);
 	// Reset the list
-	var list = rc.context('#rc-form-name-list');
+	var list = $('#rc-form-name-list');
 	list.find('.rc-form-name').remove();
 	// Reset the dropdown text name
 	list.siblings().find('.dropdown-toggle-text').html('&nbsp;');
 	// Find the workflow action menus
-	var menu = rc.context('[data-dropdown-menu="form-list"]');
+	var menu = $('[data-dropdown-menu="form-list"]');
 	menu.empty();
 	// Reset the dropdown text name
 	menu.siblings().find('.dropdown-toggle-text').html('&nbsp;');
 	// Find the divider. It acts as a lower anchor
 	var divider = list.find('.divider');
 	// Process data
-	rc.context(recv).each(function(at, info) {
-		var item = rc.context('<li class="rc-form-name"><a class="rc-cursor-pointer rc-cascade-value rc-toggle-active rc-cascade-dropdown-text rc-link"></a></li>');
+	$(recv).each(function(at, info) {
+		var item = $('<li class="rc-form-name"><a class="rc-cursor-pointer rc-cascade-value rc-toggle-active rc-cascade-dropdown-text rc-link"></a></li>');
 		item.find('a').attr('data-cascade', 'data-page');
 		item.find('a').attr('data-value', info.id);
 		item.find('a').text(info.name);
@@ -175,9 +175,9 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 	// Is there a page already selected? Or just choose the first page?
 	var form = rc.paramForm || rc.getParam('form');
 	if (form) {
-		rc.context('.rc-link[data-value="' + form+ '"]').click();
+		$('.rc-link[data-value="' + form+ '"]').click();
 	} else {
-		rc.context('.rc-link:first').click();
+		$('.rc-link:first').click();
 	}
 	// Mark resolved?
 	if (deferred && deferred.resolve) {deferred.resolve();}
@@ -194,14 +194,14 @@ rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
 rc.selectFormData = function() {
 	// Set the page name param
 	var form = rc.paramForm || rc.getParam('form');
-	rc.setParam('form', rc.context(this).attr('data-value') || form);
+	rc.setParam('form', $(this).attr('data-value') || form);
 	// Set the form link element
 	var href = '#{base}/' + rc.ns + 'campaign_designform?1&id=#{cpid}#!mode=view&form=#{form}';
 	href = href.replace('#{base}', '//' + rc.siteUrl);
 	href = href.replace('#{cpid}', rc.campaignId);
 	href = href.replace('#{fcid}', rc.paramFormCampaignId);
 	href = href.replace('#{form}', rc.getParam('form'));
-	rc.context('.page-header a.fa-link').attr('href', href);
+	$('.page-header a.fa-link').attr('href', href);
 	// Load that page
 	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('form'),rc.selectFormData.done,{escape:false});
 	rc.ui.markProcessing();// Mark processing
@@ -218,29 +218,29 @@ rc.selectFormData.done = function(data) {
 	console.log('data.workflows: ', data.workflows);
 	console.log('data.data: ', data.data);
 	// Apply Page Level CSS
-	rc.components.importContentCSS(rc.context("html"), data.styles);
-	rc.components.updateContentCSS(rc.context("html"));
+	rc.components.importContentCSS($("html"), data.styles);
+	rc.components.updateContentCSS($("html"));
 	//validations flag
 	rc.validationsEnabled = data.data['validations-enabled'] || "false";
-	rc.context("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
+	$("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
 	// Theme
 	if (data.data['theme-href'] && data.data['theme-name']) {
-		rc.context('#rc-theme-link').attr('href', data.data['theme-href']);
-		rc.context('#rc-theme-link').attr('data-name', data.data['theme-name']);
+		$('#rc-theme-link').attr('href', data.data['theme-href']);
+		$('#rc-theme-link').attr('data-name', data.data['theme-name']);
 	} else {
-		rc.context('#rc-theme-menu').find('[data-value=""]').click();
+		$('#rc-theme-menu').find('[data-value=""]').click();
 	}
 	// Empty the product slots, before deleting the container so they can be reused.
 	rc.reInitProductSlots();
 	// Empty existing container
-	rc.context('#rc-container-list').empty();
-	rc.context('#rc-workflows-list').empty();
+	$('#rc-container-list').empty();
+	$('#rc-workflows-list').empty();
 	// Add workflow names to dropdown
-	var item_list = rc.context('#rc-component-workflow-action--workflow').find('.dropdown-menu');
+	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 	item_list.empty();
-	rc.context(data.workflows).each(function(at, data) {
+	$(data.workflows).each(function(at, data) {
 		try {
-			var item = rc.context('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
+			var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
 			item.attr('data-cascade', 'data-value');
 			item.attr('data-value', data.data.guid);
 			item.text(rc.text(data.data.name));
@@ -252,28 +252,28 @@ rc.selectFormData.done = function(data) {
 		}
 	});
 	// Process data
-	rc.context(data.workflows).each(function(at, data) {
+	$(data.workflows).each(function(at, data) {
 		rc.components.insertWorkflow('#rc-workflows-list', data);
 	});
 	// Process data
-	rc.context(data.containers).each(function(at, data) {
+	$(data.containers).each(function(at, data) {
 		console.log('data.container at: ', at);
 		console.log('data.container data: ', data);
 		rc.components.insertColumnList('#rc-container-list', data);
 	});
 	// Process copy-param clicks
-	rc.context('.dropdown-menu[data-original-target]').each(function() {
-		var name = rc.context(this).attr('data-original-target');
-		rc.context(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
+	$('.dropdown-menu[data-original-target]').each(function() {
+		var name = $(this).attr('data-original-target');
+		$(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
 	});
 	// No form containers?
-	if (rc.context('#rc-container-list').is(':empty')) {
-		rc.context('#rc-container-list-messages').slideDown();
+	if ($('#rc-container-list').is(':empty')) {
+		$('#rc-container-list-messages').slideDown();
 	} else {
-		rc.context('#rc-container-list-messages').slideUp();
+		$('#rc-container-list-messages').slideUp();
 	}
 	rc.ui.markProcessingDone();// Unmark processing
-	rc.context('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
+	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
 	rc.selectData();// Trigger record selection?
 };
 
@@ -299,10 +299,10 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 	// This will be overwritten by field data values, if any.
 	rc.rollupDefaultValues();
 	// Cache form-controls with a name attribute
-	var controls = rc.context('.form-control[name]');
+	var controls = $('.form-control[name]');
 	rc.dataModal.BatchUploadModel = $.extend(rc.dataModal.BatchUploadModel, recv);
 	// Loop over the received data, and assign to fields as found
-	rc.context.each(recv, function(name, data) {
+	$.each(recv, function(name, data) {
 		rc.validateProductSlot(name,data);
 		controls.filter('[name="' + name + '"]').val(data);
 		if (controls.filter('[name="' + name + '"]').val() == 'true') {
@@ -317,13 +317,13 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 	// render sessions with their quantities
 	rc.components.Session.renderUpsertData(recv);
 	//if a old record before introducing the giving toggle on form
-	var workflowActionGivingFlag = rc.context('[data-cascade="exclude-giving"][is-old="true"]');
+	var workflowActionGivingFlag = $('[data-cascade="exclude-giving"][is-old="true"]');
 	if (workflowActionGivingFlag && workflowActionGivingFlag.length>0) {
 		//override the data in exclude-giving flag with that of batch-upload record
 		//as workflow action should not overwrite batch-upload record
 		if (recv && recv[rc.ns+'exclude_giving__c']) {
 			console.log('FOUND THE NAME WITH THE NAMESPACE!');
-			rc.context('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
+			$('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
 		}
 	}
 	rc.events.trigger("form-loaded-with-data");
@@ -419,7 +419,7 @@ rc.validateProductSlot = function(field,value) {
 	var index = rc.productSlots.indexOf(field);
 	if (index>-1 && rc.productSlots.length>0) {
 		//if code not empty, ie slot not empty, remove from avail queue
-		if (value && rc.context.trim(value)!='') {rc.productSlots.splice(index, 1);}
+		if (value && $.trim(value)!='') {rc.productSlots.splice(index, 1);}
 	};
 };
 
@@ -435,13 +435,13 @@ rc.updateProductSlots = function(component) {
 		rc.emptyProductSlot(slot);
 	} else if (type=="cart") {
 		component.find(".product-entry-row[data-product-slot]").each(function(index,slotElem) {
-			slot = rc.context(slotElem).attr("data-product-slot");
+			slot = $(slotElem).attr("data-product-slot");
 			if (!slot) {return true;}
 			rc.emptyProductSlot(slot);
 		});
 	} else if (type=="session") {
 		component.find(".session-entry-row[data-session-slot]").each(function(index,slotElem) {
-			slot = rc.context(slotElem).attr("data-session-slot");
+			slot = $(slotElem).attr("data-session-slot");
 			if (!slot) {return true;}
 			rc.emptyProductSlot(slot);
 		});
@@ -499,7 +499,7 @@ rc.stripTags = function(valueText,tag) {
 };
 
 rc.filterComponentData = function(componentsArray) {/* filter / decode data for components */
-	rc.context(componentsArray).each(function(index, component_data) {
+	$(componentsArray).each(function(index, component_data) {
 		var data = component_data || {};
 		data.data = data.data || {};
 		data.type = data.type || '';
@@ -513,7 +513,7 @@ rc.setHiddenFieldAttribute = function(component, attrValue) {
 	console.log('rc.setHiddenFieldAttribute');
 	var componentContentElem = component.find('.rc-component-content');
 	if (true == componentContentElem.hasClass("rc-always-hidden-in-view")) {return true;}
-	component = rc.context(component) || '';
+	component = $(component) || '';
 	attrValue = attrValue || '';
 	componentContentElem.attr("data-field-hidden", attrValue == "true");
 	return true;
@@ -550,12 +550,12 @@ rc.ui.MergeFieldMap[rc.ui.CONTACT_MAIL2] = {field:rc.ns + 'contact_2_email__c',c
 
 rc.ui.markProcessing = function() {
 	rc.ui.markProcessing.queue.push(true);// Push onto list for tracking
-	rc.context('#rc-ui-icon-processing').show();// Update UI
+	$('#rc-ui-icon-processing').show();// Update UI
 };
 
 rc.ui.markProcessingDone = function(data) {
-	if (rc.ui.markProcessing.queue.length == 1) {rc.context('#rc-ui-icon-processing').hide();}
-	if (data != null && data.modified == false) {rc.context('#rc-ui-icon-unsaved-changes').hide();}
+	if (rc.ui.markProcessing.queue.length == 1) {$('#rc-ui-icon-processing').hide();}
+	if (data != null && data.modified == false) {$('#rc-ui-icon-unsaved-changes').hide();}
 	rc.ui.markProcessing.queue.pop();
 };
 rc.ui.markProcessing.queue = [];
@@ -563,8 +563,8 @@ rc.ui.markProcessing.queue = [];
 rc.ui.setDropdownVisible = function() {
 	var mergeFieldsSelector = "  #rc-page-container .rc-component-content [data-field-hidden='true'] .rc-opacity-md "
 		+ ", #rc-page-container .rc-component-merge-field-content.rc-opacity-md ";
-	rc.context(mergeFieldsSelector).each( function(index, mergeField) {
-		mergeField = rc.context(mergeField);
+	$(mergeFieldsSelector).each( function(index, mergeField) {
+		mergeField = $(mergeField);
 		var childTargetElements = mergeField.find("[data-opacity-target='true'], .rc-field-menu");
 		mergeField.removeClass("rc-opacity-md");
 		if (childTargetElements.length > 0) {
@@ -578,7 +578,7 @@ rc.ui.setDropdownVisible = function() {
 
 rc.ui.setDefaultValue = function(event) {
 	if (rc.getCurrentMode() == 'view') {return true;}
-	var source = rc.context(this) || rc.context(event.target);
+	var source = $(this) || $(event.target);
 	var value  = source.val() || '';
 	var attribute = source.attr('data-field-default');
 	if (source.attr("type") == "checkbox") {
@@ -591,13 +591,13 @@ rc.ui.setDefaultValue = function(event) {
 };
 
 rc.ui.removeRedundantOpacity = function() {
-	rc.context("#rc-page-container .rc-default-hidden").each(function(index, element) {
-		element = rc.context(this) || '';
+	$("#rc-page-container .rc-default-hidden").each(function(index, element) {
+		element = $(this) || '';
 		element.removeClass("rc-opacity-md");
 		element.find(".fa-eye-slash").remove();
 		element.find(".rc-field-text").prepend('<span class="fa fa-fw fa-eye-slash pull-right rc-margin-xs rc-tooltip" data-toggle="tooltip" data-title="Hidden Field"></span>');
 		element.find("[data-opacity-target='true']").each(function(index, opacityTarget) {
-			opacityTarget = rc.context(opacityTarget) || '';
+			opacityTarget = $(opacityTarget) || '';
 			if (opacityTarget.hasClass("rc.opacity-md") == true) {
 				return true;
 			} else {
@@ -605,22 +605,22 @@ rc.ui.removeRedundantOpacity = function() {
 			}
 		});
 	});
-	rc.context(".rc-toggle-dropdown").addClass("rc-requires-edit");
+	$(".rc-toggle-dropdown").addClass("rc-requires-edit");
 }
 
 rc.ui.showMessagePopup = function(type,message) {
 	message = message || '';
-	message = rc.context.trim(message);
+	message = $.trim(message);
 	//remove message box if already active
 	//user should not miss old error message due to new error message
-	var container = rc.context('.info-message-container');
+	var container = $('.info-message-container');
 	var curText =container.find(".message-box .message").html() || '';
 	if (curText.indexOf(message)!=-1) {return;}
 	if (container.find(".message-box").length && type==='error' && curText.indexOf(message) == -1) {
 		message = curText + '<br/><br/>' + message;
 	}
 	container.find(".message-box").remove();
-	container.prepend(rc.context("#message-box-template").html());
+	container.prepend($("#message-box-template").html());
 	container.find('.message-box .message').html(message);
 	container.find('.message-box').addClass(type);
 	if (message.length > 50) {
@@ -629,22 +629,22 @@ rc.ui.showMessagePopup = function(type,message) {
 	}
 	container.find('.message-box').show();
 	container.find(".message-box").unbind("click").click(function() {
-		container.find('.message-box').fadeOut(1000, function() {rc.context(this).remove();});
+		container.find('.message-box').fadeOut(1000, function() {$(this).remove();});
 	});
 };
 
 rc.ui.addMessageToComponent = function(component,message,type,showInMode) {
-	component = component || rc.context('body');
-	var exist = rc.context(component).closest(".rc-container-column").find(".component-alert .message-text:contains("+message+")");
+	component = component || $('body');
+	var exist = $(component).closest(".rc-container-column").find(".component-alert .message-text:contains("+message+")");
 	if (exist.length) {return exist.closest(".component-alert ");}
-	var templateHtml = rc.context("#rc-alert-item.rc-template").html();
-	var messageBox = rc.context(templateHtml);
+	var templateHtml = $("#rc-alert-item.rc-template").html();
+	var messageBox = $(templateHtml);
 	type = type || rc.ui.WARNING;
 	message = message || '';
 	messageBox.addClass(type);
 	messageBox.find(".message-header").text(rc.ui.MessageHeaders[type]);
 	messageBox.find(".message-text").text(message).addClass("animated shake");
-	rc.context(component).closest(".rc-container-column").prepend(messageBox);
+	$(component).closest(".rc-container-column").prepend(messageBox);
 	showInMode= showInMode || "edit";
 	if (showInMode==="edit") {
 		messageBox.addClass("rc-requires-edit");
@@ -657,29 +657,29 @@ rc.ui.addMessageToComponent = function(component,message,type,showInMode) {
 };
 
 rc.ui.getComponentMessages = function(component,message,type) {
-	component = component || rc.context("body");
+	component = component || $("body");
 	if (message && message!='') {
-		var exist=rc.context(component).closest(".rc-container-column").find(".component-alert .message-text:contains("+message+")");
+		var exist=$(component).closest(".rc-container-column").find(".component-alert .message-text:contains("+message+")");
 		if (exist.length) {return exist.closest(".component-alert ");}
 	} else if (type) {
-		return rc.context(component).closest(".rc-container-column").find(".component-alert ."+type);
+		return $(component).closest(".rc-container-column").find(".component-alert ."+type);
 	}
-	return rc.context(component).closest(".rc-container-column").find(".component-alert");
+	return $(component).closest(".rc-container-column").find(".component-alert");
 };
 
 rc.ui.cascadeSelected = function() {
-	rc.context('.rc-selected').removeClass('rc-selected');
-	rc.context(this).closest('html,.rc-container,.rc-component').addClass('rc-selected');
+	$('.rc-selected').removeClass('rc-selected');
+	$(this).closest('html,.rc-container,.rc-component').addClass('rc-selected');
 };
 
 rc.ui.cascadeCss = function() {
-	var name = rc.context(this).attr('data-css-name');
-	var data = rc.context(this).attr('data-css') || 'auto';
-	rc.context(this).closest('.rc-cascade-css-target').css(name, data);
+	var name = $(this).attr('data-css-name');
+	var data = $(this).attr('data-css') || 'auto';
+	$(this).closest('.rc-cascade-css-target').css(name, data);
 };
 
 rc.ui.cascadeDropdownText = function() {
-	var item = rc.context(this);
+	var item = $(this);
 	//if the element is disabled dont cascade the value
 	if (item.is("[disabled]") && item.attr("data-cascade")=="data-method" && item.attr("data-value")=="send-payment" && rc.getCurrentMode() == "flow") {
 		return;
@@ -708,30 +708,30 @@ rc.ui.flipOverflownDropdown = function(event) {
 };
 
 rc.ui.cascadeInput = function() {
-	var name = rc.context(this).attr('data-cascade') || 'data-value';
-	var data = rc.context(this).val();
-	rc.context(this).closest('.rc-cascade-value-target').attr(name, data);
+	var name = $(this).attr('data-cascade') || 'data-value';
+	var data = $(this).val();
+	$(this).closest('.rc-cascade-value-target').attr(name, data);
 };
 
 rc.ui.cascadeInputGroup = function() {
-	var data = rc.context(this).attr('data-value')
-	var element = rc.context(this).closest('.input-group').find('.form-control');
+	var data = $(this).attr('data-value')
+	var element = $(this).closest('.input-group').find('.form-control');
 	element.val(data);
 	element.change();
 	rc.validateInput.validateField(element);
 };
 
 rc.ui.cascadeValue = function() {
-	var cascadeTarget = rc.context(this).closest('.rc-cascade-value-target');
+	var cascadeTarget = $(this).closest('.rc-cascade-value-target');
 	if (!cascadeTarget) {return;}
-	var item = rc.context(this);
+	var item = $(this);
 	//if the element is disabled don't cascade the value
 	if (item.is("[disabled]") && item.attr("data-cascade")=="data-method" && item.attr("data-value")=="send-payment" && rc.getCurrentMode() == "flow") {
 		return;
 	}
-	var name = rc.context(this).attr('data-cascade') || 'data-value';
+	var name = $(this).attr('data-cascade') || 'data-value';
 	var oldData = cascadeTarget.attr(name) || '';
-	var data = rc.context(this).attr('data-value');
+	var data = $(this).attr('data-value');
 	cascadeTarget.attr(name, data);
 	cascadeTarget.trigger('cascade-value-changed',{attribute:name,value:data,oldvalue:oldData,source:this});
 	if (item.hasClass("rc-cascade-toggle-label") == true) {
@@ -752,9 +752,9 @@ rc.ui.cascadeValue = function() {
 };
 
 rc.ui.cascadeValueToggle = function() {
-	var name = rc.context(this).attr('data-cascade') || 'data-value';
-	var data = rc.context(this).attr('data-value');
-	var target = rc.context(this).closest('.rc-cascade-value-target');
+	var name = $(this).attr('data-cascade') || 'data-value';
+	var data = $(this).attr('data-value');
+	var target = $(this).closest('.rc-cascade-value-target');
 	if (target.attr(name)) {
 		target.attr(name, '');
 	} else {
@@ -766,17 +766,17 @@ rc.ui.togglePlaceholderForm = function(item, cascadeTarget) {
 	console.log('rc.ui.togglePlaceholderForm');
 	console.log('item: ', item);
 	console.log('cascadeTarget: ', cascadeTarget);
-	if (!rc.context(item).hasClass("rc-cascade-placeholder")) {return;}
-	item = rc.context(item) || '';
-	cascadeTarget = rc.context(cascadeTarget) || '';
-	var placeholderLink = rc.context(rc.context(cascadeTarget).prev().find(".rc-placeholder-link")) || '';
+	if (!$(item).hasClass("rc-cascade-placeholder")) {return;}
+	item = $(item) || '';
+	cascadeTarget = $(cascadeTarget) || '';
+	var placeholderLink = $($(cascadeTarget).prev().find(".rc-placeholder-link")) || '';
 	placeholderLink.trigger("click");
-	var dataField = rc.context(cascadeTarget.find(".rc-field-name[placeholder]"));
+	var dataField = $(cascadeTarget.find(".rc-field-name[placeholder]"));
 	var placeholderValue = dataField.attr("placeholder") || '';
 	// fill in existing placeholder value
 	if (placeholderLink.next('div.popover:visible').length > 0) {
 		// popover is visible
-		var placeholderField = rc.context(placeholderLink.next().find(".rc-placeholder-content")) || '';
+		var placeholderField = $(placeholderLink.next().find(".rc-placeholder-content")) || '';
 		placeholderField.val(placeholderValue);
 	}
 	return true;
@@ -784,11 +784,11 @@ rc.ui.togglePlaceholderForm = function(item, cascadeTarget) {
 
 rc.ui.filterDropdown = function() {
 	// Find the menu
-	var menu = rc.context(this).closest('.rc-filter-dropdown-container').find('.dropdown-menu');
-	var data = rc.context(this).val() || '';
+	var menu = $(this).closest('.rc-filter-dropdown-container').find('.dropdown-menu');
+	var data = $(this).val() || '';
 	var pattern = new RegExp(data || '.+', 'i');
 	menu.find('.list-group-item').each(function() {
-		var item = rc.context(this);
+		var item = $(this);
 		var text = item.attr('data-filter-text');
 		if (text && text.match(pattern)) {
 			item.show();
@@ -804,29 +804,29 @@ rc.ui.filterDropdown = function() {
 };
 
 rc.ui.toggleActive = function() {
-	rc.context(this).closest('.rc-toggle-active-container').find('.rc-toggle-active').removeClass('active');
-	rc.context(this).addClass('active');
+	$(this).closest('.rc-toggle-active-container').find('.rc-toggle-active').removeClass('active');
+	$(this).addClass('active');
 };
 
 rc.ui.togglePrimary = function() {
-	var parentContainer = rc.context(this).closest('.rc-toggle-primary-container');
-	rc.context(parentContainer).find('.rc-toggle-primary').removeClass('btn-primary');
+	var parentContainer = $(this).closest('.rc-toggle-primary-container');
+	$(parentContainer).find('.rc-toggle-primary').removeClass('btn-primary');
 	//Fix for RCSBIRD-20315 - Check if this is done from Campaign Ask component only for frequency buttons OR for giving amount buttons
-	if (rc.context(parentContainer).hasClass('rc-campaign-ask-frequency-list')
-		|| rc.context(parentContainer).hasClass('rc-component-campaign-ask-item-list')) {
-		var campaignAskComponent = rc.context(this).closest('.rc-component-campaign-ask');
+	if ($(parentContainer).hasClass('rc-campaign-ask-frequency-list')
+		|| $(parentContainer).hasClass('rc-component-campaign-ask-item-list')) {
+		var campaignAskComponent = $(this).closest('.rc-component-campaign-ask');
 		// If yes then trigger change action to re-validate the component
 		campaignAskComponent.find('[data-validate-type="otherAmount"]').change();
 	}
-	if (rc.context(this).hasClass("btn-primary")) {
-		rc.context(this).removeClass("btn-primary");
+	if ($(this).hasClass("btn-primary")) {
+		$(this).removeClass("btn-primary");
 	} else {
-		rc.context(this).addClass("btn-primary");
+		$(this).addClass("btn-primary");
 	}
 };
 
 rc.ui.toggleSiblings = function() {
-	var item = rc.context(this);
+	var item = $(this);
 	//if the element is disabled dont cascade the value
 	if (item.is("[disabled]") && item.attr("data-cascade")=="data-method" && item.attr("data-value")=="send-payment" && rc.getCurrentMode() == "flow") {
 		return;
@@ -842,16 +842,16 @@ rc.ui.toggleSiblings = function() {
 };
 
 rc.ui.toggleHiddenFields = function(component) {
-	component = rc.context(component) || '';
+	component = $(component) || '';
 	component.find('[data-field-hidden="true"]').each(function(index, element) {
-		element = rc.context(element) || '';
+		element = $(element) || '';
 		/* Remove opacity from all content which are already hidden */
 		element.find(".rc-component-content.rc-opacity-md").removeClass("rc-opacity-md");
 		/* Hide individual elements */
 		element.find("[data-opacity-target='true'], .rc-field-menu").addClass("rc-opacity-md rc-requires-edit");
 		/* Add hidden icon */
 		element.find(".rc-field-text").each(function(index, fieldLabel) {
-			fieldLabel = rc.context(fieldLabel) || '';
+			fieldLabel = $(fieldLabel) || '';
 			if (fieldLabel.find(".fa-eye-slash").length > 0) {
 				return true;
 			} else {
@@ -865,14 +865,14 @@ rc.ui.toggleHiddenFields = function(component) {
 	});
 	/* Unhide these */
 	component.find('[data-field-hidden="false"]').each(function(index, element) {
-		element = rc.context(element) || '';
+		element = $(element) || '';
 		/* For events components */
 		element.removeClass('rc-requires-edit rc-opacity-md');
 		/* Unhide individual elements */
 		element.find("[data-opacity-target='true'], .rc-field-menu").removeClass("rc-opacity-md rc-requires-edit");
 		/* Remove hidden icon */
 		element.find(".rc-field-text").each(function(index, fieldLabel) {
-			fieldLabel = rc.context(fieldLabel) || '';
+			fieldLabel = $(fieldLabel) || '';
 			if (fieldLabel.find(".fa-eye-slash").length > 0) {fieldLabel.find(".fa-eye-slash").remove();}
 		});
 	});
@@ -882,13 +882,13 @@ rc.ui.toggleHiddenFields = function(component) {
 
 rc.ui.initializePlaceholder = function(component) {
 	console.log('rc.ui.initializePlaceholder: ',component);
-	component = rc.context(component) || '';
-	rc.context(component.find(".rc-placeholder-link")).each(function(index, link) {
-		link = rc.context(link) || '';
+	component = $(component) || '';
+	$(component.find(".rc-placeholder-link")).each(function(index, link) {
+		link = $(link) || '';
 		link.popover({html:true,placement:"top",title:function() {
-			return rc.context(this).parent().find('.rc-popover-head').html();
+			return $(this).parent().find('.rc-popover-head').html();
 		},content: function() {
-			return rc.context(this).parent().find('.rc-popover-content').html();
+			return $(this).parent().find('.rc-popover-content').html();
 		}});
 	});
 };
@@ -899,15 +899,15 @@ rc.ui.initializePlaceholderEvents = function(component) {
 	var cancelButtonSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-footer .rc-placeholder-discard";
 	var placeholderInputSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-content";
 	// Bind events
-	rc.context(component.find(".rc-component-content")).on("click", saveButtonSelector, function(event) {
+	$(component.find(".rc-component-content")).on("click", saveButtonSelector, function(event) {
 		event.preventDefault();
 		rc.ui.savePlaceholderValue(event);
 	});
-	rc.context(component.find(".rc-component-content")).on("click", cancelButtonSelector, function(event) {
+	$(component.find(".rc-component-content")).on("click", cancelButtonSelector, function(event) {
 		event.preventDefault();
 		rc.ui.discardPlaceholderPopover(event);
 	});
-	rc.context(component.find(".rc-component-content")).on("keypress", placeholderInputSelector, function(event) {
+	$(component.find(".rc-component-content")).on("keypress", placeholderInputSelector, function(event) {
 		if (event.which == 13) {
 			event.preventDefault();
 			rc.ui.savePlaceholderValue(event);
@@ -919,7 +919,7 @@ rc.ui.initializePlaceholderEvents = function(component) {
 rc.ui.savePlaceholderValue = function(event) {
 	console.log('rc.ui.savePlaceholderValue');
 	var eventTarget = event.target || '';
-	var popover = rc.context(rc.context(eventTarget).closest(".popover"));
+	var popover = $($(eventTarget).closest(".popover"));
 	popover = popover || '';
 	rc.ui.setPlaceholderValue(popover);
 	return true;
@@ -927,11 +927,11 @@ rc.ui.savePlaceholderValue = function(event) {
 
 rc.ui.setPlaceholderValue = function(popover) {
 	console.log('rc.ui.setPlaceholderValue');
-	var source = rc.context(popover) || '';
+	var source = $(popover) || '';
 	var placeholderField = source.find(".rc-placeholder-content");
 	var value = placeholderField.val() || '';
 	var targetInputField = source.closest(".rc-toggle-placeholder").next().find("[placeholder]") || '';
-	rc.context(targetInputField).attr("placeholder", value);
+	$(targetInputField).attr("placeholder", value);
 	source.popover("hide");
 	return true;
 }
@@ -939,14 +939,14 @@ rc.ui.setPlaceholderValue = function(popover) {
 rc.ui.discardPlaceholderPopover = function(event) {
 	console.log('rc.ui.discardPlaceholderPopover');
 	var eventTarget = event.target || '';
-	var popover = rc.context(rc.context(eventTarget).closest(".popover"));
+	var popover = $($(eventTarget).closest(".popover"));
 	popover.popover("hide");
 	return true;
 };
 
 rc.ui.toggleDisountCode = function() {
-	var item = rc.context(this);
-	var productRow = rc.context(this).closest(".product-entry-row");
+	var item = $(this);
+	var productRow = $(this).closest(".product-entry-row");
 	if (item.hasClass("rc-toggle-discount-code") == true) {
 		var dataValue = item.attr("data-value");
 		productRow.attr("discount-code-hidden", dataValue);
@@ -964,8 +964,8 @@ rc.ui.toggleDisountCode = function() {
 };
 
 rc.ui.toggleDescription = function() {
-	var item = rc.context(this);
-	var productRow = rc.context(this).closest(".product-entry-row");
+	var item = $(this);
+	var productRow = $(this).closest(".product-entry-row");
 	if (item.hasClass("rc-toggle-description") == true ) {
 		var dataValue = item.attr("data-value");
 		productRow.attr("product-description-hidden", dataValue);
@@ -982,45 +982,45 @@ rc.ui.toggleDescription = function() {
 
 rc.components.initialize = function(component, data) {
 	data = data || {};// Check data
-	component = rc.context(component);// Check component
+	component = $(component);// Check component
 	rc.components.renderDataTemplates(component);// Copy templates
 	// Copy data-field-name
 	component.find('[data-field-name]').each(function() {
-		var name = rc.context(this).attr('data-field-name').toLowerCase();
-		rc.context(this).find('.rc-field-name').attr('name', name);
+		var name = $(this).attr('data-field-name').toLowerCase();
+		$(this).find('.rc-field-name').attr('name', name);
 	});
 	// Copy data-field-text
 	component.find('[data-field-text]').each(function() {
-		rc.context(this).find('.rc-field-text').text(rc.context(this).attr('data-field-text'));
+		$(this).find('.rc-field-text').text($(this).attr('data-field-text'));
 	});
 	// Copy data-field-menu
 	component.find('[data-field-menu]').each(function() {
-		var name = rc.context(this).attr('data-field-menu');
-		var html = rc.context(name).html();
+		var name = $(this).attr('data-field-menu');
+		var html = $(name).html();
 		// Add the menu html to the menu
-		menu_group = rc.context(this).find('.rc-field-menu-group');
+		menu_group = $(this).find('.rc-field-menu-group');
 		menu_group.append('<span class="input-group-addon rc-field-menu"></span>');
 		menu_group.find('.rc-field-menu').html(html);
 		menu_group.addClass('input-group');
 	});
 	// Copy data-placeholder
 	component.find('[data-placeholder]').each(function() {
-		rc.context(this).find('.rc-field-name').attr('placeholder', rc.context(this).attr('data-placeholder'));
+		$(this).find('.rc-field-name').attr('placeholder', $(this).attr('data-placeholder'));
 	});
 	// Copy data-field-hidden
 	component.find('[data-field-hidden="true"]').each(function() {
-		rc.context(this).addClass('rc-requires-edit rc-opacity-md');
-		rc.context(this).find('.rc-field-text').prepend('<span class="fa fa-fw fa-eye-slash pull-right rc-margin-xs rc-tooltip" data-toggle="tooltip" data-title="Hidden Field"></span>');
+		$(this).addClass('rc-requires-edit rc-opacity-md');
+		$(this).find('.rc-field-text').prepend('<span class="fa fa-fw fa-eye-slash pull-right rc-margin-xs rc-tooltip" data-toggle="tooltip" data-title="Hidden Field"></span>');
 	});
 	// Copy data-required
 	component.find('[data-required="true"]').each(function() {
-		rc.context(this).find('.input-group').attr('data-required', 'true');
+		$(this).find('.input-group').attr('data-required', 'true');
 	});
 	// Copy data-local-only -- prevents input data from being submitted to remote host
 	component.find('[data-local-only="true"]').each(function() {
-		var name = rc.context(this).attr('data-field-name').toLowerCase();
-		rc.context(this).find('.rc-field-name').removeAttr('name');
-		rc.context(this).find('.rc-field-name').attr('data-name', name);
+		var name = $(this).attr('data-field-name').toLowerCase();
+		$(this).find('.rc-field-name').removeAttr('name');
+		$(this).find('.rc-field-name').attr('data-name', name);
 	});
 	// Bind common
 	component.find('.rc-cascade-selected').on('click', rc.ui.cascadeSelected);
@@ -1039,40 +1039,40 @@ rc.components.initialize = function(component, data) {
 	component.find('.rc-field-name').on('change', rc.ui.setDefaultValue);
 	component.find('.rc-field-name').on('keyup', rc.ui.setDefaultValue);
 	if (rc.isPaymentTransactional) {
-		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="corduro"]').attr('disabled', 'disabled');
+		$('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="corduro"]').attr('disabled', 'disabled');
 	}
 	if (rc.isSageConfigured) {
-		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="sage"]').removeAttr('disabled');
+		$('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="sage"]').removeAttr('disabled');
 	}
 	if (rc.isHeartlandConfigured) {
-		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="heartland"]').removeAttr('disabled');
+		$('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="heartland"]').removeAttr('disabled');
 	}
 	if (rc.isIATSConfigured) {
-		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="iATS"]').removeAttr('disabled');
+		$('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="iATS"]').removeAttr('disabled');
 	}
 	if (rc.isPayPalConfigured) {
-		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="PayPal"]').removeAttr('disabled');
+		$('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="PayPal"]').removeAttr('disabled');
 	}
 	if (rc.isLitleConfigured) {
-		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="Litle"]').removeAttr('disabled');
+		$('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="Litle"]').removeAttr('disabled');
 		if (rc.isLitleConfiguredForAdvancedFraudDetection) {
-			rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('[data-name="Litle"] [data-cascade="data-advanced-fraud-detection"]').removeAttr('disabled');
+			$('div[data-template="#rc-component-workflow-action--send-payment"]').find('[data-name="Litle"] [data-cascade="data-advanced-fraud-detection"]').removeAttr('disabled');
 		}
 	}
 	if (rc.isAuthDotNetConfigured) {
-		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="Authorize.net"]').removeAttr('disabled');
+		$('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="Authorize.net"]').removeAttr('disabled');
 	}
 	if (rc.isCybersourceConfigured) {
-		rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="Cybersource"]').removeAttr('disabled');
+		$('div[data-template="#rc-component-workflow-action--send-payment"]').find('.rc-payment[data-value="Cybersource"]').removeAttr('disabled');
 	}
 	// Content editable
-	var editable = 'edit' == rc.context('#rc-page-container').attr('data-mode');
+	var editable = 'edit' == $('#rc-page-container').attr('data-mode');
 	component.find('[contenteditable]').attr('contenteditable', editable);
 	component.attr('id', data.guid);// Copy GUID
 	// Required input group
 	component.find('.input-group[data-required] .rc-marker').off("click").click(function() {
 		if (rc.getCurrentMode() == 'edit') {
-			var item = rc.context(this).closest('.input-group');
+			var item = $(this).closest('.input-group');
 			var required = item.attr('data-required') != 'true';
 			item.attr('data-required', required);
 		}
@@ -1086,12 +1086,12 @@ rc.components.initialize = function(component, data) {
 rc.components.renderDataTemplates = function(component) {
 	// Copy templates
 	component.find('[data-template]').each(function() {
-		var name = rc.context(this).attr('data-template');
-		var html = rc.context(name).html();
+		var name = $(this).attr('data-template');
+		var html = $(name).html();
 		//recursively replace templates (if any)
-		var templateElem = rc.context(html);
+		var templateElem = $(html);
 		templateElem = rc.components.renderDataTemplates(templateElem);
-		rc.context(this).prepend(templateElem);
+		$(this).prepend(templateElem);
 	});
 	return component;
 };
@@ -1107,11 +1107,11 @@ rc.components.pickListValues = function() {
 			for (var fieldName in responsePickValsArr) {
 				if (hasOwnProperty.call(responsePickValsArr, fieldName)) {
 					var optionsArray = responsePickValsArr[fieldName] || [] ;
-					var picklist = rc.context("select[data-field-name="+fieldName+"]");
+					var picklist = $("select[data-field-name="+fieldName+"]");
 					if (!picklist) {continue;}
 					picklist.html('');
-					rc.context(optionsArray).each(function() {
-						picklist.append(rc.context('<option>', {value:this}).text(this));
+					$(optionsArray).each(function() {
+						picklist.append($('<option>', {value:this}).text(this));
 					});
 				}
 			}
@@ -1122,8 +1122,8 @@ rc.components.pickListValues = function() {
 			} else {
 				var optionsArray = responsePickValsArr[fieldName] || [];
 				pickListElem.html('');
-				rc.context(optionsArray).each(function() {
-					pickListElem.append(rc.context('<option>', { value : this }).text(this));
+				$(optionsArray).each(function() {
+					pickListElem.append($('<option>', { value : this }).text(this));
 				});
 			}
 		},
@@ -1131,7 +1131,7 @@ rc.components.pickListValues = function() {
 			return responsePickValsArr;
 		}
 	}
-} ();// todo: what's this nubin?
+} ();
 
 rc.components.remoting.send = function(deferred, send, done, fail) {
 	send.__campaign = send.__campaign || rc.campaignId;
@@ -1160,14 +1160,14 @@ rc.components.remoting.send = function(deferred, send, done, fail) {
 };
 
 rc.components.insert = function(template, container) {
-	var component = rc.context(template).clone();
+	var component = $(template).clone();
 	component.removeAttr('id');
 	component.removeClass('rc-template');
 	component.show();
 	// Initialize template and elements
 	rc.components.initialize(component);
 	// Add to container
-	rc.context(container).append(component);
+	$(container).append(component);
 	return component;
 };
 
@@ -1175,11 +1175,11 @@ rc.components.importContentCSS = function(component, styles) {
 	console.log('rc.components.importContentCSS', component, styles);
 	styles = styles || {};
 	// Import
-	var component = rc.context(component);
+	var component = $(component);
 	// Remove any existing css attributes from the component
 	// Delete any form attributes starting with css-
 	if (component && component.length>0 && component.get(0)) {
-		rc.context(component.get(0).attributes).each(function(index, attr) {
+		$(component.get(0).attributes).each(function(index, attr) {
 			if (attr.name.match('css-')) {
 				component.removeAttr(attr.name);
 			}
@@ -1208,7 +1208,7 @@ rc.components.insertWorkflow = function(container, container_data) {
 		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
 	});
 	// Process data
-	rc.context(container_data.actions).each(function(at, data) {
+	$(container_data.actions).each(function(at, data) {
 		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
 	});
 
@@ -1362,7 +1362,7 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 	if (rc.isLitleConfigured) {
 		item_content.find('.rc-payment[data-value="Litle"]').removeAttr('disabled');
 		if (rc.isLitleConfiguredForAdvancedFraudDetection) {
-			rc.context('div[data-template="#rc-component-workflow-action--send-payment"]').find('[data-name="Litle"] [data-cascade="data-advanced-fraud-detection"]').removeAttr('disabled');
+			$('div[data-template="#rc-component-workflow-action--send-payment"]').find('[data-name="Litle"] [data-cascade="data-advanced-fraud-detection"]').removeAttr('disabled');
 		}
 	}
 	if (rc.isAuthDotNetConfigured) {
@@ -1376,13 +1376,13 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 rc.components.validateWorkflowAction = function(event,details) {
 	if (details.attribute=="data-method") {
 		if (details.value=='send-payment') {
-			rc.context('#rc-workflows-list .dropdown-menu a[data-value="send-payment"]').not(rc.context(details.source)).attr("disabled","disabled");
+			$('#rc-workflows-list .dropdown-menu a[data-value="send-payment"]').not($(details.source)).attr("disabled","disabled");
 		} else if (details.oldvalue=='send-payment') {
-			rc.context('#rc-workflows-list .dropdown-menu a[data-value="send-payment"]').removeAttr("disabled");
+			$('#rc-workflows-list .dropdown-menu a[data-value="send-payment"]').removeAttr("disabled");
 		}
 	}
 	if (details.attribute=="data-value") {
-		if (rc.context(this).attr('data-method') == 'send-payment') {
+		if ($(this).attr('data-method') == 'send-payment') {
 			rc.components.validateCampaignAskSection();
 		}
 	}
@@ -1408,14 +1408,14 @@ rc.components.insertColumnList = function(container, container_data) {
 	// Now, with everything in place, loop over the column data and insert components
 	rc.components.upsertColumnListComponents(item_content, container_data.columns);
 	// Hide the empty alert message
-	rc.context('#rc-container-list-messages').hide();
+	$('#rc-container-list-messages').hide();
 	return item;
 };
 
 rc.components.deleteColumnListColumns = function(container, max_position) {
-	rc.context(container).find('.rc-container-column').each(function() {
-		var position = parseInt(rc.context(this).attr('data-position') || '999');
-		if (max_position < position) {rc.context(this).remove();};
+	$(container).find('.rc-container-column').each(function() {
+		var position = parseInt($(this).attr('data-position') || '999');
+		if (max_position < position) {$(this).remove();};
 	});
 }
 
@@ -1424,7 +1424,7 @@ rc.components.upsertColumnListColumns = function(container, max_position, column
 	// Check column data
 	column_data = column_data || [];
 	// Add new items
-	rc.context(new Array(max_position)).each(function(position) {
+	$(new Array(max_position)).each(function(position) {
 		// Find the old item, if it exists
 		var item_selector = '.rc-container-column[data-position="' + position + '"]';
 		var item = container.find(item_selector);
@@ -1456,7 +1456,7 @@ rc.components.upsertColumnListColumns = function(container, max_position, column
 };
 
 rc.components.upsertColumnListComponents = function(container, column_data) {
-	rc.context(column_data).each(function(position, data) {
+	$(column_data).each(function(position, data) {
 		console.log('updating column components', data);
 		//filter component Data
 		data.components = rc.filterComponentData(data.components);
@@ -1466,7 +1466,7 @@ rc.components.upsertColumnListComponents = function(container, column_data) {
 		var item = container.find(item_selector);
 		var item_content = item.find('.rc-container-column-content');
 		// Update contents
-		rc.context(data.components).each(function(index, component_data) {
+		$(data.components).each(function(index, component_data) {
 			rc.components.upsertComponent(item_content, component_data);
 		});
 		rc.components.pickListValues.fillPickListValues();
@@ -1522,13 +1522,13 @@ rc.components.upsertComponent = function(container, component_data) {
 	rc.components.updateContentCSS(item.component);
 	// Add to "copy-param" data
 	if (data.type == 'merge-field') {
-		rc.context('#rc-workflows-list').find('[data-template="#rc-component-workflow-action--copy-param"]').each(function() {
-			var template = rc.context('<li><a class="rc-cursor-pointer rc-cascade-dropdown-text rc-cascade-value" data-value=""></a></li>');
+		$('#rc-workflows-list').find('[data-template="#rc-component-workflow-action--copy-param"]').each(function() {
+			var template = $('<li><a class="rc-cursor-pointer rc-cascade-dropdown-text rc-cascade-value" data-value=""></a></li>');
 			template.find('.rc-cascade-value').on('click', rc.ui.cascadeValue);
 			template.find('.rc-cascade-value').attr('data-value', data.data.name);
 			template.find('.rc-cascade-value').text(data.data.text);
 			template.find('.rc-cascade-dropdown-text').on('click', rc.ui.cascadeDropdownText);
-			rc.context(this).find('[data-dropdown-menu="target-fields"]').append(template);
+			$(this).find('[data-dropdown-menu="target-fields"]').append(template);
 			console.log('adding to copy-param list');
 		});
 	}
@@ -1541,12 +1541,12 @@ rc.components.upsertComponent = function(container, component_data) {
 rc.components.updateContentCSS = function(component) {
 	console.log('rc.components.updateContentCSS', component);
 	// Update from css data
-	var component = rc.context(component);
+	var component = $(component);
 	var component_content = component.find('.rc-content-css').filter(':first');
 	//clear the style attribute
 	component_content.attr("style","");
 	if (component && component.get(0)) {
-		rc.context(component.get(0).attributes).each(function(index, attr) {
+		$(component.get(0).attributes).each(function(index, attr) {
 			if (attr.name.match('css-') && attr.name != 'css-background-image') {
 				var name = attr.name.replace('css-', '');
 				attr.value = attr.value || '';
@@ -1620,7 +1620,7 @@ rc.components.Address = function(container, data) {
 	for (var name in this.data) {// Update
 		if (!name.match('req-')) {continue;}
 		var key = name.replace('req-','');
-		rc.context(this.component).find("[data-field-name='"+key+"'] [data-required]").filter(":first").attr("data-required",this.data[name]);
+		$(this.component).find("[data-field-name='"+key+"'] [data-required]").filter(":first").attr("data-required",this.data[name]);
 	}
 	this.component.find('[name="'+rc.ns+'address_state__c"]').change(rc.components.Address.populateCountryBasedOnState);
 };
@@ -1663,33 +1663,33 @@ rc.components.CampaignAsk.frequencyAmountMinThreshold = { };
 
 rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 	//ask amounts
-	var html = rc.context('#rc-component-campaign-ask-item').html();
-	var list = rc.context('.rc-component-campaign-ask-item-list');
+	var html = $('#rc-component-campaign-ask-item').html();
+	var list = $('.rc-component-campaign-ask-item-list');
 	var campaignAskContainer = list.closest(".rc-component-campaign-ask > .rc-component-campaign-ask-content");
 	//frequency
 	var freqArray = [];
-	var freqHtml = rc.context('#rc-component-campaign-ask-freq-item').html();
+	var freqHtml = $('#rc-component-campaign-ask-freq-item').html();
 	var freqList = campaignAskContainer.find(".rc-toggle-primary-container.rc-campaign-ask-frequency-list");
 	//other text field
 	var askOtherArray = [];
-	var otherHtml = rc.context('#rc-component-campaign-ask-other-item').html();
+	var otherHtml = $('#rc-component-campaign-ask-other-item').html();
 	var otherContainer = campaignAskContainer.find(".rc-component-campaign-ask-other");
 	list.empty();
 	// Define show/hide functions
 	var showOther = function() {
-		rc.context('.rc-component-campaign-ask-other').show();
+		$('.rc-component-campaign-ask-other').show();
 	};
 	var hideOther = function() {
-		rc.context('.rc-component-campaign-ask-other').hide();
-		rc.context('.rc-component-campaign-ask-other input').val('');
-		rc.context('.rc-component-campaign-ask-other .rc-error-label').remove();
+		$('.rc-component-campaign-ask-other').hide();
+		$('.rc-component-campaign-ask-other input').val('');
+		$('.rc-component-campaign-ask-other .rc-error-label').remove();
 	};
 	// Load results
-	rc.context(recv).each(function() {
+	$(recv).each(function() {
 		var content = rc.cleanKeysToLower(this);
 		var givingFrequency = content[rc.ns+'giving_frequency__c'] || '';
 		var givingType = content[rc.ns+'giving_type__c'] || '';
-		var freq = rc.context(freqHtml);
+		var freq = $(freqHtml);
 		freq.removeAttr("id");
 		freq.attr("data-show",".rc-amount[data-giving-frequency='" + givingFrequency + "']");
 		freq.attr("data-hide",".rc-amount[data-giving-frequency]");
@@ -1700,7 +1700,7 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 		if (!freqArray.length) { freq.removeClass("rc-margin-xs"); }
 		freqArray.push(freq);
 		if (content[rc.ns+'ask_1_amount__c']) {
-			var item = rc.context(html);
+			var item = $(html);
 			item.removeAttr('id');
 			item.attr('data-giving-frequency', givingFrequency);
 			item.attr('data-giving-type', givingType);
@@ -1711,7 +1711,7 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 			list.append(item);
 		}
 		if (content[rc.ns+'ask_2_amount__c']) {
-			var item = rc.context(html);
+			var item = $(html);
 			item.removeAttr('id');
 			item.attr('data-giving-frequency', givingFrequency);
 			item.attr('data-giving-type', givingType);
@@ -1722,7 +1722,7 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 			list.append(item);
 		}
 		if (content[rc.ns+'ask_3_amount__c']) {
-			var item = rc.context(html);
+			var item = $(html);
 			item.removeAttr('id');
 			item.attr('data-giving-frequency', givingFrequency);
 			item.attr('data-giving-type', givingType);
@@ -1733,7 +1733,7 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 			list.append(item);
 		}
 		if (content[rc.ns+'ask_4_amount__c']) {
-			var item = rc.context(html);
+			var item = $(html);
 			item.removeAttr('id');
 			item.attr('data-giving-frequency', givingFrequency);
 			item.attr('data-giving-type', givingType);
@@ -1744,7 +1744,7 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 			list.append(item);
 		}
 		if (content[rc.ns+'ask_5_amount__c']) {
-			var item = rc.context(html);
+			var item = $(html);
 			item.removeAttr('id');
 			item.attr('data-giving-frequency', givingFrequency);
 			item.attr('data-giving-type', givingType);
@@ -1755,7 +1755,7 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 			list.append(item);
 		}
 		if (content[rc.ns+'ask_other__c']) {
-			var item = rc.context(html);
+			var item = $(html);
 			item.removeAttr('id');
 			item.attr('data-giving-frequency', givingFrequency);
 			item.attr('data-giving-type', givingType);
@@ -1763,7 +1763,7 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 			item.addClass('rc-editSelection');
 			item.on('click', showOther);
 			list.append(item);
-			var otherElem = rc.context(otherHtml);
+			var otherElem = $(otherHtml);
 			otherElem.attr('data-giving-frequency', givingFrequency);
 			otherElem.attr('data-giving-type', givingType);
 			askOtherArray.push(otherElem);
@@ -1779,7 +1779,7 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 	if (recv.length == 0) {list.append('<div class="alert alert-warning">No ask values configured!</div>');}
 	rc.components.initialize(campaignAskContainer);
 	// Set the first one active
-	rc.context('.rc-campaign-ask-frequency-list .btn').filter(':first').click();
+	$('.rc-campaign-ask-frequency-list .btn').filter(':first').click();
 	// Validate CampaignAsk section against payment Processor
 	rc.components.validateCampaignAskSection();
 };
@@ -1836,7 +1836,7 @@ rc.components.CampaignAsk.getAskValue = function() {
 rc.components.CampaignAsk.getComponentAskValue = function() {
 	var result = {};
 	result['finalAmount'] = 0;
-	var frequencyList = rc.context('#rc-container-list .rc-campaign-ask-frequency-list');
+	var frequencyList = $('#rc-container-list .rc-campaign-ask-frequency-list');
 	if (!frequencyList || frequencyList.length==0) {
 		//Check merge fields if campaign ask is not present. The priority will always be remained for Campaign ask even if giving fields are exist.
 		result = rc.components.CampaignAsk.getAskValueFromMergeFields(result);
@@ -1845,7 +1845,7 @@ rc.components.CampaignAsk.getComponentAskValue = function() {
 	if (frequencyList) {
 		var frequency = frequencyList.find('.btn-primary').attr('data-value');
 		result['frequency'] = frequency;
-		var amountList = rc.context('.rc-component-campaign-ask-item-list');
+		var amountList = $('.rc-component-campaign-ask-item-list');
 		var finalAmount = 0;
 		if (amountList) {
 			var amount = amountList.find('[data-giving-frequency="'+frequency+'"]').parent().find('[data-giving-frequency="'+frequency+'"].btn-primary').attr('data-value');
@@ -1854,7 +1854,7 @@ rc.components.CampaignAsk.getComponentAskValue = function() {
 			} else {
 				var amountOtherSelected = amountList.find('[data-giving-frequency="'+frequency+'"]').parent().find('[data-giving-frequency="'+frequency+'"].btn-primary');
 				if (amountOtherSelected.length) {
-					var otherAmount = rc.context('.rc-component-campaign-ask-other').find('[data-giving-frequency="'+frequency+'"].input-group').find('.form-control').val();
+					var otherAmount = $('.rc-component-campaign-ask-other').find('[data-giving-frequency="'+frequency+'"].input-group').find('.form-control').val();
 					if (otherAmount) {finalAmount = otherAmount;}
 				}
 			}
@@ -1883,10 +1883,10 @@ rc.components.CampaignAsk.validateMergeFieldsAskValue = function() {
 // Validate Campaign Ask amount entered
 rc.components.CampaignAsk.validateAskValue = function() {
 	var askValue = rc.components.CampaignAsk.getAskValue();
-	var componentElem = rc.context("#rc-container-list .rc-component-campaign-ask");
-	var messageTypeElement = rc.context("#rc-container-list .rc-component-campaign-ask .message-header");
+	var componentElem = $("#rc-container-list .rc-component-campaign-ask");
+	var messageTypeElement = $("#rc-container-list .rc-component-campaign-ask .message-header");
 	var messageText = "Donation amount is not selected. Please select and resubmit.";
-	var isRequired = rc.context("#rc-container-list .rc-component-campaign-ask").find('.input-group').attr('data-required');
+	var isRequired = $("#rc-container-list .rc-component-campaign-ask").find('.input-group').attr('data-required');
 	//if no ask amount field added dont throw error
 	if (componentElem.length == 0) {return true;}
 	if (isRequired == "true" && (askValue == null || askValue.finalAmount==0)) {
@@ -1897,7 +1897,7 @@ rc.components.CampaignAsk.validateAskValue = function() {
 	} else {
 		messageTypeElement.text('');
 		componentElem.find(".ask-validation-error").hide();// hide error messages
-		var exist = rc.context(componentElem).find(".component-alert .message-text:contains("+messageText+")");
+		var exist = $(componentElem).find(".component-alert .message-text:contains("+messageText+")");
 		if (exist.length) {exist.closest(".component-alert ").remove();}
 	}
 	return true;
@@ -1907,10 +1907,10 @@ rc.components.CampaignAsk.populateData = function(data) {
 	var frequency = data[rc.ns+'giving_giving_frequency__c'];
 	var amount = data[rc.ns+'giving_giving_amount__c'];
 	amount = parseFloat(amount,10);
-	var frequencyList = rc.context('#rc-container-list .rc-campaign-ask-frequency-list');
+	var frequencyList = $('#rc-container-list .rc-campaign-ask-frequency-list');
 	if (!frequencyList.length || !frequency) {return;}
 	frequencyList.find("[data-value='"+frequency+"']").click();
-	var amountList = rc.context('.rc-component-campaign-ask-item-list');
+	var amountList = $('.rc-component-campaign-ask-item-list');
 	amountList.find('[data-giving-frequency="'+frequency+'"][data-value="'+amount+'"]').click();
 }
 
@@ -1933,14 +1933,14 @@ rc.components.Attribute.send = function(deferred, send) {
 	send = send || {};
 	send.__action = rc.actions.selectCampaignMemberAttributeList;
 	// Done and fail
-	rc.components.remoting.send(deferred, send, rc.context.proxy(this.done,this),this.fail);
+	rc.components.remoting.send(deferred, send, $.proxy(this.done,this),this.fail);
 	// Done
 	return deferred.promise();
 };
 
 rc.components.Attribute.done = function(deferred, send, recv, meta) {
 	var data = this.data;
-	var defaultOptionElement = rc.context("<option/>", {
+	var defaultOptionElement = $("<option/>", {
 		value:"",
 		text:"Select Attribute",
 		selected:true
@@ -1949,14 +1949,14 @@ rc.components.Attribute.done = function(deferred, send, recv, meta) {
 	var optionList = [defaultOptionElement];
 	for (var index=0;index<recv.campaignMemberAttributeList.length;++index) {
 		attribute = recv.campaignMemberAttributeList[index];
-		var optionElement = rc.context("<option/>", {
+		var optionElement = $("<option/>", {
 			value:attribute.Id,
 			text:attribute.type
 		});
-		rc.context.data(optionElement[0],'data',attribute);
+		$.data(optionElement[0],'data',attribute);
 		optionList.push(optionElement);
 	}
-	this.component.find(".attribute-select").html("").append(optionList).val("").change(rc.context.proxy(this.render,this));
+	this.component.find(".attribute-select").html("").append(optionList).val("").change($.proxy(this.render,this));
 	this.component.find(".attribute-select").val(data.attribute_id);
 	this.component.find(".attribute-select").trigger("change");
 };
@@ -1968,7 +1968,7 @@ rc.components.Attribute.render = function(event) {
 	this.component.find(".rc-value-container").html("");
 	var selectedOption = this.component.find(".attribute-select").find(":selected");
 	if (!selectedOption || selectedOption.length==0 || selectedOption.attr("value")=='') {return true;}
-	var attributeData  = rc.context.data(selectedOption[0],'data');
+	var attributeData  = $.data(selectedOption[0],'data');
 	if (!attributeData) {return true;}
 	//if slot saved and used remove it from empty slot list
 	if (this.data.productSlot) {rc.occupyProductSlot(this.data.productSlot);}
@@ -1985,31 +1985,31 @@ rc.components.Attribute.render = function(event) {
 	//depending on type render the attribute and populate the value
 	if (attributeData.attributeDataType &&  attributeData.attributeDataType.toLowerCase() == 'picklist') {
 		//get template
-		var picklistTemplateHTML = rc.context('#rc-component-merge-field-picklist .rc-value-container').html();
+		var picklistTemplateHTML = $('#rc-component-merge-field-picklist .rc-value-container').html();
 		this.component.find(".rc-value-container").html(picklistTemplateHTML);
 		var selectList = this.component.find('.rc-field-name');
 		var optionList = [];
 		for (var index=0;index<attributeData.options.length;++index) {
-			var optionElement = rc.context("<option />", {
-				value:rc.context.trim(rc.html_decode(attributeData.options[index])),
-				text:rc.context.trim(rc.html_decode(attributeData.options[index]))
+			var optionElement = $("<option />", {
+				value:$.trim(rc.html_decode(attributeData.options[index])),
+				text:$.trim(rc.html_decode(attributeData.options[index]))
 			});
 			optionList.push(optionElement);
 		}
-		var defaultOptionElement = rc.context("<option/>", {value:"",text:"Select Value"});
+		var defaultOptionElement = $("<option/>", {value:"",text:"Select Value"});
 		selectList.append(optionList).prepend(defaultOptionElement);
 	} else if (attributeData.attributeDataType && attributeData.attributeDataType.toLowerCase() == 'checkbox') {
-		var checkboxTemplateHTML = rc.context('#rc-component-merge-field-checkbox .rc-value-container').html();
+		var checkboxTemplateHTML = $('#rc-component-merge-field-checkbox .rc-value-container').html();
 		this.component.find(".rc-value-container").html(checkboxTemplateHTML);
 	} else if (attributeData.attributeDataType && attributeData.attributeDataType.toLowerCase() == 'date') {
 		//keep the default which is a text field   
-		var checkboxTemplateHTML = rc.context('#rc-component-cm-attribute .rc-value-container').html();
+		var checkboxTemplateHTML = $('#rc-component-cm-attribute .rc-value-container').html();
 		this.component.find(".rc-value-container").html(checkboxTemplateHTML);         
 		this.component.find("input.form-control").datepicker({orientation:"bottom"});
 		//initialize datepicker
 	} else {
 		//keep the default which is a text field   
-		var checkboxTemplateHTML = rc.context('#rc-component-cm-attribute .rc-value-container').html();
+		var checkboxTemplateHTML = $('#rc-component-cm-attribute .rc-value-container').html();
 		this.component.find(".rc-value-container").html(checkboxTemplateHTML);         
 	}
 	this.component.find(".form-control").attr("name",productSlot);
@@ -2019,9 +2019,9 @@ rc.components.Attribute.render = function(event) {
 };
 
 rc.components.Attribute.populateUpsertData = function(send) {
-	var attributeInputList = rc.context(".rc-component-cm-attribute .rc-value-container .rc-field-name");
-	rc.context(attributeInputList).each(function(index,attributeInput) {
-		attributeInput = rc.context(attributeInput);
+	var attributeInputList = $(".rc-component-cm-attribute .rc-value-container .rc-field-name");
+	$(attributeInputList).each(function(index,attributeInput) {
+		attributeInput = $(attributeInput);
 		var productSlot = attributeInput.attr("name");
 		if (!productSlot) {return true;}
 		var fieldNamePrefix = rc.prodMap[productSlot];
@@ -2057,7 +2057,7 @@ rc.components.Attribute.renderUpsertData = function(send) {
 			}
 			value = rc.html_decode(value);
 			//find product row
-			var productElem = rc.context(".rc-component-cm-attribute-content .attribute-select").find("option[value='"+productId+"']:selected");
+			var productElem = $(".rc-component-cm-attribute-content .attribute-select").find("option[value='"+productId+"']:selected");
 			if (!productElem || productElem.length==0) {continue;}
 			var component = productElem.closest(".rc-component-cm-attribute");
 			if (component.find(".rc-field-name").attr("type") == "checkbox") {
@@ -2094,7 +2094,7 @@ rc.components.Cart = function(container, data) {
 	this.calculateProductDiscountCode = rc.components.Cart.calculateProductDiscountCode;
 	this.initialize = rc.components.Cart.initialize;
 	this.idProductMap = {};
-	rc.context(this.component).on('recalculate-sum',rc.context.proxy(this.recalculateTotal,this));
+	$(this.component).on('recalculate-sum',$.proxy(this.recalculateTotal,this));
 	this.component.find('.input-group').attr('data-required', data.required);
 };
 
@@ -2114,12 +2114,12 @@ rc.components.Cart.getPaymentDetails = function() {
 };
 
 rc.components.Cart.getComponentPaymentDetails = function() {
-	if (rc.context("#rc-container-list .rc-component-cart .products-total-amount").length==0) {return null;}
+	if ($("#rc-container-list .rc-component-cart .products-total-amount").length==0) {return null;}
 	var result = {};
 	result.finalAmount = 0;
 	var total = 0.0;
-	rc.context("#rc-container-list .rc-component-cart .products-total-amount").each(function(index,amountElem) {
-		var value = parseFloat(rc.context(amountElem).attr("total-sum"));
+	$("#rc-container-list .rc-component-cart .products-total-amount").each(function(index,amountElem) {
+		var value = parseFloat($(amountElem).attr("total-sum"));
 		if (value) {total+=value;}
 	});
 	result.finalAmount = total;
@@ -2130,25 +2130,25 @@ rc.components.Cart.getComponentPaymentDetails = function() {
 rc.components.Cart.validate = function() {
 	var flag = false;
 	var messageText = "Product quantity is not selected. Please select and resubmit.";
-	var messageTypeElement = rc.context("#rc-container-list .rc-component-cart .rc-component-cart-content .cart-validation-error .message-header");
-	rc.context("#rc-container-list .rc-component-cart").find('.input-group[data-required="true"]').closest('.rc-component-cart').each(function(i, cartComponent) {
+	var messageTypeElement = $("#rc-container-list .rc-component-cart .rc-component-cart-content .cart-validation-error .message-header");
+	$("#rc-container-list .rc-component-cart").find('.input-group[data-required="true"]').closest('.rc-component-cart').each(function(i, cartComponent) {
 		var totalQuantity = 0;
-		rc.context(cartComponent).find('.product-quantity').each(function(index, quantity) {
-			var value = parseInt(rc.context(quantity).attr("aria-valuenow"));
+		$(cartComponent).find('.product-quantity').each(function(index, quantity) {
+			var value = parseInt($(quantity).attr("aria-valuenow"));
 			if (value) {totalQuantity += value;}
 		});
 		if (parseInt(totalQuantity,10) == 0) {
 			flag = true;
-			rc.context('#rc-container-list .rc-component-cart .product-quantity').closest('.form-group').toggleClass('has-error', present == false);
+			$('#rc-container-list .rc-component-cart .product-quantity').closest('.form-group').toggleClass('has-error', present == false);
 			var present = flag == true ? false : true;
-			var componentElem = rc.context(cartComponent);
+			var componentElem = $(cartComponent);
 			messageTypeElement.text(rc.ui.MessageHeaders[rc.ui.ERROR] + ' ');
 			componentElem.find(".cart-validation-error").show();
 		} else {
-			rc.context('#rc-container-list .rc-component-cart .product-quantity').closest('.form-group').toggleClass('has-error', false);
-			var componentElem = rc.context(cartComponent);
+			$('#rc-container-list .rc-component-cart .product-quantity').closest('.form-group').toggleClass('has-error', false);
+			var componentElem = $(cartComponent);
 			messageTypeElement.text('');//hide error messages
-			var exist=rc.context(componentElem).find(".component-alert .message-text:contains("+messageText+")");
+			var exist=$(componentElem).find(".component-alert .message-text:contains("+messageText+")");
 			if (exist.length) {exist.closest(".component-alert ").remove();}
 		}
 	});
@@ -2164,12 +2164,12 @@ rc.components.Cart.recalculateTotal = function(event) {
 	var totalSum = 0.0;
 	var component = $(this.component);
 	this.component.find(".product-entry-row").each(function(index,row) {
-		var product = rc.context.data(row,'product');
+		var product = $.data(row,'product');
 		var price = product.purchasePrice;
 		var quantityText = $(row).find('input.product-quantity').val();
 		var quantity = !parseInt(quantityText,10) ? 0 : parseInt(quantityText,10);
-		var discountCode = rc.context(row).find(".product-discount-code");
-		var discountedAmount = rc.context(discountCode).data('discountedAmount');
+		var discountCode = $(row).find(".product-discount-code");
+		var discountedAmount = $(discountCode).data('discountedAmount');
 		if (discountedAmount) {
 			totalSum += (parseFloat(discountedAmount, 10) * quantity);
 		} else {
@@ -2183,7 +2183,7 @@ rc.components.Cart.send = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectProductList;
-	rc.components.remoting.send(deferred, send, rc.context.proxy(this.done,this),this.fail);
+	rc.components.remoting.send(deferred, send, $.proxy(this.done,this),this.fail);
 	return deferred.promise();
 };
 
@@ -2203,7 +2203,7 @@ rc.components.Cart.done = function(deferred, send, recv, meta) {
 	var that = this;
 	this.component.find(".add-product").click(function(event) {
 		var selectedOption = $(this).closest(".rc-component-cart").find(".cart-select option:selected")[0];
-		var product = rc.context.data(selectedOption,'product');
+		var product = $.data(selectedOption,'product');
 		product.quantity = 0;
 		that.appendProductRow(product);
 		that.initialize();
@@ -2243,26 +2243,26 @@ rc.components.Cart.done = function(deferred, send, recv, meta) {
 
 rc.components.Cart.initialize = function() {
 	this.component.find(".panel-body .product-entry-row").each(function(index,productRow) {
-		var createGiving = rc.context(productRow).attr("create-giving-product");
-		rc.context(productRow).find('[data-cascade="data-create-giving-product"][data-value="'+createGiving+'"]').click();
-		var isProductDescriptionHidden = rc.context(productRow).attr("product-description-hidden") == "true" ? "true" : "false";
-		rc.context(productRow).find('.rc-toggle-description[data-value='+isProductDescriptionHidden+']').attr("disabled", "disabled");
-		rc.context(productRow).find('.rc-toggle-description[data-value='+isProductDescriptionHidden+']').addClass("rc-opacity-md");
+		var createGiving = $(productRow).attr("create-giving-product");
+		$(productRow).find('[data-cascade="data-create-giving-product"][data-value="'+createGiving+'"]').click();
+		var isProductDescriptionHidden = $(productRow).attr("product-description-hidden") == "true" ? "true" : "false";
+		$(productRow).find('.rc-toggle-description[data-value='+isProductDescriptionHidden+']').attr("disabled", "disabled");
+		$(productRow).find('.rc-toggle-description[data-value='+isProductDescriptionHidden+']').addClass("rc-opacity-md");
 		if (isProductDescriptionHidden == "true") {
-			rc.context(productRow).find(".product-description").hide();
+			$(productRow).find(".product-description").hide();
 		} else {
-			rc.context(productRow).find(".product-description").show();
+			$(productRow).find(".product-description").show();
 		}
 		//RCSBIRD-15502
-		var isDiscountCodeHidden = rc.context(productRow).attr("discount-code-hidden") == "true" ? "true" : "false";
-		rc.context(productRow).find('.rc-toggle-discount-code[data-value='+isDiscountCodeHidden+']').attr("disabled", "disabled");
-		rc.context(productRow).find('.rc-toggle-discount-code[data-value='+isDiscountCodeHidden+']').addClass("rc-opacity-md");
+		var isDiscountCodeHidden = $(productRow).attr("discount-code-hidden") == "true" ? "true" : "false";
+		$(productRow).find('.rc-toggle-discount-code[data-value='+isDiscountCodeHidden+']').attr("disabled", "disabled");
+		$(productRow).find('.rc-toggle-discount-code[data-value='+isDiscountCodeHidden+']').addClass("rc-opacity-md");
 		if (isDiscountCodeHidden == "true") {
-			rc.context(productRow).find(".discount-code").hide();
-			rc.context(productRow).find(".product-discount-code").hide();
+			$(productRow).find(".discount-code").hide();
+			$(productRow).find(".product-discount-code").hide();
 		} else {
-			rc.context(productRow).find(".discount-code").show();
-			rc.context(productRow).find(".product-discount-code").show();
+			$(productRow).find(".discount-code").show();
+			$(productRow).find(".product-discount-code").show();
 		}
 	});
 };
@@ -2270,7 +2270,7 @@ rc.components.Cart.initialize = function() {
 rc.components.Cart.refreshEmptyCartMessage = function() {
 	var rowCount = this.component.find(".panel-body .row").length;
 	if (rowCount==0) {
-		var msgElem = rc.context(rc.context("#rc-component-cart-empty-cart-msg").html());
+		var msgElem = $($("#rc-component-cart-empty-cart-msg").html());
 		this.component.find(".panel-body").append(msgElem);
 	}
 };
@@ -2278,20 +2278,20 @@ rc.components.Cart.refreshEmptyCartMessage = function() {
 rc.components.Cart.getOptionGroup = function(campaignEvent) {
 	if (!campaignEvent.productList || campaignEvent.productList.length==0) {return null;}
 	campaignEvent.name = !campaignEvent.name ? 'Event' : campaignEvent.name;
-	var optGroup = rc.context('<optgroup label="" />');
+	var optGroup = $('<optgroup label="" />');
 	optGroup.attr("label",campaignEvent.name);
 	for (var index=0;index<campaignEvent.productList.length;++index) {
 		var product = campaignEvent.productList[index];
-		var optionElement = rc.context("<option/>", {value:product.Id,text:product.type +' : '+product.name});
+		var optionElement = $("<option/>", {value:product.Id,text:product.type +' : '+product.name});
 		this.idProductMap[''+product.Id] = product;
-		rc.context.data(optionElement[0],'product',product);
+		$.data(optionElement[0],'product',product);
 		optGroup.append(optionElement);
 	}
 	return optGroup;
 };
 
 rc.components.Cart.isProductAlreadyAdded = function(product) {
-	var productElem = rc.context(".rc-component .rc-component-cart-content .product-entry-row[data-product-id='"+product.Id+"']");
+	var productElem = $(".rc-component .rc-component-cart-content .product-entry-row[data-product-id='"+product.Id+"']");
 	if (productElem.length>0) {//If product already added just increment its quantity
 		product.quantity = parseInt(productElem.find("input.default-quantity").val(),10);
 		product.quantity = !product.quantity ? 1 : product.quantity + 1;
@@ -2302,7 +2302,7 @@ rc.components.Cart.isProductAlreadyAdded = function(product) {
 };
 
 rc.components.Cart.isValidPurchaseQuantity = function(row) {
-	var productRow = rc.context(row);
+	var productRow = $(row);
 	var purchaseLimit = productRow.attr("data-purchase-limit");
 	//if purchase limit not defined assume its infinite
 	if (!purchaseLimit) {return true;}
@@ -2319,14 +2319,14 @@ rc.components.Cart.isValidPurchaseQuantity = function(row) {
 rc.components.Cart.appendProductRow = function(product) {
 	if (!product) {return;}
 	var that = this;
-	var component = rc.context(this.component);
+	var component = $(this.component);
 	var foundRow = rc.components.Cart.isProductAlreadyAdded(product);
 	if (foundRow!=null) {
 		rc.ui.showMessagePopup(rc.ui.INFO,'Product already added to form, Default quantity updated (+1) to '+product.quantity);
 		return;
 	}
 	//if already maximum items added throw error
-	var currentCount = rc.context(".rc-component-cart-content .product-entry-row[data-product-type='"+product.type+"']").length;
+	var currentCount = $(".rc-component-cart-content .product-entry-row[data-product-type='"+product.type+"']").length;
 	if (currentCount>=rc.maxProductCount) {
 		rc.ui.showMessagePopup(rc.ui.ERROR,'Maximum allowed count for product type:'+product.type+', reached!');
 		return;
@@ -2352,7 +2352,7 @@ rc.components.Cart.appendProductRow = function(product) {
 	if (component.find(".panel-body .row").length == 0) {
 		component.find(".panel-body").html("");
 	}
-	var rowTemplate = rc.context(rc.context("#rc-component-cart-row-template").html());
+	var rowTemplate = $($("#rc-component-cart-row-template").html());
 	product.quantity = product.quantity || 0;
 	//select logo
 	if (product.type == product.TYPE_TICKET) {
@@ -2380,40 +2380,40 @@ rc.components.Cart.appendProductRow = function(product) {
 	rowTemplate.find(".product-price").text(product.purchasePrice.formatMoney(2));
 	rowTemplate.find("input.product-quantity").val(product.quantity);
 	rowTemplate.find("input.product-quantity").on("change",function(event) {
-		var row = rc.context(this).closest(".product-entry-row");
+		var row = $(this).closest(".product-entry-row");
 		if (that.isValidPurchaseQuantity(row) == false) {
 			rc.ui.showMessagePopup(rc.ui.ERROR,'Purchase limit for '+product.name+' reached. Cannot buy more than '+product.purchaseLimit+' units.');
 		}
-		rc.context(that.component).trigger('recalculate-sum');
+		$(that.component).trigger('recalculate-sum');
 	});
 	rowTemplate.find("input.product-discount-code").on("change",function(event) {//RCSBIRD-15502
-		var row = rc.context(this).closest(".product-entry-row");
+		var row = $(this).closest(".product-entry-row");
 		that.calculateProductDiscountCode(row);
 	});
 	rowTemplate.find("button.remove-product").click(function(event) {
 		//enable option in select list
 		var hrLine = $(this).closest(".product-entry-row").next(".separator-line");
 		hrLine.remove();
-		var productRow = rc.context(this).closest(".product-entry-row");
+		var productRow = $(this).closest(".product-entry-row");
 		//empty slot as it wont be required anymore
 		var slot = productRow.attr("data-product-slot");
 		rc.emptyProductSlot(slot);
 		productRow.remove();
-		rc.context(that.component).trigger('recalculate-sum');
+		$(that.component).trigger('recalculate-sum');
 		that.refreshEmptyCartMessage();
 		return false;
 	});
 	var productEntryRow = rowTemplate.filter(".product-entry-row")[0];
-	rc.context.data(productEntryRow,'product',product);
+	$.data(productEntryRow,'product',product);
 	rowTemplate.find(".product-quantity").spinner({
 		spin: function(event, ui) {
 			if (ui.value < 0) {
-				rc.context( this ).spinner("value", 0);
+				$(this).spinner("value", 0);
 				return false;
 			}
 		},
 		change: function(event, ui) {
-			rc.context(this).trigger('change');
+			$(this).trigger('change');
 		}
 	});
 	//select the create giving flag
@@ -2426,7 +2426,7 @@ rc.components.Cart.appendProductRow = function(product) {
 	rowTemplate.attr("discount-code-hidden",product.hideDiscountCode);
 	rowTemplate.find('.rc-toggle-discount-code').on('click',rc.ui.toggleDisountCode);
 	component.find(".panel-body").append(rowTemplate);
-	rc.context(that.component).trigger('recalculate-sum');
+	$(that.component).trigger('recalculate-sum');
 	return false;
 };
 
@@ -2434,8 +2434,8 @@ rc.components.Cart.appendProductRow = function(product) {
 rc.components.Cart.populateSetupSaveData = function(component,data) {
 	var selectedProducts = [];
 	var givingPostfix = '_Giving';
-	rc.context(component).find(".product-entry-row").each(function(index,productRow) {
-		var productRow = rc.context(productRow);
+	$(component).find(".product-entry-row").each(function(index,productRow) {
+		var productRow = $(productRow);
 		var product = {};
 		product.id = productRow.attr("data-product-id");
 		if (!product.id) {return true;}
@@ -2452,10 +2452,10 @@ rc.components.Cart.populateSetupSaveData = function(component,data) {
 
 rc.components.Cart.populateUpsertData = function(send) {
 	if (!send) {return;}
-	var productElemList = rc.context(".rc-component .rc-component-cart-content .product-entry-row");
-	rc.context(productElemList).each(function(index,productElem) {
-		var product = rc.context.data(productElem,'product');
-		productElem = rc.context(productElem);
+	var productElemList = $(".rc-component .rc-component-cart-content .product-entry-row");
+	$(productElemList).each(function(index,productElem) {
+		var product = $.data(productElem,'product');
+		productElem = $(productElem);
 		var productSlot = productElem.attr("data-product-slot");
 		if (!productSlot) {return true;}
 		var fieldNamePrefix = rc.prodMap[productSlot];
@@ -2466,8 +2466,8 @@ rc.components.Cart.populateUpsertData = function(send) {
 		var isCreateGiving = productElem.attr("data-create-giving-product");
 		if (isCreateGiving=="true") {productType+='_Giving';}
 		var productQuantity = productElem.find("input.product-quantity").val();
-		var productDiscountCode = rc.context(productElem).find(".product-discount-code");
-		var productDiscountedAmount = rc.context(productDiscountCode).data('discountedAmount');
+		var productDiscountCode = $(productElem).find(".product-discount-code");
+		var productDiscountedAmount = $(productDiscountCode).data('discountedAmount');
 		var productPurchasePrice = product.purchasePrice || 0;
 		productPurchasePrice = parseFloat(productPurchasePrice);
 		send[productSlot] = productId;
@@ -2499,9 +2499,9 @@ rc.components.Cart.renderUpsertData = function(send) {
 		//if type to be managed by cart
 		if (!!productId	&& send[prefix+'_type__c']!='Session' && send[prefix+'_type__c']!='Product'	&& send[prefix+'_type__c']!='Attribute') {
 			//find product row
-			var productElem = rc.context(".rc-component .rc-component-cart-content .product-entry-row[data-product-id='"+productId+"']");
+			var productElem = $(".rc-component .rc-component-cart-content .product-entry-row[data-product-id='"+productId+"']");
 			if (!productElem || productElem.length==0) {continue;}
-			var product = rc.context.data(productElem[0],'product');
+			var product = $.data(productElem[0],'product');
 			var quantity = send[prefix+'_quantity__c'] || 0;
 			quantity = parseInt(quantity,10);
 			var discountCode = send[prefix+'_discount_code__c'];
@@ -2513,7 +2513,7 @@ rc.components.Cart.renderUpsertData = function(send) {
 				discountedAmountPerProduct = (purchasePrice - discountedAmount) || 0.0;
 			}
 			var discountCodeElement = productElem.find(".product-discount-code");
-			rc.context(discountCodeElement).data('discountedAmount',discountedAmountPerProduct);
+			$(discountCodeElement).data('discountedAmount',discountedAmountPerProduct);
 
 			//trigger change so total re-calculation takes place
 			productElem.find("input.default-quantity").val(quantity).trigger("change");
@@ -2530,8 +2530,8 @@ rc.components.Cart.renderUpsertData = function(send) {
 
 rc.components.Cart.calculateProductDiscountCode = function(row, send, deferred) {
 	if (!row || row.length==0) {return;}
-	var product = rc.context.data(row[0],'product');
-	var productRow = rc.context(row);
+	var product = $.data(row[0],'product');
+	var productRow = $(row);
 	deferred = deferred || new jQuery.Deferred();
 	var productId = productRow.attr("data-product-id");
 	var quantity = productRow.find(".product-quantity").val();
@@ -2541,10 +2541,10 @@ rc.components.Cart.calculateProductDiscountCode = function(row, send, deferred) 
 	send.__purchasePrice = product.purchasePrice || 0;
 	//if discount code is blank
 	if (send.__discountCode == null || send.__discountCode == '') {
-		var discountCode = rc.context(productRow).find(".product-discount-code");
+		var discountCode = $(productRow).find(".product-discount-code");
 		var discountedAmount = 0.0;
-		rc.context(discountCode).data('discountedAmount',discountedAmount);
-		rc.context(productRow).trigger('recalculate-sum');
+		$(discountCode).data('discountedAmount',discountedAmount);
+		$(productRow).trigger('recalculate-sum');
 		return;
 	}
 	//check if quantity is greater than 0
@@ -2557,7 +2557,7 @@ rc.components.Cart.calculateProductDiscountCode = function(row, send, deferred) 
 	send.__action = rc.actions.selectDiscountCodeList;
 	this.row = productRow;
 	// Done and fail
-	rc.components.remoting.send(deferred, send, rc.context.proxy(rc.components.Cart.calculateProductDiscountCode.done,this) , rc.components.Cart.calculateProductDiscountCode.fail);
+	rc.components.remoting.send(deferred, send, $.proxy(rc.components.Cart.calculateProductDiscountCode.done,this) , rc.components.Cart.calculateProductDiscountCode.fail);
 	// Done
 	return deferred.promise();
 };
@@ -2566,15 +2566,15 @@ rc.components.Cart.calculateProductDiscountCode.done = function(deferred, send, 
 	var discountCodeResponse = recv['__error'];
 	if (discountCodeResponse) {
 		rc.ui.showMessagePopup(rc.ui.ERROR, discountCodeResponse);
-		rc.context(this.row).find(".product-discount-code").val('');
+		$(this.row).find(".product-discount-code").val('');
 	} else {
 		rc.ui.showMessagePopup(rc.ui.SUCCESS, rc.validMessageDiscountCode);
 	}
 	var discountedAmount = recv['__discount'];
-	var discountCode = rc.context(this.row).find(".product-discount-code");
-	rc.context(discountCode).data('discountedAmount',discountedAmount);
+	var discountCode = $(this.row).find(".product-discount-code");
+	$(discountCode).data('discountedAmount',discountedAmount);
 	var that = this;
-	rc.context(that.row).trigger('recalculate-sum');
+	$(that.row).trigger('recalculate-sum');
 };
 
 rc.components.Cart.calculateProductDiscountCode.fail = function(deferred, send, recv, meta) {
@@ -2587,15 +2587,15 @@ rc.components.Cart.calculateProductDiscountCode.fail = function(deferred, send, 
 /* end event javascript */
 
 rc.components.validateCampaignAskSection = function() {
-	var paymentProcessor = rc.context('.rc-component-workflow-action[data-method="send-payment"]').attr('data-value');
-	var monthlyFrequency = rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "Monthly"]');
+	var paymentProcessor = $('.rc-component-workflow-action[data-method="send-payment"]').attr('data-value');
+	var monthlyFrequency = $('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "Monthly"]');
 	if (paymentProcessor == 'corduro') {
-		rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "One Payment"]').addClass('disabled');
-		rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value = "One Payment"]').trigger('click');
-		if (monthlyFrequency.size() != 0) {rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find(".note[data-giving-frequency='Monthly']").hide();}
+		$('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "One Payment"]').addClass('disabled');
+		$('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value = "One Payment"]').trigger('click');
+		if (monthlyFrequency.size() != 0) {$('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find(".note[data-giving-frequency='Monthly']").hide();}
 	} else {
-		rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "One Payment"]').removeClass('disabled');
-		if (monthlyFrequency.size() != 0) {rc.context('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find(".note[data-giving-frequency='Monthly']").show();}
+		$('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "One Payment"]').removeClass('disabled');
+		if (monthlyFrequency.size() != 0) {$('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find(".note[data-giving-frequency='Monthly']").show();}
 	}
 };
 
@@ -2616,9 +2616,9 @@ rc.components.CreditCard = function(container, data) {
 	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.components.CreditCard.format);
 	//prepopulate values for hidden fields saved along with the form
 	this.component.find('[data-field-hidden="true"]').each(function(index,hiddenField) {
-		var formControlInput = rc.context(hiddenField).find(".form-control");
+		var formControlInput = $(hiddenField).find(".form-control");
 		//if field has a default value populate the same
-		var defaultValue = rc.context(hiddenField).attr("data-default-value");
+		var defaultValue = $(hiddenField).attr("data-default-value");
 		if (defaultValue && defaultValue!='') {formControlInput.val(defaultValue);}
 		var fieldName = formControlInput.attr("name");
 		if (!fieldName || fieldName=='') {return true;}
@@ -2634,14 +2634,14 @@ rc.components.CreditCard = function(container, data) {
 };
 
 rc.components.CreditCard.format = function() {
-	var oldData = rc.context(this).val();
-	var data = rc.context(this).val();
+	var oldData = $(this).val();
+	var data = $(this).val();
 	data = data.replace(/[^\d]+/g, '');
 	data = data.substring(0, 16);
 	data = data.match(/.{1,4}/g);
 	data = data ? data.join(' ') : '';
 	if (oldData==data) {return;}
-	rc.context(this).val(data);// Save data back to input
+	$(this).val(data);// Save data back to input
 	rc.validateInput.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
 };
 
@@ -2658,9 +2658,9 @@ rc.components.Button = function(container, data) {
 	this.content.find('.rc-name').text(data.text);
 	this.content.find('.rc-icon').addClass(data.icon);
 	var workflow_list = this.content.find('.dropdown-menu');// Populate the list of workflows
-	rc.context('#rc-workflows-list').find('.rc-container-workflow').each(function() {
-		var context = rc.context(this);
-		var item = rc.context('<li><a class="rc-cursor-pointer rc-cascade-value rc-cascade-dropdown-text"></a></li>');
+	$('#rc-workflows-list').find('.rc-container-workflow').each(function() {
+		var context = $(this);
+		var item = $('<li><a class="rc-cursor-pointer rc-cascade-value rc-cascade-dropdown-text"></a></li>');
 		item.find('a').attr('data-cascade', 'data-workflow');
 		item.find('a').attr('data-value', context.attr('id')); // guid
 		item.find('a').text(context.find('.rc-workflow-name').val());
@@ -2679,7 +2679,7 @@ rc.components.Button = function(container, data) {
 
 rc.components.Button.execute = function() {
 	// Nothing goes above this
-	var actionButtonContext = rc.context(this);
+	var actionButtonContext = $(this);
 	actionButtonContext.prop("disabled",true);
 	// All of the below validations should be independent statements, ensuring that each
 	// validation method is called, and providing all errors after one click of the button.
@@ -2693,7 +2693,7 @@ rc.components.Button.execute = function() {
 	//workflows should send local only data to server
 	// TODO Perhaps this call should be in rc.validateInput.isFormValid()
 	rc.enableLocalOnly(true);
-	var workflowToExecuteId = rc.context.trim(rc.context(this).closest('[data-workflow]').attr('data-workflow'));
+	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
 		rc.workflow.execute(workflowToExecuteId, actionButtonContext);
 	} else {
@@ -2724,13 +2724,13 @@ rc.components.SimpleHeader = function(container, data) {
 
 rc.components.CopyParameterAction = function(container,data) {};
 rc.components.CopyParameterAction.refreshMergeFieldPicklist = function(container) {
-	var copyParamAction = rc.context(container).find('[data-template="#rc-component-workflow-action--copy-param"]');
+	var copyParamAction = $(container).find('[data-template="#rc-component-workflow-action--copy-param"]');
 	var listItemsArray = []; //find all merge fields on the page
 	$("#rc-page-container .rc-component-merge-field-content").each(function(index,mergeField) {
 		var mergeFieldName  = $(mergeField).find(".rc-field-name").attr("name") || '';
 		if (!mergeFieldName) {return true;}
 		var mergeFieldLabel = $(mergeField).find("label.control-label").text() || mergeFieldName;
-		var listItem = rc.context('<li><a class="rc-cursor-pointer rc-cascade-dropdown-text rc-cascade-value" data-value=""></a></li>');
+		var listItem = $('<li><a class="rc-cursor-pointer rc-cascade-dropdown-text rc-cascade-value" data-value=""></a></li>');
 		listItem.find('.rc-cascade-value').attr('data-value', mergeFieldName);
 		listItem.find('.rc-cascade-value').text(mergeFieldLabel);
 		listItemsArray.push(listItem);
@@ -2758,11 +2758,11 @@ rc.components.URLLink = function(container, data) {
 	this.component.find(".rc-url-label .form-control").val(data['label']);
 	this.component.find(".rc-url-link .form-control").val(data['link']);
 	this.component.find("input.form-control").on("blur", function(event) {
-		var componentElem = rc.context(this).closest(".rc-component");
+		var componentElem = $(this).closest(".rc-component");
 		var labelValue = componentElem.find(".rc-url-label .form-control").val() || 'Untitled Link';
 		var linkValue = componentElem.find(".rc-url-link .form-control").val();
 		//if error 1. show error, 2. dont allow save
-		linkValue = rc.context.trim(linkValue);
+		linkValue = $.trim(linkValue);
 		//check if url starts with protocol or //
 		if (linkValue) {
 			var startWithProtoRegex = new RegExp("^((https?|ftp)://)|//", "i");
@@ -2770,14 +2770,14 @@ rc.components.URLLink = function(container, data) {
 		}
 		var isValidBool = rc.components.URLLink.isValidURL(linkValue);
 		var messageText = 'Invalid URL.';
-		rc.context(this).closest('.form-group.rc-url-link').toggleClass("has-error",!isValidBool);
+		$(this).closest('.form-group.rc-url-link').toggleClass("has-error",!isValidBool);
 		if (!isValidBool) {
 			rc.ui.addMessageToComponent(componentElem,messageText,rc.ui.ERROR);
 		} else {
 			rc.ui.getComponentMessages(componentElem,messageText).remove();
 			linkValue = linkValue || 'javascript:void(0)';
-			var widthNumber = rc.context(window).width();
-			var heightNumber = rc.context(window).height();
+			var widthNumber = $(window).width();
+			var heightNumber = $(window).height();
 			var onclickText ="window.open('"+linkValue+"', 'newwindow', 'menubar=1, resizable=1, width="+widthNumber+", height="+heightNumber+"'); return false;";
 			componentElem.find('.rc-component-url-link-view-content a.rc-url-link-anchor').text(labelValue).attr("href",linkValue).attr("onclick",onclickText);
 		}
@@ -2848,7 +2848,7 @@ rc.components.HtmlBlock = function(container, data) {
 	this.content = this.component.find('.rc-component-content');
 	var htmlContainer = this.component.find('.rc-component-content .rc-value');
 	var viewContainer = this.component.find('.rc-component-html-view-content .rc-value');
-	rc.context.data(htmlContainer[0],"html-content",data.text);
+	$.data(htmlContainer[0],"html-content",data.text);
 	var styleAttrText = htmlContainer.attr("style");
 	viewContainer.html(data.text).attr("style",styleAttrText);
 	rc.components.HtmlBlock.initializeHTMLEditor(this.component,data.text);
@@ -2875,7 +2875,7 @@ rc.components.HtmlBlock.initializeHTMLEditor = function(component, dataText) {
 	}});
 
 	editor.on("change",function(editor, changeObj) {
-		rc.context.data(htmlContainer[0],"html-content",editor.getValue());
+		$.data(htmlContainer[0],"html-content",editor.getValue());
 		htmlViewContainer.html(editor.getValue());
 	});
 
@@ -2888,11 +2888,11 @@ rc.components.HtmlBlock.initializeHTMLEditor = function(component, dataText) {
 
 //refresh view when changed from editable to noneditable and vice a versa
 rc.components.HtmlBlock.refreshView = function(event, editable) {
-	var htmlBlockCompnents = rc.context('#rc-container-list').find('.rc-component-html-block');
+	var htmlBlockCompnents = $('#rc-container-list').find('.rc-component-html-block');
 	if (!htmlBlockCompnents.length) {return;}
-	rc.context(htmlBlockCompnents).each(function(index,component) {
-		component = rc.context(component);
-		var dataText = rc.context.data(component.find(".rc-component-html-content .rc-value")[0],"html-content");
+	$(htmlBlockCompnents).each(function(index,component) {
+		component = $(component);
+		var dataText = $.data(component.find(".rc-component-html-content .rc-value")[0],"html-content");
 		dataText = rc.stripTags(dataText,"script");
 		component.find('.rc-component-html-view-content .rc-value').html(dataText);
 		if (rc.getCurrentMode() == 'edit') {
@@ -2914,7 +2914,7 @@ rc.components.AdvancedCSS = function(container, data) {
 	this.component.find('textarea').val(data.text);
 	var that = this;
 	this.component.find('textarea').on('keyup', function(event) {
-		that.component.find('style').html(rc.context(this).val());
+		that.component.find('style').html($(this).val());
 	});
 };
 
@@ -2949,8 +2949,8 @@ rc.components.registerMergeFieldAutoComplete = function(field,dataArray) {
 
 rc.components.insertLitleProfilingTag = function() {
 	//create profiling element, find form body, add profiling element to form body
-	var fraudDetectTokenGenHtml = rc.context("#rc-litle-advance-fraud-detection").html();
-	var fraudDetectTokenGenEl = rc.context(fraudDetectTokenGenHtml);
+	var fraudDetectTokenGenHtml = $("#rc-litle-advance-fraud-detection").html();
+	var fraudDetectTokenGenEl = $(fraudDetectTokenGenHtml);
 	var scriptTag = fraudDetectTokenGenEl.filter("script");
 	var iFrameTag = fraudDetectTokenGenEl.filter("iframe");
 	var scriptTagUrl = scriptTag.attr("data-lib-src");
@@ -2959,7 +2959,7 @@ rc.components.insertLitleProfilingTag = function() {
 	iFrameTagUrl += rc.sessionId;
 	scriptTag.attr("src",scriptTagUrl).attr("data-lib-src","");
 	iFrameTag.attr("src",iFrameTagUrl).attr("data-lib-src","");
-	rc.context("body:first").prepend(fraudDetectTokenGenEl);
+	$("body:first").prepend(fraudDetectTokenGenEl);
 	return fraudDetectTokenGenEl;
 }
 
@@ -2985,27 +2985,27 @@ rc.components.Session = function(container, data) {
 };
 
 rc.components.Session.validate = function() {
-	var messageTypeElement = rc.context("#rc-container-list .rc-component-session .message-header");
-	var isRequired = rc.context("#rc-container-list .rc-component-session-content").find('.input-group').attr('data-required');
+	var messageTypeElement = $("#rc-container-list .rc-component-session .message-header");
+	var isRequired = $("#rc-container-list .rc-component-session-content").find('.input-group').attr('data-required');
 	var isRegistered = false;
 	//if no session component added to the page then skip the validation
-	if (rc.context("#rc-container-list .rc-component-session-content").length == 0) {return true;}
-	rc.context("#rc-container-list .rc-component-session-content .register-link").each(function(index, obj) {
-		if (rc.context(obj).hasClass('selected-session') == true) {isRegistered = true;}
+	if ($("#rc-container-list .rc-component-session-content").length == 0) {return true;}
+	$("#rc-container-list .rc-component-session-content .register-link").each(function(index, obj) {
+		if ($(obj).hasClass('selected-session') == true) {isRegistered = true;}
 	});
 	var present = isRegistered == false ? false : true;
 	var messageText = "Please register for atleast one session and resubmit.";
-	var componentElem = rc.context("#rc-container-list .rc-component-session-content");
+	var componentElem = $("#rc-container-list .rc-component-session-content");
 	if (isRequired == "true" && isRegistered == false) {
-		rc.context('#rc-container-list .rc-component-session-content .register-link').closest('.form-group').toggleClass('has-error', present == false);
+		$('#rc-container-list .rc-component-session-content .register-link').closest('.form-group').toggleClass('has-error', present == false);
 		messageTypeElement.text(rc.ui.MessageHeaders[rc.ui.ERROR] + ' ');
 		componentElem.find(".session-validation-error").show();
 		rc.ui.showMessagePopup(rc.ui.ERROR,messageText);
 		return present;
 	} else {
-		rc.context('#rc-container-list .rc-component-session-content .register-link').closest('.form-group').toggleClass('has-error', false);
+		$('#rc-container-list .rc-component-session-content .register-link').closest('.form-group').toggleClass('has-error', false);
 		messageTypeElement.text('');
-		var exist=rc.context(componentElem).find(".component-alert .message-text:contains("+messageText+")");
+		var exist=$(componentElem).find(".component-alert .message-text:contains("+messageText+")");
 		if (exist.length) {exist.closest(".component-alert ").remove();}
 		return true;
 	}
@@ -3015,14 +3015,14 @@ rc.components.Session.send = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectProductList;
-	rc.components.remoting.send(deferred, send, rc.context.proxy(this.done,this),this.fail);
+	rc.components.remoting.send(deferred, send, $.proxy(this.done,this),this.fail);
 	return deferred.promise();
 };
 
 rc.components.Session.done = function(deferred, send, recv, meta) {
 	//empty out all existing slots on the sessions
 	this.component.find("[data-session-slot]").each(function(index,row) {
-		rc.emptyProductSlot( rc.context(row).attr("data-session-slot") );
+		rc.emptyProductSlot( $(row).attr("data-session-slot") );
 	});
 	var campaignEvent = recv;
 	for (var index=0;index<campaignEvent.sessionList.length;++index) {
@@ -3051,8 +3051,8 @@ rc.components.Session.done = function(deferred, send, recv, meta) {
 		//3. call appendSessionRow
 		this.appendSessionRow(session);
 	}
-	rc.context(this.component).find(".register-link").click(function(event) {
-		var isSelected = !rc.context(this).hasClass("selected-session");
+	$(this.component).find(".register-link").click(function(event) {
+		var isSelected =! $(this).hasClass("selected-session");
 		rc.components.Session.toggleRegisterButton(isSelected,this);
 		return false;
 	});
@@ -3061,16 +3061,16 @@ rc.components.Session.done = function(deferred, send, recv, meta) {
 
 rc.components.Session.toggleRegisterButton =function(value, button) {
 	if (value==true) {
-		rc.context(button).removeClass("btn-primary").addClass("btn-success").addClass("selected-session").find('.register-link-text').text("Registered");
-		rc.context(button).find(".glyphicon-remove").show();
+		$(button).removeClass("btn-primary").addClass("btn-success").addClass("selected-session").find('.register-link-text').text("Registered");
+		$(button).find(".glyphicon-remove").show();
 	} else {
-		rc.context(button).removeClass("btn-success").addClass("btn-primary").removeClass("selected-session").find('.register-link-text').text("Register");
-		rc.context(button).find(".glyphicon-remove").hide();
+		$(button).removeClass("btn-success").addClass("btn-primary").removeClass("selected-session").find('.register-link-text').text("Register");
+		$(button).find(".glyphicon-remove").hide();
 	}
 }
 
 rc.components.Session.isSessionAlreadyAdded = function(session) {
-	var sessionElem = rc.context(".rc-component .rc-component-session-content .session-entry-row[data-session-id='"+session.Id+"']");
+	var sessionElem = $(".rc-component .rc-component-session-content .session-entry-row[data-session-id='"+session.Id+"']");
 	if (sessionElem.length>0) {return sessionElem;}
 	return null;
 };
@@ -3078,8 +3078,8 @@ rc.components.Session.isSessionAlreadyAdded = function(session) {
 rc.components.Session.appendSessionRow = function(session) {
 	if (!session) {return;}
 	var that = this;
-	var component = rc.context(this.component);
-	var rowTemplate = rc.context(rc.context("#rc-component-session-row-template").html());
+	var component = $(this.component);
+	var rowTemplate = $($("#rc-component-session-row-template").html());
 	//session-batch start
 	var foundRow = rc.components.Session.isSessionAlreadyAdded(session);
 	if (foundRow!=null) {
@@ -3107,7 +3107,7 @@ rc.components.Session.appendSessionRow = function(session) {
 	rowTemplate.find(".session-startDate").text(startDate);
 	rowTemplate.find(".session-endDate").text(endDate);
 	var sessionEntryRow = rowTemplate.filter(".session-entry-row")[0];
-	rc.context.data(sessionEntryRow,'session',session);
+	$.data(sessionEntryRow,'session',session);
 	component.find(".session-panel-body").append(rowTemplate);
 	return false;
 };
@@ -3115,13 +3115,13 @@ rc.components.Session.appendSessionRow = function(session) {
 //populate data to be saved to server
 rc.components.Session.populateSetupSaveData = function(component,data) {
 	var selectedSessions = [];
-	var selectedValuesArr = rc.context(component).find(".view-component-select").val();
+	var selectedValuesArr = $(component).find(".view-component-select").val();
 	if (selectedValuesArr && selectedValuesArr.length>0) {
 		var selectedViewComponents = selectedValuesArr.join(",");
 		data['selectedViewComponents'] = selectedViewComponents;
 	}
-	rc.context(component).find(".session-entry-row").each(function(index,sessionRow) {
-		var sessionRow = rc.context(sessionRow);
+	$(component).find(".session-entry-row").each(function(index,sessionRow) {
+		var sessionRow = $(sessionRow);
 		var session = {};
 		session.id = sessionRow.attr("data-session-id");
 		if (!session.id) {
@@ -3136,10 +3136,10 @@ rc.components.Session.populateSetupSaveData = function(component,data) {
 
 rc.components.Session.populateUpsertData = function(send) {
 	if (!send) {return;}
-	var rowTemplate = rc.context(rc.context("#rc-component-session-row-template").html());
-	var sessionElemList = rc.context(".rc-component .rc-component-session-content .session-entry-row");
-	rc.context(sessionElemList).each(function(index,sessionElem) {
-		sessionElem = rc.context(sessionElem);
+	var rowTemplate = $($("#rc-component-session-row-template").html());
+	var sessionElemList = $(".rc-component .rc-component-session-content .session-entry-row");
+	$(sessionElemList).each(function(index,sessionElem) {
+		sessionElem = $(sessionElem);
 		var sessionSlot = sessionElem.attr("data-session-slot");
 		var fieldNamePrefix = rc.productSlotPrefixMap[sessionSlot];
 		var sessionId = sessionElem.attr("data-session-id");
@@ -3167,7 +3167,7 @@ rc.components.Session.renderUpsertData = function(send) {
 		var sessionId = send[productSlot];
 		//if type to be managed by session component.
 		if (!!sessionId && send[prefix+'_type__c']=='Session') {
-			var sessionElem = rc.context(".rc-component .rc-component-session-content .session-entry-row[data-session-id='"+sessionId+"']");
+			var sessionElem = $(".rc-component .rc-component-session-content .session-entry-row[data-session-id='"+sessionId+"']");
 			if (!sessionElem || sessionElem.length==0) {continue;}
 			if (sessionElem.attr("data-session-slot")!=productSlot) {
 				sessionElem.attr("data-session-slot",productSlot);
@@ -3189,7 +3189,7 @@ rc.components.Session.renderUpsertData = function(send) {
 rc.dataModal.BatchUploadModel = {};
 rc.dataModal.getFieldByName = function(fieldName, fieldSelector) {
 	/* give priority to field being on current page, which has most fresh data */
-	var fieldJQ = rc.context(fieldSelector).filter(':first');
+	var fieldJQ = $(fieldSelector).filter(':first');
 	if (fieldJQ.length > 0) {
 		return fieldJQ.val();
 	} else {
@@ -3220,7 +3220,7 @@ This is a workaround to provide backwards-compatibility with the current form de
 rc.workflow.quenchByGuid = {};
 
 rc.workflow.hasPaymentProcessor = function() {
-	return rc.context('#rc-workflows-list .rc-component-workflow-action[data-method="send-payment"]').length > 0;
+	return $('#rc-workflows-list .rc-component-workflow-action[data-method="send-payment"]').length > 0;
 };
 
 rc.workflow.forceFail = function(deferred, quenchGuid, msg) {
@@ -3234,7 +3234,7 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 	//always disable the actionButton which was source of the event
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
 	console.log('rc.workflow.execute', guid);
-	var context = rc.context('#' + guid);
+	var context = $('#' + guid);
 	var flow_origin = new jQuery.Deferred(); // null deferred to kickoff the flow
 	var flow = flow_origin.promise();
 	rc.workflow.retroactiveFailure = new jQuery.Deferred();
@@ -3242,7 +3242,7 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 	rc.workflow.executingMap[guid] = true;
 	// Add actions
 	context.find('[data-component-type="workflow-action"]').each(function() {
-		var action = rc.context(this);
+		var action = $(this);
 		var action_type = action.attr('data-context');
 		var action_guid = action.attr('id');
 		var action_method = action.attr('data-method');
@@ -3297,7 +3297,7 @@ rc.workflow.process = function(type, guid, data, actionButtonContext) {
 	// Find and execute
 	var deferred = new jQuery.Deferred();
 	deferred.workflowGuid = data.workflowGuid;
-	var action = rc.context('#' + guid);
+	var action = $('#' + guid);
 	var method_map = {};
 	method_map['copy-param'] = rc.workflow.process.CopyParameter;
 	method_map['javascript'] = rc.workflow.process.Javascript;
@@ -3327,16 +3327,16 @@ rc.workflow.process = function(type, guid, data, actionButtonContext) {
 };
 
 rc.workflow.process.CopyParameter = function(deferred, action, data) {
-	var parameter = rc.context(action).attr('data-parameter');
-	var toField = rc.context(action).attr('data-value');
+	var parameter = $(action).attr('data-parameter');
+	var toField = $(action).attr('data-value');
 	// Copy parameter data
-	rc.context('.form-control[name="' + toField + '"]').val(rc.getParam(parameter) || '');
+	$('.form-control[name="' + toField + '"]').val(rc.getParam(parameter) || '');
 	deferred.resolve();
 };
 
 rc.workflow.process.Javascript = function(deferred, action, data) {
 	deferred = deferred || new jQuery.Deferred();
-	action = action || rc.context();
+	action = action || $();
 	var action_data = action.find('.rc-fg[data-method="javascript"] .form-control').val();
 	var action_function = eval('(function(deferred, data) { ' + action_data + ' })');
 	var action_eval = action_function.call(action, deferred, data);
@@ -3374,7 +3374,7 @@ rc.workflow.process.TrafficController = function(deferred, action, data) {
 };
 
 rc.workflow.process.LoadHref = function(deferred, action, data) {
-	var href = rc.context(action).attr('data-value');
+	var href = $(action).attr('data-value');
 	if (href == null || href == '') {return;}
 	if (href.match('(http:|https:)?(/?)/.+')) {
 		window.location = href;
@@ -3390,7 +3390,7 @@ rc.workflow.process.SendData = function(deferred, action, data) {
 
 rc.workflow.process.SendMail = function(deferred, action, data) {
 	deferred = deferred || new jQuery.Deferred();
-	action = action || rc.context();
+	action = action || $();
 	var mailSendTo = action.attr("data-mail-to") || '';
 	var mailReplyTo = action.attr("data-mail-reply-to") || '';
 	var mailSubject = action.attr("data-mail-subject") || '';
@@ -3415,13 +3415,13 @@ rc.workflow.process.SendMail.getFilteredMailArray = function(emails) {
 	var emailsArray = emails.split(",");
 	//replace merge fields with actual values.
 	for (var index=0; index < emailsArray.length; index++) {
-		var emailText = rc.context.trim(emailsArray[index]);
+		var emailText = $.trim(emailsArray[index]);
 		if (emailText && rc.workflow.process.SendMail.isValidMergeField(emailText)) {
 			//find the merge field value
 			var fieldName = rc.ui.MergeFieldMap[emailText].field || '';
-			var mailText = rc.context('input[name="'+fieldName+'"]:first').val() || '';
+			var mailText = $('input[name="'+fieldName+'"]:first').val() || '';
 			var controlField = rc.ui.MergeFieldMap[emailText].control || '';
-			var controlValue = controlField ? rc.context('input[name="'+controlField+'"]:first').is(':checked') : false;
+			var controlValue = controlField ? $('input[name="'+controlField+'"]:first').is(':checked') : false;
 			//if control is set then dont send email : opt out option
 			if (controlValue == true) {continue;}
 			if (mailText) {resultArray.push(mailText);}
@@ -3445,8 +3445,8 @@ rc.workflow.process.SendMail.isValidMergeField = function(mergeFieldText) {
 rc.workflow.process.SendPayment = function(deferred, action, data) {
 	// Validate fields in the payment processor?
 	// Do not validate the fields for discount codes
-	rc.context('.form-control').filter(':visible:NOT(input.product-discount-code)').change();
-	if (rc.context('.form-group.has-error').length != 0) {return;}
+	$('.form-control').filter(':visible:NOT(input.product-discount-code)').change();
+	if ($('.form-group.has-error').length != 0) {return;}
 	var cartPaymentDetails = rc.components.Cart.getPaymentDetails() || {finalAmount:0};
 	var askPaymentDetails = rc.components.CampaignAsk.getAskValue() || {finalAmount:0};
 	//if nothing to process, pass the processing
@@ -3492,11 +3492,11 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 		rc.enableLocalOnly(false);
 		// Populate some payment-related data on the BU fields to be submitted
 		if (action.paymentDetails.isGiving == true) {
-			rc.context('input[name="'+rc.ns+'giving_giving_frequency__c"]').val(action.paymentDetails.frequency);
-			rc.context('input[name="'+rc.ns+'giving_giving_amount__c"]').val(action.paymentDetails.givingAmount);
+			$('input[name="'+rc.ns+'giving_giving_frequency__c"]').val(action.paymentDetails.frequency);
+			$('input[name="'+rc.ns+'giving_giving_amount__c"]').val(action.paymentDetails.givingAmount);
 		}
 		if (action.paymentDetails.isEvent == true) {
-			rc.context('input[name="'+rc.ns+'event_purchase_giving_amount__c"]').val(action.paymentDetails.eventAmount);
+			$('input[name="'+rc.ns+'event_purchase_giving_amount__c"]').val(action.paymentDetails.eventAmount);
 		}
 		// Store params for processing the pending payment within the next SendData RemoteAction
 		rc.pendingPayment = {};
@@ -3504,7 +3504,7 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 		// At this time, these are only required for Litle
 		// 'isAdvancedFraudDetection' indicates whether the admin enabled AFD during form design; it's not only the merchant setting.
 		rc.pendingPayment.processorParams = {};
-		rc.pendingPayment.processorParams['isAdvancedFraudDetection'] = rc.context(action).attr("data-advanced-fraud-detection");
+		rc.pendingPayment.processorParams['isAdvancedFraudDetection'] = $(action).attr("data-advanced-fraud-detection");
 		rc.pendingPayment.processorParams['sessionId'] = rc.sessionId;
 		// Copy the payment alternate flow related to the current SendPayment action. This will be used during a future SaveData workflow.
 		// An alternative attempted was to clone the failure flow from the deferred passed to this method; however, that deferred refers only to the
@@ -3527,7 +3527,7 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 
 rc.workflow.process.SendPayment.send = function(deferred, action, data) {
 	if (action.attr('data-value') == 'corduro') {
-		if (rc.context('#corduro_snap #maskcorduro_snap').length == 0) {rc.workflow.integrations.Corduro(deferred, action);}
+		if ($('#corduro_snap #maskcorduro_snap').length == 0) {rc.workflow.integrations.Corduro(deferred, action);}
 		return rc.workflow.integrations.Corduro.send(deferred, action);
 	}
 	if (action.attr('data-value') == 'iATS') {
@@ -3555,7 +3555,7 @@ rc.workflow.process.SendPayment.send = function(deferred, action, data) {
 }
 
 rc.workflow.process.Workflow = function(deferred, action, data, actionButtonContext) {
-	rc.workflow.execute(rc.context(action).attr('data-value'),actionButtonContext);
+	rc.workflow.execute($(action).attr('data-value'),actionButtonContext);
 	deferred.resolve();
 };
 
@@ -3569,8 +3569,8 @@ rc.upsertData = function(deferred, send) {
 	send.__data = rc.getParam('data');
 	deferred = deferred || new jQuery.Deferred();
 	// Find all of the component form controls
-	rc.context('.rc-component-content .form-control[name]').each(function() {
-		var context = rc.context(this);
+	$('.rc-component-content .form-control[name]').each(function() {
+		var context = $(this);
 		var name = context.attr('name');
 		// Add to send map
 		if (context.attr('type') === 'checkbox') {
@@ -3655,9 +3655,9 @@ rc.upsertData = function(deferred, send) {
 	/* TAOS-1490 - If 2 save data workflows existed in the form, then the "Exclude Giving"
 	and "Exclude Events" flag of the first w/f defined in the metadata would override any other
 	save data workflows. The old solution is commented out and the new solution is implemented. */
-	var context = rc.context('#' + deferred.workflowGuid);
+	var context = $('#' + deferred.workflowGuid);
 	context.find('[data-component-type="workflow-action"]').each(function() {
-		var action = rc.context(this);
+		var action = $(this);
 		var action_type = action.attr('data-context');
 		var action_guid = action.attr('id');
 		var action_method = action.attr('data-method');
@@ -3677,7 +3677,7 @@ rc.upsertData = function(deferred, send) {
 		}
 	});
 	// Form failures?
-	if (rc.context('.form-group.has-error').length != 0) {return deferred.reject(send);}
+	if ($('.form-group.has-error').length != 0) {return deferred.reject(send);}
 	//case cleanup, convert all keys to lower case
 	send = rc.cleanKeysToLower(send);
 	// TAOS-774 Transactional payment processing
@@ -3705,9 +3705,9 @@ rc.upsertData.validateCustomComponents = function() {
 rc.upsertData.validate = function() {
 	console.log('rc.upsertData.validate');
 	console.log('this', this);
-	var context = rc.context(this);
+	var context = $(this);
 	var present = context.val() ? true: false;
-	var errorLabel = rc.context(rc.context("#rc-error-label").html());
+	var errorLabel = $($("#rc-error-label").html());
 	if ($(this).attr('type') === 'checkbox') {
 		$(context).is(':checked') ? 'true' : 'false';
 		return true;
@@ -3723,7 +3723,7 @@ rc.upsertData.validate = function() {
 	if (context.attr("data-validate-type")=="otherAmount" && present) {
 		var minimumThresholdAmount = rc.components.CampaignAsk.frequencyAmountMinThreshold[context.parent().attr('data-giving-frequency')];
 		// Trim the leading and trailing spaces and replace the textbox value with it
-		var otherAmountValue = rc.context.trim(context.val());
+		var otherAmountValue = $.trim(context.val());
 		context.val(otherAmountValue);
 		// validation for TAOS-1509 - todo: move to Campaign_Design_Form_Validator - will be complicated
 		if (!otherAmountValue.match(/^\d+\.?\d{0,2}$/)) {
@@ -3744,7 +3744,7 @@ rc.upsertData.validate = function() {
 		for (var index=0;index<emailListArray.length;++index) {
 			console.log('index,',index);
 			console.log('emailListArray[index],',emailListArray[index]);
-			var emailText = rc.context.trim(emailListArray[index]);
+			var emailText = $.trim(emailListArray[index]);
 			if (emailText==null || !emailText) {
 				continue;
 			}
@@ -3800,11 +3800,11 @@ rc.validateInput.populateUpsertFormData = function(component) {
 	if (!component) {
 		return validateInfo;
 	}
-	component = rc.context(component);
+	component = $(component);
 	var fieldName;
 	var validators;
 	component.find('.rc-component-content .form-control[name],.rc-component-content .form-control[data-name]').each(function(index,field) {
-		field = rc.context(field);
+		field = $(field);
 		fieldName = field.attr("name") || field.attr("data-name") || "";
 		validators = field.attr("data-validate-type") || "";
 		if (!fieldName) {
@@ -3814,7 +3814,7 @@ rc.validateInput.populateUpsertFormData = function(component) {
 			validateInfo[fieldName] = validators;
 		}
 		//check if all validations for this field are disabled ? 
-		if (rc.context(field).closest("[data-validatation-disabled]").attr("data-validatation-disabled") == "true") {
+		if ($(field).closest("[data-validatation-disabled]").attr("data-validatation-disabled") == "true") {
 			validatorDisableFlags[fieldName] = true;
 		} else {
 			validatorDisableFlags[fieldName] = false;
@@ -3843,26 +3843,26 @@ rc.validateInput.initializeComponentData = function(component,data) {
 		} else {
 			isDisabled = "false";
 		}
-		field = rc.context(component).find('.form-control[name="'+fieldName+'"],.form-control[data-name="'+fieldName+'"]');
+		field = $(component).find('.form-control[name="'+fieldName+'"],.form-control[data-name="'+fieldName+'"]');
 		if (isDisabled == "true") {
-			rc.context(field).closest("[data-validatation-disabled]").attr("data-validatation-disabled", isDisabled);
-			rc.context(field).closest("[data-validatation-disabled]").find('[data-cascade="data-validatation-disabled"]').trigger('click');
+			$(field).closest("[data-validatation-disabled]").attr("data-validatation-disabled", isDisabled);
+			$(field).closest("[data-validatation-disabled]").find('[data-cascade="data-validatation-disabled"]').trigger('click');
 		} else {
-			rc.context(field).closest("[data-validatation-disabled]").attr("data-validatation-disabled", "false");
+			$(field).closest("[data-validatation-disabled]").attr("data-validatation-disabled", "false");
 		}
-		rc.context(field).attr("data-validate-type", validators);
+		$(field).attr("data-validate-type", validators);
 	}
 };
 
 //disable the local only feature, to allow validations to be fired on fields
 rc.enableLocalOnly = function(enableLocalOnly) {
-	var localFieldList = rc.context('#rc-page-container [data-local-only="true"] input.rc-field-name[data-name]');
+	var localFieldList = $('#rc-page-container [data-local-only="true"] input.rc-field-name[data-name]');
 	localFieldList.each(function(index,field) {
 		if (false == enableLocalOnly) {
-			field = rc.context(field);
+			field = $(field);
 			field.attr("name",field.attr("data-name"));
 		} else if (true == enableLocalOnly) {
-			field = rc.context(field);
+			field = $(field);
 			field.removeAttr("name");
 		}
 	});
@@ -3872,7 +3872,7 @@ rc.enableLocalOnly = function(enableLocalOnly) {
 rc.validateInput.initialize = function() {
 	rc.enableLocalOnly(false);
 	//add default validator classes to each field configured for validation, add validator to form once
-	rc.context('#rc-page-container').bootstrapValidator({
+	$('#rc-page-container').bootstrapValidator({
 		framework: 'bootstrap',
 		feedbackIcons: {
 			valid: 'glyphicon glyphicon-ok',
@@ -3880,8 +3880,8 @@ rc.validateInput.initialize = function() {
 			validating: 'glyphicon glyphicon-refresh'
 		}
 	});
-	rc.context('#rc-page-container .rc-component-content .form-control[name]').each(function(index,field) {
-		field = rc.context(field);
+	$('#rc-page-container .rc-component-content .form-control[name]').each(function(index,field) {
+		field = $(field);
 		rc.validateInput.initializeFieldValidator(field);
 	});
 };
@@ -3901,7 +3901,7 @@ rc.validateInput.initializeFieldValidator = function(component) {
 	var validateTypeAttr;
 	var validatorRuleSet;
 	var validatorRule;
-	var component = rc.context(component);
+	var component = $(component);
 	var fieldName = component.attr("name");
 	if (!fieldName) {
 		return true;
@@ -3929,7 +3929,7 @@ rc.validateInput.initializeFieldValidator = function(component) {
 		|| rc.validateInput.isFieldValidatorsDisabled(component) == true) {
 		validatorTypesArray = [];
 	}
-	var nonEmptyValidatorIndex = rc.context.inArray("notEmpty",validatorTypesArray);
+	var nonEmptyValidatorIndex = $.inArray("notEmpty",validatorTypesArray);
 	//check if the component is required
 	if (rc.validateInput.isFieldRequired(component) == true) {
 		if (nonEmptyValidatorIndex == -1) {
@@ -3957,14 +3957,14 @@ rc.validateInput.initializeFieldValidatorRules = function(fieldName, validatorTy
 		//add code for custom validators
 		validatorRule = rc.validateInput.getValidator(validatorRule);
 		//merge all validation rules together into validatorRuleSet
-		validatorRuleSet = rc.context.extend( validatorRuleSet, validatorRule );
+		validatorRuleSet = $.extend(validatorRuleSet, validatorRule);
 	}
 	validatorRuleSet = {"validators":validatorRuleSet};
 	//try removing the field first to clear all existing validators if any
 	try {
-		rc.context('#rc-page-container').bootstrapValidator('removeField',fieldName);
+		$('#rc-page-container').bootstrapValidator('removeField',fieldName);
 	} catch (exception){ }
-	rc.context('#rc-page-container').bootstrapValidator('addField',fieldName,validatorRuleSet);
+	$('#rc-page-container').bootstrapValidator('addField',fieldName,validatorRuleSet);
 	return true;
 };
 
@@ -3973,7 +3973,7 @@ rc.validateInput.getValidator = function(validatorType) {
 };
 
 rc.validateInput.isFormValid = function() {
-	var container = rc.context('#rc-page-container');
+	var container = $('#rc-page-container');
 	var form = container.data('bootstrapValidator');
 	form.validate();
 	return form.isValidContainer(container);
@@ -3984,13 +3984,12 @@ rc.validateInput.validateField = function(field) {
 	if (!field) {
 		return;
 	}
-	rc.context("#rc-page-container").bootstrapValidator('revalidateField',field);
+	$("#rc-page-container").bootstrapValidator('revalidateField',field);
 };
 
 rc.validatorsRequiringCountry = ["zipCode","iban","phone"];
 
 //use default validator for these fields
-//rc.validateInput.fieldWiseDefaultValidators = {}; // todo: remove - old name
 rc.validateInput.fieldValidator = {};
 rc.validateInput.fieldValidator[rc.ns+'address_country__c'] = ["countryCode"];
 rc.validateInput.fieldValidator[rc.ns+'address_country_name__c'] = ["country"];
@@ -4038,57 +4037,6 @@ rc.validateInput.fieldValidator[rc.ns+'recipient_preferred_email__c'] = ["email"
 rc.validateInput.fieldValidator[rc.ns+'recipient_preferred_phone__c'] = ["phone"];
 rc.validateInput.fieldValidator[rc.ns+'recipient_state_province__c'] = ["state"];
 
-/* keep for reference until tested
-rc.validateInput.fieldWiseDefaultValidators = {
-	"{!nameSpaceLowerCase}contact_1_email__c":["email"],
-	"{!nameSpaceLowerCase}payment_method_card_number__c":["creditCard"],
-	"{!nameSpaceLowerCase}address_2_city__c":["city"],
-	"{!nameSpaceLowerCase}address_2_country__c":["countryCode"],
-	"{!nameSpaceLowerCase}address_2_city__c":["city"],
-	"{!nameSpaceLowerCase}address_2_country__c":["countryCode"],
-	"{!nameSpaceLowerCase}address_2_country_name__c":["country"],
-	"{!nameSpaceLowerCase}address_2_postal_code__c":["zipCode"],
-	"{!nameSpaceLowerCase}address_2_state__c":["state"],
-	"{!nameSpaceLowerCase}address_2_zip__c":["zipCode"],
-	"{!nameSpaceLowerCase}address_city__c":["city"],
-	"{!nameSpaceLowerCase}address_country__c":["countryCode"],
-	"{!nameSpaceLowerCase}address_country_name__c":["country"],
-	"{!nameSpaceLowerCase}address_postal_code__c":["zipCode"],
-	"{!nameSpaceLowerCase}address_state__c":["state"],
-	"{!nameSpaceLowerCase}address_zip__c":["zipCode"],
-	"{!nameSpaceLowerCase}contact_1_phone_1__c":["phone"],
-	"{!nameSpaceLowerCase}contact_1_phone_2__c":["phone"],
-	"{!nameSpaceLowerCase}contact_2_email__c":["email"],
-	"{!nameSpaceLowerCase}contact_2_phone_1__c":["phone"],
-	"{!nameSpaceLowerCase}contact_2_phone_2__c":["phone"],
-	"{!nameSpaceLowerCase}event_purchase_giving_amount__c":["amount"],
-	"{!nameSpaceLowerCase}giving_check_date__c":["date"],
-	"{!nameSpaceLowerCase}giving_close_date__c":["date"],
-	"{!nameSpaceLowerCase}giving_close_date_time__c":["datetime"],
-	"{!nameSpaceLowerCase}giving_giving_amount__c":["amount"],
-	"{!nameSpaceLowerCase}giving_giving_years__c":["year"],
-	"{!nameSpaceLowerCase}giving_record_amount__c":["amount"],
-	"{!nameSpaceLowerCase}payment_method_billing_email__c":["email"],
-	"{!nameSpaceLowerCase}payment_method_billing_phone__c":["phone"],
-	"{!nameSpaceLowerCase}payment_method_card_expiration_date__c":["date"],
-	"{!nameSpaceLowerCase}payment_method_card_expiration_month__c":["monthExpiration"],
-	"{!nameSpaceLowerCase}payment_method_card_expiration_year__c":["yearExpiration"],
-	"{!nameSpaceLowerCase}payment_method_card_last_four_digits__c":["numeric"],
-	"{!nameSpaceLowerCase}payment_method_card_security_code__c":["cvv"],
-	"{!nameSpaceLowerCase}preferences_1_end_date__c":["date"],
-	"{!nameSpaceLowerCase}preferences_1_start_date__c":["date"],
-	"{!nameSpaceLowerCase}preferences_2_end_date__c":["date"],
-	"{!nameSpaceLowerCase}preferences_2_start_date__c":["date"],
-	"{!nameSpaceLowerCase}recipient_city__c":["city"],
-	"{!nameSpaceLowerCase}recipient_country__c":["country"],
-	"{!nameSpaceLowerCase}recipient_email__c":["email"],
-	"{!nameSpaceLowerCase}recipient_phone__c":["phone"],
-	"{!nameSpaceLowerCase}recipient_postal_code__c":["zipCode"],
-	"{!nameSpaceLowerCase}recipient_preferred_email__c":["email"],
-	"{!nameSpaceLowerCase}recipient_preferred_phone__c":["phone"],
-	"{!nameSpaceLowerCase}recipient_state_province__c":["state"]
-}
-*/
 //standard validators
 rc.validateInput.validatorMap = {
 	"notEmpty" : {
@@ -4193,7 +4141,7 @@ rc.validateInput.validatorMap = {
 			message: 'Expired',
 			callback: function(value, validator, $field) {
 				value = parseInt(value, 10);
-				var year = rc.context('[name="'+rc.ns+'payment_method_card_expiration_year__c"]').val(),
+				var year = $('[name="'+rc.ns+'payment_method_card_expiration_year__c"]').val(),
 					currentMonth = new Date().getMonth() + 1,
 					currentYear  = new Date().getFullYear();
 				if (value < 0 || value > 12) {
@@ -4220,7 +4168,7 @@ rc.validateInput.validatorMap = {
 			message: 'Expired',
 			callback: function(value, validator, $field) {
 				value = parseInt(value, 10);
-				var month = rc.context('[name="'+rc.ns+'payment_method_card_expiration_month__c"]').val(),
+				var month = $('[name="'+rc.ns+'payment_method_card_expiration_month__c"]').val(),
 					currentMonth = new Date().getMonth() + 1,
 					currentYear  = new Date().getFullYear();
 				if (value < currentYear) {
@@ -4240,14 +4188,6 @@ rc.validateInput.validatorMap = {
 		}
 	},
 	"amount" : {
-		/*,
-		numeric: {
-			message: 'The amount must be a number',
-			transformer: function($field, validatorName, validator) {
-				var value = $field.val();
-				return value.replace(',', '');// strip out commas
-			}
-		},new validation below for TAOS-1509*/
 		regexp: {
 			regexp: /^\d+\.?\d{0,2}$/,
 			message: 'The Amount must be a number with only 2 decimal places'
