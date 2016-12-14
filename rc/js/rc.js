@@ -7,8 +7,8 @@ That way we can reference variables set in our VF Page that we wouldn't have acc
 */
 rc = rc || {};
 rc.ui = rc.ui || {};
-rc.components = rc.components || {};
-rc.components.remoting = rc.components.remoting || {};
+rc.comp = rc.comp || {};
+rc.comp.remoting = rc.comp.remoting || {};
 rc.dataModal = rc.dataModal || {};
 rc.workflow = rc.workflow || {};
 rc.upsertData = rc.upsertData || {};
@@ -16,7 +16,7 @@ rc.sessionId;/* litle Session Id */
 var sessionList = {};
 
 rc.initializeFormApp = function() {
-	//rc.components.initialize('.page-header');// Initialize actions in the page header
+	//rc.comp.initialize('.page-header');// Initialize actions in the page header
 	// Component list sorting
 	$('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
@@ -157,9 +157,9 @@ rc.selectFormInfoList = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectFormInfoList;
-	rc.components.remoting.send(deferred, send, rc.selectFormInfoList.done, rc.selectFormInfoList.fail);
+	rc.comp.remoting.send(deferred, send, rc.selectFormInfoList.done, rc.selectFormInfoList.fail);
 	return deferred.promise();
-	};
+};
 
 rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 	// Reset the list
@@ -187,8 +187,8 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 		menu.append(item_clone);
 	});
 	// Initialize items
-	rc.components.initialize(list);
-	rc.components.initialize(menu);
+	rc.comp.initialize(list);
+	rc.comp.initialize(menu);
 	// When the form item is clicked, reselect the form data
 	list.find('.rc-link').on('click', rc.selectFormData);
 	// Is there a page already selected? Or just choose the first page?
@@ -232,8 +232,8 @@ rc.selectFormData.done = function(data) {
 	data.workflows = data.workflows || [];
 	data.data = data.data || {};
 	// Apply Page Level CSS
-	rc.components.importContentCSS($("html"), data.styles);
-	rc.components.updateContentCSS($("html"));
+	rc.comp.importContentCSS($("html"), data.styles);
+	rc.comp.updateContentCSS($("html"));
 	//validations flag
 	rc.validationsEnabled = data.data['validations-enabled'] || "false";
 	$("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
@@ -266,11 +266,11 @@ rc.selectFormData.done = function(data) {
 	});
 	// Process data
 	$(data.workflows).each(function(at, data) {
-		rc.components.insertWorkflow('#rc-workflows-list', data);
+		rc.comp.insertWorkflow('#rc-workflows-list', data);
 	});
 	// Process data
 	$(data.containers).each(function(at, data) {
-		rc.components.insertColumnList('#rc-container-list', data);
+		rc.comp.insertColumnList('#rc-container-list', data);
 	});
 	// Process copy-param clicks
 	$('.dropdown-menu[data-original-target]').each(function() {
@@ -293,7 +293,7 @@ rc.selectData = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectData;
-	rc.components.remoting.send(deferred, send, rc.selectData.done, rc.selectData.fail);
+	rc.comp.remoting.send(deferred, send, rc.selectData.done, rc.selectData.fail);
 	return deferred.promise();
 };
 
@@ -313,12 +313,12 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 		}
 	});
 	// render cart products with their quantities
-	rc.components.Cart.renderUpsertData(recv);
-	rc.components.Attribute.renderUpsertData(recv);
+	rc.comp.Cart.renderUpsertData(recv);
+	rc.comp.Attribute.renderUpsertData(recv);
 	//restore campaign ask state
-	rc.components.CampaignAsk.populateData(recv);
+	rc.comp.CampaignAsk.populateData(recv);
 	// render sessions with their quantities
-	rc.components.Session.renderUpsertData(recv);
+	rc.comp.Session.renderUpsertData(recv);
 	//if a old record before introducing the giving toggle on form
 	var workflowActionGivingFlag = $('[data-cascade="exclude-giving"][is-old="true"]');
 	if (workflowActionGivingFlag && workflowActionGivingFlag.length>0) {
@@ -974,10 +974,10 @@ rc.ui.toggleDescription = function() {
 	}
 };
 
-rc.components.initialize = function(component, data) {
+rc.comp.initialize = function(component, data) {
 	data = data || {};// Check data
 	component = $(component);// Check component
-	rc.components.renderDataTemplates(component);// Copy templates
+	rc.comp.renderDataTemplates(component);// Copy templates
 	// Copy data-field-name
 	component.find('[data-field-name]').each(function() {
 		var name = $(this).attr('data-field-name').toLowerCase();
@@ -1077,20 +1077,20 @@ rc.components.initialize = function(component, data) {
 	component.find('.form-control').on('change', rc.upsertData.validate);
 };
 
-rc.components.renderDataTemplates = function(component) {
+rc.comp.renderDataTemplates = function(component) {
 	// Copy templates
 	component.find('[data-template]').each(function() {
 		var name = $(this).attr('data-template');
 		var html = $(name).html();
 		//recursively replace templates (if any)
 		var templateElem = $(html);
-		templateElem = rc.components.renderDataTemplates(templateElem);
+		templateElem = rc.comp.renderDataTemplates(templateElem);
 		$(this).prepend(templateElem);
 	});
 	return component;
 };
 
-rc.components.pickListValues = function() {
+rc.comp.pickListValues = function() {
 	var responsePickValsArr = null;
 	return {
 		fillPickListValues : function(keyField) {
@@ -1127,7 +1127,7 @@ rc.components.pickListValues = function() {
 	}
 } ();
 
-rc.components.remoting.send = function(deferred, send, done, fail) {
+rc.comp.remoting.send = function(deferred, send, done, fail) {
 	send.__campaign = send.__campaign || rc.campaignId;
 	send.__mode = send.__mode || rc.getParam('mode');
 	send.__form = send.__form || rc.getParam('form') || rc.paramForm || null;
@@ -1153,19 +1153,19 @@ rc.components.remoting.send = function(deferred, send, done, fail) {
 	return deferred.promise();
 };
 
-rc.components.insert = function(template, container) {
+rc.comp.insert = function(template, container) {
 	var component = $(template).clone();
 	component.removeAttr('id');
 	component.removeClass('rc-template');
 	component.show();
 	// Initialize template and elements
-	rc.components.initialize(component);
+	rc.comp.initialize(component);
 	// Add to container
 	$(container).append(component);
 	return component;
 };
 
-rc.components.importContentCSS = function(component, styles) {
+rc.comp.importContentCSS = function(component, styles) {
 	styles = styles || {};
 	// Import
 	var component = $(component);
@@ -1181,13 +1181,13 @@ rc.components.importContentCSS = function(component, styles) {
 	for (var name in styles) {component.attr('css-' + name, styles[name]);}
 };
 
-rc.components.insertWorkflow = function(container, container_data) {
+rc.comp.insertWorkflow = function(container, container_data) {
 	container_data = container_data || {};
 	container_data.actions = container_data.actions || [];
 	container_data.data = container_data.data || {};
 	container_data.data['guid'] = container_data.data['guid'] || rc.guid();
 	// Set attributes
-	var item = rc.components.insert('#rc-container-workflow', container, container_data.data);
+	var item = rc.comp.insert('#rc-container-workflow', container, container_data.data);
 	var item_content = item.find('.rc-container-workflow-content');
 	// Process
 	item.find('.rc-workflow-name').val(container_data.data['name']);
@@ -1197,16 +1197,16 @@ rc.components.insertWorkflow = function(container, container_data) {
 	// Actions
 	item.find('[data-action="insert"]').on('click', function() {
 		var data = {context:'then'};
-		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
+		rc.comp.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
 	});
 	// Process data
 	$(container_data.actions).each(function(at, data) {
-		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
+		rc.comp.insertWorkflowAction(item.find('.rc-container-workflow-content'), data);
 	});
 
 	// No actions? Insert at least one
 	if (container_data.actions.length == 0) {
-		rc.components.insertWorkflowAction(item.find('.rc-container-workflow-content'), { guid: rc.guid() });
+		rc.comp.insertWorkflowAction(item.find('.rc-container-workflow-content'), { guid: rc.guid() });
 	}
 	// Sortable
 	item.find('.rc-container-workflow-content').sortable({handle:'.rc-container-handle',opacity:0.5,placeholder:'rc-state-highlight well',revert:true});
@@ -1215,7 +1215,7 @@ rc.components.insertWorkflow = function(container, container_data) {
 	return item;
 };
 
-rc.components.insertWorkflowAction = function(container, container_data) {
+rc.comp.insertWorkflowAction = function(container, container_data) {
 	container_data = container_data || {};
 	container_data.context = container_data.context || 'then';
 	container_data.data = container_data.data || {};
@@ -1225,9 +1225,9 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 		container_data.data['data'] = rc.html_decode(container_data.data['data']);
 	}
 	// Set attributes
-	var item = rc.components.insert('#rc-component-workflow-action', container, container_data.data);
+	var item = rc.comp.insert('#rc-component-workflow-action', container, container_data.data);
 	item.attr('id', container_data.data['guid']);
-	item.on('cascade-value-changed', rc.components.validateWorkflowAction);
+	item.on('cascade-value-changed', rc.comp.validateWorkflowAction);
 	// Disable send payment option if already payment processor is added
 	if (container_data.method != 'send-payment' && rc.workflow.hasPaymentProcessor()) {
 		item.find('.dropdown-menu a[data-value="send-payment"]').attr("disabled","disabled");
@@ -1238,7 +1238,7 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 	item_content.find('[data-cascade="data-method"][data-value="' + container_data.method + '"]').click();
 	var item_details = item_content.find('.rc-fg[data-method="' + container_data.method + '"]');
 	//refresh copy parameter merge fields list
-	rc.components.CopyParameterAction.refreshMergeFieldPicklist(container);
+	rc.comp.CopyParameterAction.refreshMergeFieldPicklist(container);
 	// what details to process?
 	if (container_data.method == 'send-mail') {
 		item_details.find('[data-cascade="data-mail-to"]').val(container_data.data['mail-to']);
@@ -1246,7 +1246,7 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 		item_details.find('[data-cascade="data-mail-subject"]').val(container_data.data['mail-subject']);
 		item_details.find('[data-cascade="data-mail-body"]').val(container_data.data['mail-body']);
 		item_details.find('[data-cascade]').change();
-		rc.components.registerMergeFieldAutoComplete(item_details.find('[data-cascade="data-mail-to"]'), rc.getKeys(rc.ui.MergeFieldMap));
+		rc.comp.registerMergeFieldAutoComplete(item_details.find('[data-cascade="data-mail-to"]'), rc.getKeys(rc.ui.MergeFieldMap));
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'corduro') {
 		item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
 		item_details.find('[data-cascade="data-auth-token"]').val(container_data.data['auth-token']);
@@ -1300,7 +1300,7 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 				rc.initializeSessionId(container_data.data['advanced-fraud-detection-test-mode'],container_data.data['sessionId']);
 				if (isViewMode && isAdvancedFraudDetection) {
 					//Add profiling tag to form body
-					rc.components.insertLitleProfilingTag();
+					rc.comp.insertLitleProfilingTag();
 				}
 			}
 		}
@@ -1364,7 +1364,7 @@ rc.components.insertWorkflowAction = function(container, container_data) {
 	}
 };
 
-rc.components.validateWorkflowAction = function(event,details) {
+rc.comp.validateWorkflowAction = function(event,details) {
 	if (details.attribute=="data-method") {
 		if (details.value=='send-payment') {
 			$('#rc-workflows-list .dropdown-menu a[data-value="send-payment"]').not($(details.source)).attr("disabled","disabled");
@@ -1374,43 +1374,43 @@ rc.components.validateWorkflowAction = function(event,details) {
 	}
 	if (details.attribute=="data-value") {
 		if ($(this).attr('data-method') == 'send-payment') {
-			rc.components.validateCampaignAskSection();
+			rc.comp.validateCampaignAskSection();
 		}
 	}
 };
 
-rc.components.insertColumnList = function(container, container_data) {
+rc.comp.insertColumnList = function(container, container_data) {
 	container_data = container_data || {};
 	container_data.data = container_data.data || {};
 	container_data.data.columns = parseInt(container_data.data.columns || '1');
 	container_data.data['guid'] = container_data.data['guid'] || rc.guid();
 	// Set attributes
-	var item = rc.components.insert('#rc-container-column-list', container, container_data.data);
+	var item = rc.comp.insert('#rc-container-column-list', container, container_data.data);
 	var item_content = item.find('.rc-container-column-list-content');
 	item.attr('id', container_data.data['guid']);
 	item.attr('data-columns', container_data.data.columns);
 	// Apply CSS
-	rc.components.importContentCSS(item, container_data.styles);
-	rc.components.updateContentCSS(item);
+	rc.comp.importContentCSS(item, container_data.styles);
+	rc.comp.updateContentCSS(item);
 	// Delete columns over a certain position
-	rc.components.deleteColumnListColumns(item_content, container_data.data.columns);
+	rc.comp.deleteColumnListColumns(item_content, container_data.data.columns);
 	// Insert new columns
-	rc.components.upsertColumnListColumns(item_content, container_data.data.columns, container_data.columns);
+	rc.comp.upsertColumnListColumns(item_content, container_data.data.columns, container_data.columns);
 	// Now, with everything in place, loop over the column data and insert components
-	rc.components.upsertColumnListComponents(item_content, container_data.columns);
+	rc.comp.upsertColumnListComponents(item_content, container_data.columns);
 	// Hide the empty alert message
 	$('#rc-container-list-messages').hide();
 	return item;
 };
 
-rc.components.deleteColumnListColumns = function(container, max_position) {
+rc.comp.deleteColumnListColumns = function(container, max_position) {
 	$(container).find('.rc-container-column').each(function() {
 		var position = parseInt($(this).attr('data-position') || '999');
 		if (max_position < position) {$(this).remove();};
 	});
 }
 
-rc.components.upsertColumnListColumns = function(container, max_position, column_data) {
+rc.comp.upsertColumnListColumns = function(container, max_position, column_data) {
 	// Check column data
 	column_data = column_data || [];
 	// Add new items
@@ -1424,7 +1424,7 @@ rc.components.upsertColumnListColumns = function(container, max_position, column
 		// Insert if needed
 		if (item.length == 0) {
 			// Create
-			item = rc.components.insert('#rc-container-column', container, data.data);
+			item = rc.comp.insert('#rc-container-column', container, data.data);
 			container.append(item);
 			// Sortable
 			item.find('.rc-container-column-content').sortable({
@@ -1444,7 +1444,7 @@ rc.components.upsertColumnListColumns = function(container, max_position, column
 	});
 };
 
-rc.components.upsertColumnListComponents = function(container, column_data) {
+rc.comp.upsertColumnListComponents = function(container, column_data) {
 	$(column_data).each(function(position, data) {
 		//filter component Data
 		data.components = rc.filterComponentData(data.components);
@@ -1455,13 +1455,13 @@ rc.components.upsertColumnListComponents = function(container, column_data) {
 		var item_content = item.find('.rc-container-column-content');
 		// Update contents
 		$(data.components).each(function(index, component_data) {
-			rc.components.upsertComponent(item_content, component_data);
+			rc.comp.upsertComponent(item_content, component_data);
 		});
-		rc.components.pickListValues.fillPickListValues();
+		rc.comp.pickListValues.fillPickListValues();
 	});
 };
 
-rc.components.upsertComponent = function(container, component_data) {
+rc.comp.upsertComponent = function(container, component_data) {
 	// Sanity
 	var data = component_data || {};
 	data.data = data.data || {};
@@ -1473,27 +1473,27 @@ rc.components.upsertComponent = function(container, component_data) {
 	data.placeholderValues = data.placeholderValues || {};
 	// Matching component types
 	var insert_map = {};
-	insert_map['address'] = rc.components.Address;
-	insert_map['advanced-css'] = rc.components.AdvancedCSS;
-	insert_map['button'] = rc.components.Button;
-	insert_map['campaign-ask'] = rc.components.CampaignAsk;
-	insert_map['campaign-product'] = rc.components.CampaignProduct;
-	insert_map['campaign-progress'] = rc.components.CampaignProgress;
-	insert_map['credit-card'] = rc.components.CreditCard;
-	insert_map['internal-javascript'] = rc.components.InternalJavascript;
-	insert_map['external-javascript'] = rc.components.ExternalJavascript;
-	insert_map['external-stylesheet'] = rc.components.ExternalStylesheet;
-	insert_map['html-block'] = rc.components.HtmlBlock;
-	insert_map['image'] = rc.components.Image;
-	insert_map['jumbotron'] = rc.components.Jumbotron;
-	insert_map['merge-field'] = rc.components.MergeField;
-	insert_map['simple-header'] = rc.components.SimpleHeader;
-	insert_map['simple-text'] = rc.components.SimpleText;
-	insert_map['url-link'] = rc.components.URLLink;
+	insert_map['address'] = rc.comp.Address;
+	insert_map['advanced-css'] = rc.comp.AdvancedCSS;
+	insert_map['button'] = rc.comp.Button;
+	insert_map['campaign-ask'] = rc.comp.CampaignAsk;
+	insert_map['campaign-product'] = rc.comp.CampaignProduct;
+	insert_map['campaign-progress'] = rc.comp.CampaignProgress;
+	insert_map['credit-card'] = rc.comp.CreditCard;
+	insert_map['internal-javascript'] = rc.comp.InternalJavascript;
+	insert_map['external-javascript'] = rc.comp.ExternalJavascript;
+	insert_map['external-stylesheet'] = rc.comp.ExternalStylesheet;
+	insert_map['html-block'] = rc.comp.HtmlBlock;
+	insert_map['image'] = rc.comp.Image;
+	insert_map['jumbotron'] = rc.comp.Jumbotron;
+	insert_map['merge-field'] = rc.comp.MergeField;
+	insert_map['simple-header'] = rc.comp.SimpleHeader;
+	insert_map['simple-text'] = rc.comp.SimpleText;
+	insert_map['url-link'] = rc.comp.URLLink;
 	//rcEvents Components
-	insert_map['cart'] = rc.components.Cart;
-	insert_map['session'] = rc.components.Session;
-	insert_map['attribute'] = rc.components.Attribute;
+	insert_map['cart'] = rc.comp.Cart;
+	insert_map['session'] = rc.comp.Session;
+	insert_map['attribute'] = rc.comp.Attribute;
 	// Found a match?
 	var item_insert = insert_map[data.type] || function() {};
 	var item = new item_insert(container, data.data);
@@ -1506,8 +1506,8 @@ rc.components.upsertComponent = function(container, component_data) {
 	// Set hidden field attribute and value
 	rc.setHiddenFieldAttribute(item.component, data.data['customHidden']);
 	// Apply CSS
-	rc.components.importContentCSS(item.component, data.styles);
-	rc.components.updateContentCSS(item.component);
+	rc.comp.importContentCSS(item.component, data.styles);
+	rc.comp.updateContentCSS(item.component);
 	// Add to "copy-param" data
 	if (data.type == 'merge-field') {
 		$('#rc-workflows-list').find('[data-template="#rc-component-workflow-action--copy-param"]').each(function() {
@@ -1525,7 +1525,7 @@ rc.components.upsertComponent = function(container, component_data) {
 	if (item.send) {item.send();}
 };
 
-rc.components.updateContentCSS = function(component) {
+rc.comp.updateContentCSS = function(component) {
 	// Update from css data
 	var component = $(component);
 	var component_content = component.find('.rc-content-css').filter(':first');
@@ -1563,25 +1563,25 @@ rc.components.updateContentCSS = function(component) {
 	rc.ui.removeRedundantOpacity();
 };
 
-rc.components.MergeField = function(container, data) {
+rc.comp.MergeField = function(container, data) {
 	this.container = container;
 	this.type = 'MergeField';
 	this.data = data;
 	if (data['type'] == 'PICKLIST') {
-		this.component = rc.components.insert('#rc-component-merge-field-picklist', this.container, this.data);
+		this.component = rc.comp.insert('#rc-component-merge-field-picklist', this.container, this.data);
 		var selectList = this.component.find('.rc-field-name');
 		selectList.attr("data-field-name",data.name);
-		rc.components.pickListValues.populatePicklistValue(selectList,data.name);
+		rc.comp.pickListValues.populatePicklistValue(selectList,data.name);
 	} else if (data['type'] == 'MULTIPICKLIST') {
-		this.component = rc.components.insert('#rc-component-merge-field-picklist', this.container, this.data);
+		this.component = rc.comp.insert('#rc-component-merge-field-picklist', this.container, this.data);
 		var selectList = this.component.find('.rc-field-name');
 		selectList.attr("data-field-name",data.name);
 		selectList.prop('multiple',true);
-		rc.components.pickListValues.populatePicklistValue(selectList,data.name);
+		rc.comp.pickListValues.populatePicklistValue(selectList,data.name);
 	} else if (data['type'] == 'BOOLEAN') {
-		this.component = rc.components.insert('#rc-component-merge-field-checkbox', this.container, this.data);
+		this.component = rc.comp.insert('#rc-component-merge-field-checkbox', this.container, this.data);
 	} else {
-		this.component = rc.components.insert('#rc-component-merge-field', this.container, this.data);
+		this.component = rc.comp.insert('#rc-component-merge-field', this.container, this.data);
 	}
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
@@ -1596,11 +1596,11 @@ rc.components.MergeField = function(container, data) {
 	this.component.find('.input-group').attr('data-required', data.required);
 };
 
-rc.components.Address = function(container, data) {
+rc.comp.Address = function(container, data) {
 	this.container = container;
 	this.type = 'Address';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-address', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-address', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	for (var name in this.data) {// Update
@@ -1608,10 +1608,10 @@ rc.components.Address = function(container, data) {
 		var key = name.replace('req-','');
 		$(this.component).find("[data-field-name='"+key+"'] [data-required]").filter(":first").attr("data-required",this.data[name]);
 	}
-	this.component.find('[name="'+rc.ns+'address_state__c"]').change(rc.components.Address.populateCountryBasedOnState);
+	this.component.find('[name="'+rc.ns+'address_state__c"]').change(rc.comp.Address.populateCountryBasedOnState);
 };
 
-rc.components.Address.populateCountryBasedOnState = function(event) {
+rc.comp.Address.populateCountryBasedOnState = function(event) {
 	var countryInputElem = $(this).closest("div.rc-component-address-content").find('[name="'+rc.ns+'address_country__c"]');
 	if (!countryInputElem.length) {return;}
 	var stateValue = $.trim($(this).val());
@@ -1620,34 +1620,34 @@ rc.components.Address.populateCountryBasedOnState = function(event) {
 	if (isFromPicklist>0) {countryInputElem.val("US");} else {countryInputElem.val("");}
 };
 
-rc.components.CampaignAsk = function(container, data) {
+rc.comp.CampaignAsk = function(container, data) {
 	this.container = container;
 	this.type = 'CampaignAsk';
 	this.data = data || {};
 	this.data.data = this.data.data || {};
-	this.component = rc.components.insert('#rc-component-campaign-ask', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-campaign-ask', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	// Copy text values
 	this.component.find('.text-1').text(data['text-1']);
 	this.component.find('.text-2').text(data['text-2']);
 	// Actions: Required as properties here so that they can access the "this" value
-	this.send = rc.components.CampaignAsk.send;
-	this.done = rc.components.CampaignAsk.done;
+	this.send = rc.comp.CampaignAsk.send;
+	this.done = rc.comp.CampaignAsk.done;
 	this.component.find('.input-group').attr('data-required', data.required);
 };
 
-rc.components.CampaignAsk.send = function(deferred, send) {
+rc.comp.CampaignAsk.send = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectCampaignAskList;
-	rc.components.remoting.send(deferred, send, this.done, this.fail);
+	rc.comp.remoting.send(deferred, send, this.done, this.fail);
 	return deferred.promise();
 };
 
-rc.components.CampaignAsk.frequencyAmountMinThreshold = { };
+rc.comp.CampaignAsk.frequencyAmountMinThreshold = { };
 
-rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
+rc.comp.CampaignAsk.done = function(deferred, send, recv, meta) {
 	//ask amounts
 	var html = $('#rc-component-campaign-ask-item').html();
 	var list = $('.rc-component-campaign-ask-item-list');
@@ -1755,7 +1755,7 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 			askOtherArray.push(otherElem);
 		}
 		//Note: Keeping minimum threshold amound in map to validate other amount when submitting the form.
-		rc.components.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
+		rc.comp.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
 	});
 	freqList.empty();
 	otherContainer.empty();
@@ -1763,14 +1763,14 @@ rc.components.CampaignAsk.done = function(deferred, send, recv, meta) {
 	freqList.append(freqArray);
 	otherContainer.append(askOtherArray);
 	if (recv.length == 0) {list.append('<div class="alert alert-warning">No ask values configured!</div>');}
-	rc.components.initialize(campaignAskContainer);
+	rc.comp.initialize(campaignAskContainer);
 	// Set the first one active
 	$('.rc-campaign-ask-frequency-list .btn').filter(':first').click();
 	// Validate CampaignAsk section against payment Processor
-	rc.components.validateCampaignAskSection();
+	rc.comp.validateCampaignAskSection();
 };
 
-rc.components.CampaignAsk.getAskValueFromMergeFields = function(result) {
+rc.comp.CampaignAsk.getAskValueFromMergeFields = function(result) {
 	result['finalAmount'] = 0;
 	//check if giving frequenncy field is exist on the page
 	var isGivingFrequencyMergeField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_frequency__c"]').val() != undefined ? true : false;
@@ -1790,8 +1790,8 @@ rc.components.CampaignAsk.getAskValueFromMergeFields = function(result) {
 	}
 };
 
-rc.components.CampaignAsk.populateUpsertData = function(send) {
-	var askAmount = rc.components.CampaignAsk.getAskValue();
+rc.comp.CampaignAsk.populateUpsertData = function(send) {
+	var askAmount = rc.comp.CampaignAsk.getAskValue();
 	if (askAmount && askAmount.frequency) {
 		send[rc.ns+'giving_giving_frequency__c'] = askAmount.frequency;
 		if (askAmount.finalAmount) {send[rc.ns+'giving_giving_amount__c'] = askAmount.finalAmount;}
@@ -1804,8 +1804,8 @@ rc.components.CampaignAsk.populateUpsertData = function(send) {
 	return send;
 };
 
-rc.components.CampaignAsk.getAskValue = function() {
-	var campaignAsk = rc.components.CampaignAsk.getComponentAskValue();
+rc.comp.CampaignAsk.getAskValue = function() {
+	var campaignAsk = rc.comp.CampaignAsk.getComponentAskValue();
 	//if component is not on the page, read data from the model
 	if ((campaignAsk==null || !campaignAsk) && rc.dataModal.BatchUploadModel) {
 		campaignAsk = {};
@@ -1819,13 +1819,13 @@ rc.components.CampaignAsk.getAskValue = function() {
 	return campaignAsk;
 };
 
-rc.components.CampaignAsk.getComponentAskValue = function() {
+rc.comp.CampaignAsk.getComponentAskValue = function() {
 	var result = {};
 	result['finalAmount'] = 0;
 	var frequencyList = $('#rc-container-list .rc-campaign-ask-frequency-list');
 	if (!frequencyList || frequencyList.length==0) {
 		//Check merge fields if campaign ask is not present. The priority will always be remained for Campaign ask even if giving fields are exist.
-		result = rc.components.CampaignAsk.getAskValueFromMergeFields(result);
+		result = rc.comp.CampaignAsk.getAskValueFromMergeFields(result);
 		return result;
 	}
 	if (frequencyList) {
@@ -1850,7 +1850,7 @@ rc.components.CampaignAsk.getComponentAskValue = function() {
 	return result;
 };
 
-rc.components.CampaignAsk.validateMergeFieldsAskValue = function() {
+rc.comp.CampaignAsk.validateMergeFieldsAskValue = function() {
 	//check if giving frequenncy field is exist on the page
 	var isGivingFrequencyMergeField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_frequency__c"]').val() != undefined ? true : false;
 	//check if giving amount field is exist on the page
@@ -1867,8 +1867,8 @@ rc.components.CampaignAsk.validateMergeFieldsAskValue = function() {
 };
 
 // Validate Campaign Ask amount entered
-rc.components.CampaignAsk.validateAskValue = function() {
-	var askValue = rc.components.CampaignAsk.getAskValue();
+rc.comp.CampaignAsk.validateAskValue = function() {
+	var askValue = rc.comp.CampaignAsk.getAskValue();
 	var componentElem = $("#rc-container-list .rc-component-campaign-ask");
 	var messageTypeElement = $("#rc-container-list .rc-component-campaign-ask .message-header");
 	var messageText = "Donation amount is not selected. Please select and resubmit.";
@@ -1889,7 +1889,7 @@ rc.components.CampaignAsk.validateAskValue = function() {
 	return true;
 };
 
-rc.components.CampaignAsk.populateData = function(data) {
+rc.comp.CampaignAsk.populateData = function(data) {
 	var frequency = data[rc.ns+'giving_giving_frequency__c'];
 	var amount = data[rc.ns+'giving_giving_amount__c'];
 	amount = parseFloat(amount,10);
@@ -1901,30 +1901,30 @@ rc.components.CampaignAsk.populateData = function(data) {
 }
 
 /* start event javascript */
-rc.components.Attribute = function(container, data) {
+rc.comp.Attribute = function(container, data) {
 	this.container = container;
 	this.type = 'attribute';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-cm-attribute', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-cm-attribute', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	// Actions: Required as properties here so that they can access the "this" value
-	this.send = rc.components.Attribute.send;
-	this.done = rc.components.Attribute.done;
-	this.render = rc.components.Attribute.render;
+	this.send = rc.comp.Attribute.send;
+	this.done = rc.comp.Attribute.done;
+	this.render = rc.comp.Attribute.render;
 };
 
-rc.components.Attribute.send = function(deferred, send) {
+rc.comp.Attribute.send = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectCampaignMemberAttributeList;
 	// Done and fail
-	rc.components.remoting.send(deferred, send, $.proxy(this.done,this),this.fail);
+	rc.comp.remoting.send(deferred, send, $.proxy(this.done,this),this.fail);
 	// Done
 	return deferred.promise();
 };
 
-rc.components.Attribute.done = function(deferred, send, recv, meta) {
+rc.comp.Attribute.done = function(deferred, send, recv, meta) {
 	var data = this.data;
 	var defaultOptionElement = $("<option/>", {
 		value:"",
@@ -1947,7 +1947,7 @@ rc.components.Attribute.done = function(deferred, send, recv, meta) {
 	this.component.find(".attribute-select").trigger("change");
 };
 
-rc.components.Attribute.render = function(event) {
+rc.comp.Attribute.render = function(event) {
 	//get selected option & clear label
 	var data = this.data;
 	this.component.find(".rc-label-container label").text("");
@@ -2000,11 +2000,11 @@ rc.components.Attribute.render = function(event) {
 	}
 	this.component.find(".form-control").attr("name",productSlot);
 	this.component.find('.input-group').attr('data-required', data.required);//set required flag from data
-	rc.components.initialize(this.component.find(".rc-value-stub-container"));//initialize the component
+	rc.comp.initialize(this.component.find(".rc-value-stub-container"));//initialize the component
 	return true;
 };
 
-rc.components.Attribute.populateUpsertData = function(send) {
+rc.comp.Attribute.populateUpsertData = function(send) {
 	var attributeInputList = $(".rc-component-cm-attribute .rc-value-container .rc-field-name");
 	$(attributeInputList).each(function(index,attributeInput) {
 		attributeInput = $(attributeInput);
@@ -2025,7 +2025,7 @@ rc.components.Attribute.populateUpsertData = function(send) {
 	return send;
 };
 
-rc.components.Attribute.renderUpsertData = function(send) {
+rc.comp.Attribute.renderUpsertData = function(send) {
 	var productSlotList = rc.getKeys(rc.prodMap);
 	for (var index=0;index<productSlotList.length;++index) {
 		var productSlot = productSlotList[index];
@@ -2060,32 +2060,32 @@ rc.components.Attribute.renderUpsertData = function(send) {
 	}
 };
 
-rc.components.Cart = function(container, data) {
+rc.comp.Cart = function(container, data) {
 	this.container = container;
 	this.type = 'cart';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-cart', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-cart', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	data.header = data.header || "Shopping Cart";
 	this.component.find('.cart-header-text').text(data.header);
 	// Actions: Required as properties here so that they can access the "this" value
-	this.send = rc.components.Cart.send;
-	this.done = rc.components.Cart.done;
-	this.getOptionGroup = rc.components.Cart.getOptionGroup;
-	this.appendProductRow = rc.components.Cart.appendProductRow;
-	this.recalculateTotal = rc.components.Cart.recalculateTotal;
-	this.refreshEmptyCartMessage = rc.components.Cart.refreshEmptyCartMessage;
-	this.isValidPurchaseQuantity = rc.components.Cart.isValidPurchaseQuantity;
-	this.calculateProductDiscountCode = rc.components.Cart.calculateProductDiscountCode;
-	this.initialize = rc.components.Cart.initialize;
+	this.send = rc.comp.Cart.send;
+	this.done = rc.comp.Cart.done;
+	this.getOptionGroup = rc.comp.Cart.getOptionGroup;
+	this.appendProductRow = rc.comp.Cart.appendProductRow;
+	this.recalculateTotal = rc.comp.Cart.recalculateTotal;
+	this.refreshEmptyCartMessage = rc.comp.Cart.refreshEmptyCartMessage;
+	this.isValidPurchaseQuantity = rc.comp.Cart.isValidPurchaseQuantity;
+	this.calculateProductDiscountCode = rc.comp.Cart.calculateProductDiscountCode;
+	this.initialize = rc.comp.Cart.initialize;
 	this.idProductMap = {};
 	$(this.component).on('recalculate-sum',$.proxy(this.recalculateTotal,this));
 	this.component.find('.input-group').attr('data-required', data.required);
 };
 
-rc.components.Cart.getPaymentDetails = function() {
-	var cartPaymentDetails = rc.components.Cart.getComponentPaymentDetails();
+rc.comp.Cart.getPaymentDetails = function() {
+	var cartPaymentDetails = rc.comp.Cart.getComponentPaymentDetails();
 	//if component is not configured then get details from the model
 	if (cartPaymentDetails==null || !cartPaymentDetails) {
 		cartPaymentDetails = {};
@@ -2099,7 +2099,7 @@ rc.components.Cart.getPaymentDetails = function() {
 	return cartPaymentDetails;
 };
 
-rc.components.Cart.getComponentPaymentDetails = function() {
+rc.comp.Cart.getComponentPaymentDetails = function() {
 	if ($("#rc-container-list .rc-component-cart .products-total-amount").length==0) {return null;}
 	var result = {};
 	result.finalAmount = 0;
@@ -2113,7 +2113,7 @@ rc.components.Cart.getComponentPaymentDetails = function() {
 	return result;
 };
 
-rc.components.Cart.validate = function() {
+rc.comp.Cart.validate = function() {
 	var flag = false;
 	var messageText = "Product quantity is not selected. Please select and resubmit.";
 	var messageTypeElement = $("#rc-container-list .rc-component-cart .rc-component-cart-content .cart-validation-error .message-header");
@@ -2146,7 +2146,7 @@ rc.components.Cart.validate = function() {
 	}
 };
 
-rc.components.Cart.recalculateTotal = function(event) {
+rc.comp.Cart.recalculateTotal = function(event) {
 	var totalSum = 0.0;
 	var component = $(this.component);
 	this.component.find(".product-entry-row").each(function(index,row) {
@@ -2165,15 +2165,15 @@ rc.components.Cart.recalculateTotal = function(event) {
 	this.component.find(".products-total-amount").text(totalSum.formatMoney(2)).attr("total-sum",totalSum);
 };
 
-rc.components.Cart.send = function(deferred, send) {
+rc.comp.Cart.send = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectProductList;
-	rc.components.remoting.send(deferred, send, $.proxy(this.done,this),this.fail);
+	rc.comp.remoting.send(deferred, send, $.proxy(this.done,this),this.fail);
 	return deferred.promise();
 };
 
-rc.components.Cart.done = function(deferred, send, recv, meta) {
+rc.comp.Cart.done = function(deferred, send, recv, meta) {
 	//create select elements in cart-select
 	var selectElem = this.component.find(".cart-select");
 	//clear it out
@@ -2227,7 +2227,7 @@ rc.components.Cart.done = function(deferred, send, recv, meta) {
 	this.initialize();
 };
 
-rc.components.Cart.initialize = function() {
+rc.comp.Cart.initialize = function() {
 	this.component.find(".panel-body .product-entry-row").each(function(index,productRow) {
 		var createGiving = $(productRow).attr("create-giving-product");
 		$(productRow).find('[data-cascade="data-create-giving-product"][data-value="'+createGiving+'"]').click();
@@ -2253,7 +2253,7 @@ rc.components.Cart.initialize = function() {
 	});
 };
 
-rc.components.Cart.refreshEmptyCartMessage = function() {
+rc.comp.Cart.refreshEmptyCartMessage = function() {
 	var rowCount = this.component.find(".panel-body .row").length;
 	if (rowCount==0) {
 		var msgElem = $($("#rc-component-cart-empty-cart-msg").html());
@@ -2261,7 +2261,7 @@ rc.components.Cart.refreshEmptyCartMessage = function() {
 	}
 };
 
-rc.components.Cart.getOptionGroup = function(campaignEvent) {
+rc.comp.Cart.getOptionGroup = function(campaignEvent) {
 	if (!campaignEvent.productList || campaignEvent.productList.length==0) {return null;}
 	campaignEvent.name = !campaignEvent.name ? 'Event' : campaignEvent.name;
 	var optGroup = $('<optgroup label="" />');
@@ -2276,7 +2276,7 @@ rc.components.Cart.getOptionGroup = function(campaignEvent) {
 	return optGroup;
 };
 
-rc.components.Cart.isProductAlreadyAdded = function(product) {
+rc.comp.Cart.isProductAlreadyAdded = function(product) {
 	var productElem = $(".rc-component .rc-component-cart-content .product-entry-row[data-product-id='"+product.Id+"']");
 	if (productElem.length>0) {//If product already added just increment its quantity
 		product.quantity = parseInt(productElem.find("input.default-quantity").val(),10);
@@ -2287,7 +2287,7 @@ rc.components.Cart.isProductAlreadyAdded = function(product) {
 	return null;
 };
 
-rc.components.Cart.isValidPurchaseQuantity = function(row) {
+rc.comp.Cart.isValidPurchaseQuantity = function(row) {
 	var productRow = $(row);
 	var purchaseLimit = productRow.attr("data-purchase-limit");
 	//if purchase limit not defined assume its infinite
@@ -2302,11 +2302,11 @@ rc.components.Cart.isValidPurchaseQuantity = function(row) {
 	}
 };
 
-rc.components.Cart.appendProductRow = function(product) {
+rc.comp.Cart.appendProductRow = function(product) {
 	if (!product) {return;}
 	var that = this;
 	var component = $(this.component);
-	var foundRow = rc.components.Cart.isProductAlreadyAdded(product);
+	var foundRow = rc.comp.Cart.isProductAlreadyAdded(product);
 	if (foundRow!=null) {
 		rc.ui.showMessagePopup(rc.ui.INFO,'Product already added to form, Default quantity updated (+1) to '+product.quantity);
 		return;
@@ -2417,7 +2417,7 @@ rc.components.Cart.appendProductRow = function(product) {
 };
 
 //populate data to be saved to server
-rc.components.Cart.populateSetupSaveData = function(component,data) {
+rc.comp.Cart.populateSetupSaveData = function(component,data) {
 	var selectedProducts = [];
 	var givingPostfix = '_Giving';
 	$(component).find(".product-entry-row").each(function(index,productRow) {
@@ -2436,7 +2436,7 @@ rc.components.Cart.populateSetupSaveData = function(component,data) {
 	return data;
 };
 
-rc.components.Cart.populateUpsertData = function(send) {
+rc.comp.Cart.populateUpsertData = function(send) {
 	if (!send) {return;}
 	var productElemList = $(".rc-component .rc-component-cart-content .product-entry-row");
 	$(productElemList).each(function(index,productElem) {
@@ -2468,7 +2468,7 @@ rc.components.Cart.populateUpsertData = function(send) {
 	});
 
 	//also populate the amount as the payment processing may happen in another context/page
-	var cartPaymentDetails = rc.components.Cart.getPaymentDetails();
+	var cartPaymentDetails = rc.comp.Cart.getPaymentDetails();
 	if (cartPaymentDetails && cartPaymentDetails['finalAmount'] && cartPaymentDetails['finalAmount'] != '') {
 		send[rc.ns+'event_purchase_giving_amount__c'] =cartPaymentDetails['finalAmount'];
 	}
@@ -2476,7 +2476,7 @@ rc.components.Cart.populateUpsertData = function(send) {
 };
 
 //load product data from batch-upload object
-rc.components.Cart.renderUpsertData = function(send) {
+rc.comp.Cart.renderUpsertData = function(send) {
 	var productSlotList = rc.getKeys(rc.prodMap);
 	for (var index=0;index<productSlotList.length;++index) {
 		var productSlot = productSlotList[index];
@@ -2514,7 +2514,7 @@ rc.components.Cart.renderUpsertData = function(send) {
 	}
 };
 
-rc.components.Cart.calculateProductDiscountCode = function(row, send, deferred) {
+rc.comp.Cart.calculateProductDiscountCode = function(row, send, deferred) {
 	if (!row || row.length==0) {return;}
 	var product = $.data(row[0],'product');
 	var productRow = $(row);
@@ -2543,12 +2543,12 @@ rc.components.Cart.calculateProductDiscountCode = function(row, send, deferred) 
 	send.__action = rc.actions.selectDiscountCodeList;
 	this.row = productRow;
 	// Done and fail
-	rc.components.remoting.send(deferred, send, $.proxy(rc.components.Cart.calculateProductDiscountCode.done,this) , rc.components.Cart.calculateProductDiscountCode.fail);
+	rc.comp.remoting.send(deferred, send, $.proxy(rc.comp.Cart.calculateProductDiscountCode.done,this) , rc.comp.Cart.calculateProductDiscountCode.fail);
 	// Done
 	return deferred.promise();
 };
 
-rc.components.Cart.calculateProductDiscountCode.done = function(deferred, send, recv, meta) {
+rc.comp.Cart.calculateProductDiscountCode.done = function(deferred, send, recv, meta) {
 	var discountCodeResponse = recv['__error'];
 	if (discountCodeResponse) {
 		rc.ui.showMessagePopup(rc.ui.ERROR, discountCodeResponse);
@@ -2563,8 +2563,8 @@ rc.components.Cart.calculateProductDiscountCode.done = function(deferred, send, 
 	$(that.row).trigger('recalculate-sum');
 };
 
-rc.components.Cart.calculateProductDiscountCode.fail = function(deferred, send, recv, meta) {
-	console.error('rc.components.Cart.calculateProductDiscountCode.fail');
+rc.comp.Cart.calculateProductDiscountCode.fail = function(deferred, send, recv, meta) {
+	console.error('rc.comp.Cart.calculateProductDiscountCode.fail');
 	console.error('this', this);
 	console.error('send', send);
 	console.error('recv', recv);
@@ -2572,7 +2572,7 @@ rc.components.Cart.calculateProductDiscountCode.fail = function(deferred, send, 
 };
 /* end event javascript */
 
-rc.components.validateCampaignAskSection = function() {
+rc.comp.validateCampaignAskSection = function() {
 	var paymentProcessor = $('.rc-component-workflow-action[data-method="send-payment"]').attr('data-value');
 	var monthlyFrequency = $('.rc-component-campaign-ask[data-component-type="campaign-ask"]').find('.rc-campaign-ask-frequency-list').find('.btn[data-value != "Monthly"]');
 	if (paymentProcessor == 'corduro') {
@@ -2585,11 +2585,11 @@ rc.components.validateCampaignAskSection = function() {
 	}
 };
 
-rc.components.CreditCard = function(container, data) {
+rc.comp.CreditCard = function(container, data) {
 	this.container = container;
 	this.type = 'CreditCard';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-credit-card', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-credit-card', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.component.attr('data-payment-processor', data['payment-processor']);
@@ -2599,7 +2599,7 @@ rc.components.CreditCard = function(container, data) {
 	this.component.attr('data-advanced-fraud-detection', data['advanced-fraud-detection']);
 	this.component.attr('data-advanced-fraud-detection-test-mode', data['advanced-fraud-detection-test-mode']);
 	// Attach listener to reformat CC
-	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.components.CreditCard.format);
+	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.comp.CreditCard.format);
 	//prepopulate values for hidden fields saved along with the form
 	this.component.find('[data-field-hidden="true"]').each(function(index,hiddenField) {
 		var formControlInput = $(hiddenField).find(".form-control");
@@ -2619,7 +2619,7 @@ rc.components.CreditCard = function(container, data) {
 	});
 };
 
-rc.components.CreditCard.format = function() {
+rc.comp.CreditCard.format = function() {
 	var oldData = $(this).val();
 	var data = $(this).val();
 	data = data.replace(/[^\d]+/g, '');
@@ -2631,11 +2631,11 @@ rc.components.CreditCard.format = function() {
 	rc.validateInput.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
 };
 
-rc.components.Button = function(container, data) {
+rc.comp.Button = function(container, data) {
 	this.container = container;
 	this.type = 'Button';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-button', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-button', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.content.find('.rc-name').text(data.text);
@@ -2654,13 +2654,13 @@ rc.components.Button = function(container, data) {
 		workflow_list.append(item);
 	});
 	// Bind to submit to kick off the authorization
-	this.content.find('.btn-execute').on('click', rc.components.Button.execute);
+	this.content.find('.btn-execute').on('click', rc.comp.Button.execute);
 	//stop bubble on toggle button
 	// Find the specified workflow option and click it
 	this.content.find('[data-cascade="data-workflow"][data-value="' + data.workflow + '"]').click();
 };
 
-rc.components.Button.execute = function() {
+rc.comp.Button.execute = function() {
 	// Nothing goes above this
 	var actionButtonContext = $(this);
 	actionButtonContext.prop("disabled",true);
@@ -2668,9 +2668,9 @@ rc.components.Button.execute = function() {
 	// validation method is called, and providing all errors after one click of the button.
 	// TODO This would be more de-coupled if the attached components could be iterated for validation
 	var v0 = rc.validateInput.isFormValid();
-	var v1 = rc.components.CampaignAsk.validateAskValue();
-	var v2 = rc.components.Cart.validate();
-	var v3 = rc.components.Session.validate();
+	var v1 = rc.comp.CampaignAsk.validateAskValue();
+	var v2 = rc.comp.Cart.validate();
+	var v3 = rc.comp.Session.validate();
 	var formValid = v0 && v1 && v2 && v3;
 	//reenable the local only fields, which were disabled for validation purpose
 	//workflows should send local only data to server
@@ -2684,29 +2684,29 @@ rc.components.Button.execute = function() {
 	}
 }
 
-rc.components.Jumbotron = function(container, data) {
+rc.comp.Jumbotron = function(container, data) {
 	this.container = container;
 	this.type = 'Jumbotron';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-jumbotron', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-jumbotron', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.component.find('.rc-header').text(data.header);
 	this.component.find('.rc-text').text(data.text);
 };
 
-rc.components.SimpleHeader = function(container, data) {
+rc.comp.SimpleHeader = function(container, data) {
 	this.container = container;
 	this.type = 'SimpleHeader';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-simple-header', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-simple-header', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.component.find('.rc-component-content .rc-value').html(data.text);
 };
 
-rc.components.CopyParameterAction = function(container,data) {};
-rc.components.CopyParameterAction.refreshMergeFieldPicklist = function(container) {
+rc.comp.CopyParameterAction = function(container,data) {};
+rc.comp.CopyParameterAction.refreshMergeFieldPicklist = function(container) {
 	var copyParamAction = $(container).find('[data-template="#rc-component-workflow-action--copy-param"]');
 	var listItemsArray = []; //find all merge fields on the page
 	$("#rc-page-container .rc-component-merge-field-content").each(function(index,mergeField) {
@@ -2723,21 +2723,21 @@ rc.components.CopyParameterAction.refreshMergeFieldPicklist = function(container
 	copyParamAction.find('.rc-cascade-dropdown-text').on('click', rc.ui.cascadeDropdownText);
 };
 
-rc.components.Image = function(container, data) {
+rc.comp.Image = function(container, data) {
 	this.container = container;
 	this.type = 'Image';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-image', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-image', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.component.find('img').attr('src', data['data']);
 };
 
-rc.components.URLLink = function(container, data) {
+rc.comp.URLLink = function(container, data) {
 	this.container = container;
 	this.type = 'URLLink';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-url-link', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-url-link', this.container, this.data);
 	this.component.find(".rc-url-label .form-control").val(data['label']);
 	this.component.find(".rc-url-link .form-control").val(data['link']);
 	this.component.find("input.form-control").on("blur", function(event) {
@@ -2751,7 +2751,7 @@ rc.components.URLLink = function(container, data) {
 			var startWithProtoRegex = new RegExp("^((https?|ftp)://)|//", "i");
 			if (!startWithProtoRegex.test(linkValue)) {linkValue = '//'+linkValue;}
 		}
-		var isValidBool = rc.components.URLLink.isValidURL(linkValue);
+		var isValidBool = rc.comp.URLLink.isValidURL(linkValue);
 		var messageText = 'Invalid URL.';
 		$(this).closest('.form-group.rc-url-link').toggleClass("has-error",!isValidBool);
 		if (!isValidBool) {
@@ -2768,27 +2768,27 @@ rc.components.URLLink = function(container, data) {
 	this.component.find(".form-control").trigger('blur');//trigger now to populate data
 };
 
-rc.components.URLLink.isValidURL = function(urlText) {
+rc.comp.URLLink.isValidURL = function(urlText) {
 	if (!urlText) {return false;}
 	var regex = new RegExp("^((https?:)|(ftp:))?//(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?", "i");
 	return regex.test(urlText);
 }
 
-rc.components.SimpleText = function(container, data) {
+rc.comp.SimpleText = function(container, data) {
 	this.container = container;
 	this.type = 'SimpleText';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-simple-text', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-simple-text', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.component.find('.rc-component-content .rc-value').html(data.text);
 };
 
-rc.components.InternalJavascript = function(container, data) {
+rc.comp.InternalJavascript = function(container, data) {
 	this.container = container;
 	this.type = 'InternalJavascript';
 	this.data = data || {};
-	this.component = rc.components.insert('#rc-component-internal-javascript', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-internal-javascript', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.component.find('.rc-component-content .form-control').val(rc.html_decode(this.data.text));
@@ -2799,34 +2799,34 @@ rc.components.InternalJavascript = function(container, data) {
 	}, 10);
 };
 
-rc.components.ExternalJavascript = function(container, data) {
+rc.comp.ExternalJavascript = function(container, data) {
 	this.container = container;
 	this.type = 'ExternalJavascript';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-external-javascript', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-external-javascript', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.component.find('.rc-component-content .form-control').val(data.text);
 	this.component.find('.rc-component-content script').attr('src', data.text);
 };
 
-rc.components.ExternalStylesheet = function(container, data) {
+rc.comp.ExternalStylesheet = function(container, data) {
 	this.container = container;
 	this.type = 'ExternalStylesheet';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-external-stylesheet', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-external-stylesheet', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.component.find('.rc-component-content .form-control').val(data.text);
 	this.component.find('.rc-component-content link').attr('href', data.text);
 };
 
-rc.components.HtmlBlock = function(container, data) {
+rc.comp.HtmlBlock = function(container, data) {
 	var that = this;
 	this.container = container;
 	this.type = 'HtmlBlock';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-html-block', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-html-block', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	var htmlContainer = this.component.find('.rc-component-content .rc-value');
@@ -2834,10 +2834,10 @@ rc.components.HtmlBlock = function(container, data) {
 	$.data(htmlContainer[0],"html-content",data.text);
 	var styleAttrText = htmlContainer.attr("style");
 	viewContainer.html(data.text).attr("style",styleAttrText);
-	rc.components.HtmlBlock.initializeHTMLEditor(this.component,data.text);
+	rc.comp.HtmlBlock.initializeHTMLEditor(this.component,data.text);
 };
 
-rc.components.HtmlBlock.initializeHTMLEditor = function(component, dataText) {
+rc.comp.HtmlBlock.initializeHTMLEditor = function(component, dataText) {
 	var htmlContainer = component.find('.rc-component-content .rc-value');
 	var htmlViewContainer = component.find('.rc-component-html-view-content .rc-value');
 	var editor = CodeMirror(function(elt) {component.find(".rc-component-html-editor").append(elt);},
@@ -2870,7 +2870,7 @@ rc.components.HtmlBlock.initializeHTMLEditor = function(component, dataText) {
 };
 
 //refresh view when changed from editable to noneditable and vice a versa
-rc.components.HtmlBlock.refreshView = function(event, editable) {
+rc.comp.HtmlBlock.refreshView = function(event, editable) {
 	var htmlBlockCompnents = $('#rc-container-list').find('.rc-component-html-block');
 	if (!htmlBlockCompnents.length) {return;}
 	$(htmlBlockCompnents).each(function(index,component) {
@@ -2886,11 +2886,11 @@ rc.components.HtmlBlock.refreshView = function(event, editable) {
 	});
 };
 
-rc.components.AdvancedCSS = function(container, data) {
+rc.comp.AdvancedCSS = function(container, data) {
 	this.container = container;
 	this.type = 'AdvancedCSS';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-advanced-css', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-advanced-css', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	this.component.find('style').html(data.text);
@@ -2901,7 +2901,7 @@ rc.components.AdvancedCSS = function(container, data) {
 	});
 };
 
-rc.components.registerMergeFieldAutoComplete = function(field,dataArray) {
+rc.comp.registerMergeFieldAutoComplete = function(field,dataArray) {
 	function split(val) {return val.split( /,\s*/ );}
 	function extractLast(term) {return split( term ).pop();}
 	// don't navigate away from the field on tab when selecting an item
@@ -2930,7 +2930,7 @@ rc.components.registerMergeFieldAutoComplete = function(field,dataArray) {
 	});
 };
 
-rc.components.insertLitleProfilingTag = function() {
+rc.comp.insertLitleProfilingTag = function() {
 	//create profiling element, find form body, add profiling element to form body
 	var fraudDetectTokenGenHtml = $("#rc-litle-advance-fraud-detection").html();
 	var fraudDetectTokenGenEl = $(fraudDetectTokenGenHtml);
@@ -2946,11 +2946,11 @@ rc.components.insertLitleProfilingTag = function() {
 	return fraudDetectTokenGenEl;
 }
 
-rc.components.Session = function(container, data) {
+rc.comp.Session = function(container, data) {
 	this.container = container;
 	this.type = 'session';
 	this.data = data;
-	this.component = rc.components.insert('#rc-component-session', this.container, this.data);
+	this.component = rc.comp.insert('#rc-component-session', this.container, this.data);
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	//static view component data
@@ -2960,14 +2960,14 @@ rc.components.Session = function(container, data) {
 	data.header = data.header || "Event Session";
 	this.component.find('.session-header-text').text(data.header);
 	// Actions: Required as properties here so that they can access the "this" value
-	this.send = rc.components.Session.send;
-	this.done = rc.components.Session.done;
-	this.appendSessionRow = rc.components.Session.appendSessionRow;
+	this.send = rc.comp.Session.send;
+	this.done = rc.comp.Session.done;
+	this.appendSessionRow = rc.comp.Session.appendSessionRow;
 	this.idProductMap = {};
 	this.component.find('.input-group').attr('data-required', data.required);
 };
 
-rc.components.Session.validate = function() {
+rc.comp.Session.validate = function() {
 	var messageTypeElement = $("#rc-container-list .rc-component-session .message-header");
 	var isRequired = $("#rc-container-list .rc-component-session-content").find('.input-group').attr('data-required');
 	var isRegistered = false;
@@ -2994,15 +2994,15 @@ rc.components.Session.validate = function() {
 	}
 };
 
-rc.components.Session.send = function(deferred, send) {
+rc.comp.Session.send = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectProductList;
-	rc.components.remoting.send(deferred, send, $.proxy(this.done,this),this.fail);
+	rc.comp.remoting.send(deferred, send, $.proxy(this.done,this),this.fail);
 	return deferred.promise();
 };
 
-rc.components.Session.done = function(deferred, send, recv, meta) {
+rc.comp.Session.done = function(deferred, send, recv, meta) {
 	//empty out all existing slots on the sessions
 	this.component.find("[data-session-slot]").each(function(index,row) {
 		rc.emptyProductSlot( $(row).attr("data-session-slot") );
@@ -3036,13 +3036,13 @@ rc.components.Session.done = function(deferred, send, recv, meta) {
 	}
 	$(this.component).find(".register-link").click(function(event) {
 		var isSelected =! $(this).hasClass("selected-session");
-		rc.components.Session.toggleRegisterButton(isSelected,this);
+		rc.comp.Session.toggleRegisterButton(isSelected,this);
 		return false;
 	});
 	rc.initializeViewSelector.rerender(this);
 };
 
-rc.components.Session.toggleRegisterButton =function(value, button) {
+rc.comp.Session.toggleRegisterButton =function(value, button) {
 	if (value==true) {
 		$(button).removeClass("btn-primary").addClass("btn-success").addClass("selected-session").find('.register-link-text').text("Registered");
 		$(button).find(".glyphicon-remove").show();
@@ -3052,19 +3052,19 @@ rc.components.Session.toggleRegisterButton =function(value, button) {
 	}
 }
 
-rc.components.Session.isSessionAlreadyAdded = function(session) {
+rc.comp.Session.isSessionAlreadyAdded = function(session) {
 	var sessionElem = $(".rc-component .rc-component-session-content .session-entry-row[data-session-id='"+session.Id+"']");
 	if (sessionElem.length>0) {return sessionElem;}
 	return null;
 };
 
-rc.components.Session.appendSessionRow = function(session) {
+rc.comp.Session.appendSessionRow = function(session) {
 	if (!session) {return;}
 	var that = this;
 	var component = $(this.component);
 	var rowTemplate = $($("#rc-component-session-row-template").html());
 	//session-batch start
-	var foundRow = rc.components.Session.isSessionAlreadyAdded(session);
+	var foundRow = rc.comp.Session.isSessionAlreadyAdded(session);
 	if (foundRow!=null) {
 		rc.ui.showMessagePopup(rc.ui.INFO,'Session already added to form');
 		return;
@@ -3096,7 +3096,7 @@ rc.components.Session.appendSessionRow = function(session) {
 };
 
 //populate data to be saved to server
-rc.components.Session.populateSetupSaveData = function(component,data) {
+rc.comp.Session.populateSetupSaveData = function(component,data) {
 	var selectedSessions = [];
 	var selectedValuesArr = $(component).find(".view-component-select").val();
 	if (selectedValuesArr && selectedValuesArr.length>0) {
@@ -3117,7 +3117,7 @@ rc.components.Session.populateSetupSaveData = function(component,data) {
 	return data;
 };
 
-rc.components.Session.populateUpsertData = function(send) {
+rc.comp.Session.populateUpsertData = function(send) {
 	if (!send) {return;}
 	var rowTemplate = $($("#rc-component-session-row-template").html());
 	var sessionElemList = $(".rc-component .rc-component-session-content .session-entry-row");
@@ -3142,7 +3142,7 @@ rc.components.Session.populateUpsertData = function(send) {
 	return send;
 };
 
-rc.components.Session.renderUpsertData = function(send) {
+rc.comp.Session.renderUpsertData = function(send) {
 	var productSlotList = rc.getKeys(rc.productSlotPrefixMap);
 	for (var index=0;index<productSlotList.length;++index) {
 		var productSlot = productSlotList[index];
@@ -3161,7 +3161,7 @@ rc.components.Session.renderUpsertData = function(send) {
 			registerFlag = parseInt(registerFlag);
 			sessionElem.attr('data-register-flag',registerFlag);
 			if (registerFlag==1) {
-				rc.components.Session.toggleRegisterButton(true,regButton);
+				rc.comp.Session.toggleRegisterButton(true,regButton);
 			}
 		}
 	}
@@ -3382,7 +3382,7 @@ rc.workflow.process.SendMail = function(deferred, action, data) {
 	email.subject = mailSubject;
 	email.body = mailBody;
 	this.done = rc.workflow.process.SendMail.done;
-	rc.components.remoting.send(deferred, email, this.done, this.fail);
+	rc.comp.remoting.send(deferred, email, this.done, this.fail);
 	var data = {};
 };
 
@@ -3424,8 +3424,8 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 	// Do not validate the fields for discount codes
 	$('.form-control').filter(':visible:NOT(input.product-discount-code)').change();
 	if ($('.form-group.has-error').length != 0) {return;}
-	var cartPaymentDetails = rc.components.Cart.getPaymentDetails() || {finalAmount:0};
-	var askPaymentDetails = rc.components.CampaignAsk.getAskValue() || {finalAmount:0};
+	var cartPaymentDetails = rc.comp.Cart.getPaymentDetails() || {finalAmount:0};
+	var askPaymentDetails = rc.comp.CampaignAsk.getAskValue() || {finalAmount:0};
 	//if nothing to process, pass the processing
 	if (cartPaymentDetails.finalAmount == 0 && askPaymentDetails.finalAmount == 0) {
 		//if no data found then skip payment processing but create payment method
@@ -3433,7 +3433,7 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 		//and resolve the workflow action so that payment process action is green
 		return deferred.resolve();
 	}
-	action.paymentDetails = rc.components.CampaignAsk.getAskValue();
+	action.paymentDetails = rc.comp.CampaignAsk.getAskValue();
 	if (action.paymentDetails) {
 		action.paymentDetails = action.paymentDetails || {};
 		action.paymentDetails.isGiving = true;
@@ -3447,7 +3447,7 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 	//clone the object, so that it wont update giving action object and let giving call back to update it
 	var eventsAction = jQuery.extend(true, {}, action);
 	//get rcEvent related payment data
-	eventsAction.paymentDetails = rc.components.Cart.getPaymentDetails();
+	eventsAction.paymentDetails = rc.comp.Cart.getPaymentDetails();
 	if (eventsAction.paymentDetails) {
 		eventsAction.paymentDetails = eventsAction.paymentDetails || {};
 		action.paymentDetails.isEvent = true;
@@ -3569,12 +3569,12 @@ rc.upsertData = function(deferred, send) {
 		return deferred.reject('Internal error: form must be in view mode to process user input.');
 	}
 	//populate events shopping cart data
-	send = rc.components.Cart.populateUpsertData(send);
+	send = rc.comp.Cart.populateUpsertData(send);
 	//populate events session data
-	send = rc.components.Session.populateUpsertData(send);
-	send = rc.components.Attribute.populateUpsertData(send);
+	send = rc.comp.Session.populateUpsertData(send);
+	send = rc.comp.Attribute.populateUpsertData(send);
 	//for ask data
-	var askAmount = rc.components.CampaignAsk.getAskValue();
+	var askAmount = rc.comp.CampaignAsk.getAskValue();
 	if (askAmount && askAmount.frequency) {
 		send[rc.ns+'giving_giving_frequency__c'] = askAmount.frequency;
 		send[rc.ns+'giving_giving_amount__c'] = askAmount.finalAmount;
@@ -3663,15 +3663,15 @@ rc.upsertData = function(deferred, send) {
 		}
 	}
 	rc.dataModal.BatchUploadModel = $.extend(rc.dataModal.BatchUploadModel, send);
-	rc.components.remoting.send(deferred, send, doneCallback, rc.upsertData.fail);
+	rc.comp.remoting.send(deferred, send, doneCallback, rc.upsertData.fail);
 	return deferred.promise();
 };
 
 //Validating Ask, Cart, Session component on submission of form
 rc.upsertData.validateCustomComponents = function() {
-	if (rc.components.CampaignAsk.validateAskValue() == false) {return false;}
-	if (rc.components.Cart.validate() == false) {return false;}
-	if (rc.components.Session.validate() == false) {return false;}
+	if (rc.comp.CampaignAsk.validateAskValue() == false) {return false;}
+	if (rc.comp.Cart.validate() == false) {return false;}
+	if (rc.comp.Session.validate() == false) {return false;}
 	return true;
 };
 
@@ -3693,7 +3693,7 @@ rc.upsertData.validate = function() {
 	context.closest(".input-group").removeClass("has-error");
 	//Validate other amount
 	if (context.attr("data-validate-type")=="otherAmount" && present) {
-		var minimumThresholdAmount = rc.components.CampaignAsk.frequencyAmountMinThreshold[context.parent().attr('data-giving-frequency')];
+		var minimumThresholdAmount = rc.comp.CampaignAsk.frequencyAmountMinThreshold[context.parent().attr('data-giving-frequency')];
 		// Trim the leading and trailing spaces and replace the textbox value with it
 		var otherAmountValue = $.trim(context.val());
 		context.val(otherAmountValue);

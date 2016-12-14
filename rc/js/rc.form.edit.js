@@ -8,12 +8,12 @@ rc.modal = rc.modal || {};
 
 rc.initializeFormAppInDesignMode = function() {
 	console.log('rc.initializeFormAppInDesignMode');
-	rc.components.initialize('.modal');// Copy data templates in modal templates
-	rc.components.initialize('.page-header');// Initialize actions in the page header
+	rc.comp.initialize('.modal');// Copy data templates in modal templates
+	rc.comp.initialize('.page-header');// Initialize actions in the page header
 	// Which page mode is set?
 	$('#rc-page-container').find('.page-header [data-value="' + rc.getParam('mode') + '"]').click();
 	//on view change refresh html block elements to toggle between html<->text views
-	rc.events.on('view-change',rc.components.HtmlBlock.refreshView);
+	rc.events.on('view-change',rc.comp.HtmlBlock.refreshView);
 	// on view change, toggle placeholder values shown in fields
 	rc.events.on('view-change',rc.rollupPlaceholderValues);
 	// on view change, toggle default values shown in fields
@@ -106,12 +106,12 @@ rc.initializeHeaderButtons = function() {
 	// Add sections
 	$('#rc-page-container').find('.page-header [data-action="rc-action-insert-section"]').on('click', function() {
 		var data = {data:{columns:$(this).attr('data-value')}};
-		rc.components.insertColumnList('#rc-container-list',data);
+		rc.comp.insertColumnList('#rc-container-list',data);
 		rc.ui.markUnsavedChanges();
 	});
 	// Add workflow
 	$('#rc-page-container').find('.page-header [data-action="rc-action-insert-workflow"]').on('click', function() {
-		rc.components.insertWorkflow('#rc-workflows-list',{});
+		rc.comp.insertWorkflow('#rc-workflows-list',{});
 		rc.ui.markUnsavedChanges();
 	});
 	// Theme selection
@@ -302,7 +302,7 @@ rc.modal.saveContainerCSS = function() {
 			}
 		}
 	});
-	rc.components.updateContentCSS(component);// Apply CSS
+	rc.comp.updateContentCSS(component);// Apply CSS
 	$(this).closest('.modal').modal('hide');// Dismiss modal
 	$('.rc-selected').removeClass('rc-selected');// Delete selection marker
 	rc.ui.markUnsavedChanges();// Mark changed
@@ -346,8 +346,8 @@ rc.modal.saveContainerColumns = function() {
 	});
 	item.attr('data-columns', item_data.data.columns);// Update the column list
 	// Update the column DOM
-	rc.components.deleteColumnListColumns(item_content, item_data.data.columns);
-	rc.components.upsertColumnListColumns(item_content, item_data.data.columns, item_data.columns);
+	rc.comp.deleteColumnListColumns(item_content, item_data.data.columns);
+	rc.comp.upsertColumnListColumns(item_content, item_data.data.columns, item_data.columns);
 	$(this).closest('.modal').modal('hide');// Dismiss modal
 	rc.ui.markUnsavedChanges();// Mark changed
 };
@@ -440,7 +440,7 @@ rc.modal.saveInsertComponent = function() {
 	if (data.type == 'attribute') {
 		data.data['header'] = form_data.find('.form-control.rc-header').val();
 	}
-	rc.components.upsertComponent(item_content, data);// Save it
+	rc.comp.upsertComponent(item_content, data);// Save it
 	$(this).closest('.modal').modal('hide');// Dismiss modal
 	rc.ui.markUnsavedChanges();// Mark changed
 };
@@ -465,7 +465,7 @@ rc.modal.confirmClone = function() {
 	var component = $('.rc-selected');
 	var component_clone = component.clone();
 	component.after(component_clone);
-	rc.components.initialize(component_clone);// Re-initialize
+	rc.comp.initialize(component_clone);// Re-initialize
 	$(this).closest('.modal').modal('hide');// Dismiss modal
 	$('.rc-selected').removeClass('rc-selected');// Unselect for safety
 	rc.ui.markUnsavedChanges();// Mark changed
@@ -738,12 +738,12 @@ rc.upsertFormData.exportFormComponent = function(list, item) {
 	if (data.type == 'cart') {
 		data.data['header'] = item.find(".cart-header-text").text();
 		data.data['required'] = item.find('.input-group').attr('data-required') == 'true';
-		data.data = rc.components.Cart.populateSetupSaveData(item,data.data);
+		data.data = rc.comp.Cart.populateSetupSaveData(item,data.data);
 	}
 	if (data.type == 'session') {
 		data.data['header'] = item.find('.session-header-text').text();
 		data.data['required'] = item.find('.input-group').attr('data-required') == 'true';
-		data.data = rc.components.Session.populateSetupSaveData(item,data.data);
+		data.data = rc.comp.Session.populateSetupSaveData(item,data.data);
 	}
 	if (data.type == 'attribute') {
 		data.data['attribute_id'] = item.find('.attribute-select').val();
