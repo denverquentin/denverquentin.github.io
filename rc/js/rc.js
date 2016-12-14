@@ -42,7 +42,6 @@ rc.initializeFormApp = function() {
 };
 
 rc.initializeParams = function() {
-	console.log('rc.initializeParams');
 	rc.params = {};
 	var hash = (window.location.hash || '#!mode=view').substring(2);
 	if (hash == null) {return;}
@@ -67,7 +66,6 @@ rc.applyDefaultAttributeDefaultValues = function(component, defaultValues) {
 }
 
 rc.applyPlaceholderAttributeValues = function(component, placeholderValues) {
-	console.log('rc.applyPlaceholderAttributeValues');
 	var component = $(component) || {};
 	var placeholderValues = placeholderValues || {};
 	$($(component).find('.form-control')).each(function() {
@@ -78,7 +76,6 @@ rc.applyPlaceholderAttributeValues = function(component, placeholderValues) {
 }
 
 rc.rollupDefaultValues = function(event, defaultValues) {
-	console.log('rc.rollupDefaultValues');
 	var defaultValueComponents = $('[data-field-default]');
 	if (!defaultValueComponents.length) {return;}
 	$(defaultValueComponents).each(function(index, field) {
@@ -126,10 +123,37 @@ rc.setParam = function(name, data) {
 	window.location.hash = hash;
 };
 
+// todo: do we want to keep this? will change yearly
+// is only called from rc.workflow.integrations.Sage so need to change that code first
+rc.CreditCardType = function(ccNum) {
+	if (ccNum == undefined || ccNum == '') {
+		return '';
+	}
+	var visa = new RegExp("^4[0-9]{12}(?:[0-9]{3})?$");
+	var master = new RegExp("^5[1-5][0-9]{14}$");
+	var amex = new RegExp("^3[47][0-9]{13}$");
+	var diners = new RegExp("^3(?:0[0-5]|[68][0-9])[0-9]{11}$");
+	var discover = new RegExp("^6(?:011|5[0-9]{2})[0-9]{12}$");
+	var jcb = new RegExp("^(?:2131|1800|35/d{3})/d{11}$");
+	if (visa.exec(ccNum) != null) {
+		return "visa";
+	} else if (master.exec(ccNum) != null) {
+		return "mastercard";
+	} else if (amex.exec(ccNum) != null) {
+		return "amex";
+	} else if (diners.exec(ccNum) != null) {
+		return "diners club";
+	} else if (discover.exec(ccNum) != null) {
+		return "discover";
+	} else if (jcb.exec(ccNum) != null) {
+		return "jcb";
+	} else {
+		return "undefined";
+	}
+	return '';
+};
+
 rc.selectFormInfoList = function(deferred, send) {
-	console.log('rc.selectFormInfoList');
-	console.log('this', this);
-	console.log('send', send);
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectFormInfoList;
@@ -138,11 +162,6 @@ rc.selectFormInfoList = function(deferred, send) {
 	};
 
 rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
-	console.log('rc.selectFormInfoList.done');
-	console.log('this', this);
-	console.log('send', send);
-	console.log('recv', recv);
-	console.log('meta', meta);
 	// Reset the list
 	var list = $('#rc-form-name-list');
 	list.find('.rc-form-name').remove();
@@ -208,15 +227,10 @@ rc.selectFormData = function() {
 };
 
 rc.selectFormData.done = function(data) {
-	console.log('rc.selectFormData.done: ', data);
 	data = data || {};
 	data.containers = data.containers || [];
 	data.workflows = data.workflows || [];
 	data.data = data.data || {};
-	console.log('data: ', data);
-	console.log('data.containers: ', data.containers);
-	console.log('data.workflows: ', data.workflows);
-	console.log('data.data: ', data.data);
 	// Apply Page Level CSS
 	rc.components.importContentCSS($("html"), data.styles);
 	rc.components.updateContentCSS($("html"));
@@ -246,7 +260,6 @@ rc.selectFormData.done = function(data) {
 			item.text(rc.text(data.data.name));
 			// Add to workflow menu list
 			item_list.append(item.wrap('<li></li>').parent());
-			console.log('item', item);
 		} catch (message) {
 			console.error('[ERROR]', message);
 		}
@@ -257,8 +270,6 @@ rc.selectFormData.done = function(data) {
 	});
 	// Process data
 	$(data.containers).each(function(at, data) {
-		console.log('data.container at: ', at);
-		console.log('data.container data: ', data);
 		rc.components.insertColumnList('#rc-container-list', data);
 	});
 	// Process copy-param clicks
@@ -279,9 +290,6 @@ rc.selectFormData.done = function(data) {
 
 // Select record data
 rc.selectData = function(deferred, send) {
-	console.log('rc.selectData');
-	console.log('this', this);
-	console.log('send', send);
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectData;
@@ -290,11 +298,6 @@ rc.selectData = function(deferred, send) {
 };
 
 rc.selectData.done = function(deferred, send, recv, meta) {
-	console.log('rc.selectData.done');
-	console.log('this', this);
-	console.log('send', send);
-	console.log('recv', recv);
-	console.log('meta', meta);
 	// Assign default values to all the fields
 	// This will be overwritten by field data values, if any.
 	rc.rollupDefaultValues();
@@ -510,7 +513,6 @@ rc.filterComponentData = function(componentsArray) {/* filter / decode data for 
 }
 
 rc.setHiddenFieldAttribute = function(component, attrValue) {
-	console.log('rc.setHiddenFieldAttribute');
 	var componentContentElem = component.find('.rc-component-content');
 	if (true == componentContentElem.hasClass("rc-always-hidden-in-view")) {return true;}
 	component = $(component) || '';
@@ -763,9 +765,6 @@ rc.ui.cascadeValueToggle = function() {
 };
 
 rc.ui.togglePlaceholderForm = function(item, cascadeTarget) {
-	console.log('rc.ui.togglePlaceholderForm');
-	console.log('item: ', item);
-	console.log('cascadeTarget: ', cascadeTarget);
 	if (!$(item).hasClass("rc-cascade-placeholder")) {return;}
 	item = $(item) || '';
 	cascadeTarget = $(cascadeTarget) || '';
@@ -881,7 +880,6 @@ rc.ui.toggleHiddenFields = function(component) {
 }
 
 rc.ui.initializePlaceholder = function(component) {
-	console.log('rc.ui.initializePlaceholder: ',component);
 	component = $(component) || '';
 	$(component.find(".rc-placeholder-link")).each(function(index, link) {
 		link = $(link) || '';
@@ -894,7 +892,6 @@ rc.ui.initializePlaceholder = function(component) {
 };
 
 rc.ui.initializePlaceholderEvents = function(component) {
-	console.log('rc.ui.initializePlaceholderEvents: ',component);
 	var saveButtonSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-footer .rc-placeholder-save";
 	var cancelButtonSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-footer .rc-placeholder-discard";
 	var placeholderInputSelector = ".form-group .rc-toggle-placeholder .popover .popover-content .rc-placeholder-content";
@@ -917,7 +914,6 @@ rc.ui.initializePlaceholderEvents = function(component) {
 };
 
 rc.ui.savePlaceholderValue = function(event) {
-	console.log('rc.ui.savePlaceholderValue');
 	var eventTarget = event.target || '';
 	var popover = $($(eventTarget).closest(".popover"));
 	popover = popover || '';
@@ -926,7 +922,6 @@ rc.ui.savePlaceholderValue = function(event) {
 };
 
 rc.ui.setPlaceholderValue = function(popover) {
-	console.log('rc.ui.setPlaceholderValue');
 	var source = $(popover) || '';
 	var placeholderField = source.find(".rc-placeholder-content");
 	var value = placeholderField.val() || '';
@@ -937,7 +932,6 @@ rc.ui.setPlaceholderValue = function(popover) {
 }
 
 rc.ui.discardPlaceholderPopover = function(event) {
-	console.log('rc.ui.discardPlaceholderPopover');
 	var eventTarget = event.target || '';
 	var popover = $($(eventTarget).closest(".popover"));
 	popover.popover("hide");
@@ -1172,7 +1166,6 @@ rc.components.insert = function(template, container) {
 };
 
 rc.components.importContentCSS = function(component, styles) {
-	console.log('rc.components.importContentCSS', component, styles);
 	styles = styles || {};
 	// Import
 	var component = $(component);
@@ -1189,7 +1182,6 @@ rc.components.importContentCSS = function(component, styles) {
 };
 
 rc.components.insertWorkflow = function(container, container_data) {
-	console.log('rc.components.insertWorkflow', container_data);
 	container_data = container_data || {};
 	container_data.actions = container_data.actions || [];
 	container_data.data = container_data.data || {};
@@ -1224,7 +1216,6 @@ rc.components.insertWorkflow = function(container, container_data) {
 };
 
 rc.components.insertWorkflowAction = function(container, container_data) {
-	console.log('rc.components.insertWorkflowAction', container_data);
 	container_data = container_data || {};
 	container_data.context = container_data.context || 'then';
 	container_data.data = container_data.data || {};
@@ -1420,7 +1411,6 @@ rc.components.deleteColumnListColumns = function(container, max_position) {
 }
 
 rc.components.upsertColumnListColumns = function(container, max_position, column_data) {
-	console.log('rc.components.upsertColumnListColumns', max_position);
 	// Check column data
 	column_data = column_data || [];
 	// Add new items
@@ -1433,7 +1423,6 @@ rc.components.upsertColumnListColumns = function(container, max_position, column
 		data.data = data.data || {};
 		// Insert if needed
 		if (item.length == 0) {
-			console.log('upserting position', position, 'as', data);
 			// Create
 			item = rc.components.insert('#rc-container-column', container, data.data);
 			container.append(item);
@@ -1457,7 +1446,6 @@ rc.components.upsertColumnListColumns = function(container, max_position, column
 
 rc.components.upsertColumnListComponents = function(container, column_data) {
 	$(column_data).each(function(position, data) {
-		console.log('updating column components', data);
 		//filter component Data
 		data.components = rc.filterComponentData(data.components);
 		// Find column
@@ -1529,7 +1517,6 @@ rc.components.upsertComponent = function(container, component_data) {
 			template.find('.rc-cascade-value').text(data.data.text);
 			template.find('.rc-cascade-dropdown-text').on('click', rc.ui.cascadeDropdownText);
 			$(this).find('[data-dropdown-menu="target-fields"]').append(template);
-			console.log('adding to copy-param list');
 		});
 	}
 	//initialize validation data
@@ -1539,7 +1526,6 @@ rc.components.upsertComponent = function(container, component_data) {
 };
 
 rc.components.updateContentCSS = function(component) {
-	console.log('rc.components.updateContentCSS', component);
 	// Update from css data
 	var component = $(component);
 	var component_content = component.find('.rc-content-css').filter(':first');
@@ -2646,9 +2632,6 @@ rc.components.CreditCard.format = function() {
 };
 
 rc.components.Button = function(container, data) {
-	console.log('rc.components.Button');
-	console.log('container', container);
-	console.log('data', data);
 	this.container = container;
 	this.type = 'Button';
 	this.data = data;
@@ -3233,7 +3216,6 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 	//if workflow trigger in the context of an action button,
 	//always disable the actionButton which was source of the event
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
-	console.log('rc.workflow.execute', guid);
 	var context = $('#' + guid);
 	var flow_origin = new jQuery.Deferred(); // null deferred to kickoff the flow
 	var flow = flow_origin.promise();
@@ -3246,7 +3228,6 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 		var action_type = action.attr('data-context');
 		var action_guid = action.attr('id');
 		var action_method = action.attr('data-method');
-		console.log('adding action', action_guid, action_type, action.attr('data-method'));
 		if (action_type == 'then' || action_type == 'execute') { // the "execute" type is for very early versions of the form
 			flow = flow.then(function(data) {
 				return rc.workflow.process('then', action_guid, {workflowGuid:guid}, actionButtonContext);
@@ -3290,10 +3271,6 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 rc.workflow.process = function(type, guid, data, actionButtonContext) {
 	//always disable action button when executing any action
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
-	console.log('rc.workflow.process');
-	console.log('guid', guid);
-	console.log('type', type);
-	console.log('data', data);
 	// Find and execute
 	var deferred = new jQuery.Deferred();
 	deferred.workflowGuid = data.workflowGuid;
@@ -3561,9 +3538,6 @@ rc.workflow.process.Workflow = function(deferred, action, data, actionButtonCont
 
 
 rc.upsertData = function(deferred, send) {
-	console.log('rc.upsertData');
-	console.log('this', this);
-	console.log('send', send);
 	send = send || {};
 	send.__action = rc.actions.upsertData;
 	send.__data = rc.getParam('data');
@@ -3703,8 +3677,6 @@ rc.upsertData.validateCustomComponents = function() {
 
 //WARNING : Avoid adding validation code here - see Campaign_Design_Form_Validator.component
 rc.upsertData.validate = function() {
-	console.log('rc.upsertData.validate');
-	console.log('this', this);
 	var context = $(this);
 	var present = context.val() ? true: false;
 	var errorLabel = $($("#rc-error-label").html());
@@ -3742,8 +3714,6 @@ rc.upsertData.validate = function() {
 		var emailListArray = emailListText.split(",");
 		var invalidEmailsArray = [];
 		for (var index=0;index<emailListArray.length;++index) {
-			console.log('index,',index);
-			console.log('emailListArray[index],',emailListArray[index]);
 			var emailText = $.trim(emailListArray[index]);
 			if (emailText==null || !emailText) {
 				continue;
@@ -3760,7 +3730,6 @@ rc.upsertData.validate = function() {
 			errorLabel.find(".label-text").text(labelText);
 			context.closest(".input-group").before(errorLabel);
 			context.closest(".input-group").addClass("has-error");
-			console.log('context.closest(".input-group")',context.closest(".input-group"));
 		}
 	}
 	var monthContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_month__c"]');
