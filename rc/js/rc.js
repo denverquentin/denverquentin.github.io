@@ -324,7 +324,6 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 		//override the data in exclude-giving flag with that of batch-upload record
 		//as workflow action should not overwrite batch-upload record
 		if (recv && recv[rc.ns+'exclude_giving__c']) {
-			console.log('FOUND THE NAME WITH THE NAMESPACE!');
 			$('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
 		}
 	}
@@ -3329,9 +3328,7 @@ rc.workflow.process.LoadData = function(deferred, action, data) {
 
 rc.workflow.process.LoadPage = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
-	alert('campaignFormId: ' + campaignFormId);
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
-	alert('campaignFormId after blank check: ' + campaignFormId);
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
 		+ '&formCampaignId=' + campaignFormId + '&form=' + action.attr('data-value')
 		+ '&data=' + rc.getParam('data');
