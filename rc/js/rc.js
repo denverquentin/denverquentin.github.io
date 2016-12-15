@@ -3231,6 +3231,7 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 	var retroactiveFailureFlow = rc.workflow.retroactiveFailure.promise();
 	rc.workflow.executingMap[guid] = true;
 	// Add actions
+	console.log('bout to loop');
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
 		var action_type = action.attr('data-context');
@@ -3277,6 +3278,7 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 };
 
 rc.workflow.process = function(type, guid, data, actionButtonContext) {
+	console.log('rc.workflow.process');
 	//always disable action button when executing any action
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
 	// Find and execute
