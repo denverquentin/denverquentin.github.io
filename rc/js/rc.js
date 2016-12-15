@@ -2640,10 +2640,8 @@ rc.comp.Button = function(container, data) {
 	this.content.find('.rc-name').text(data.text);
 	this.content.find('.rc-icon').addClass(data.icon);
 	var workflow_list = this.content.find('.dropdown-menu');// Populate the list of workflows
-	console.log('workflow_list = ' + JSON.stringify(workflow_list));
 	$('#rc-workflows-list').find('.rc-container-workflow').each(function() {
 		var context = $(this);
-		console.log('looping in the button');
 		var item = $('<li><a class="rc-cursor-pointer rc-cascade-value rc-cascade-dropdown-text"></a></li>');
 		item.find('a').attr('data-cascade', 'data-workflow');
 		item.find('a').attr('data-value', context.attr('id')); // guid
@@ -2656,7 +2654,7 @@ rc.comp.Button = function(container, data) {
 	});
 	// Bind to submit to kick off the authorization
 	this.content.find('.btn-execute').on('click', rc.comp.Button.execute);
-	//stop bubble on toggle button
+	// stop bubble on toggle button
 	// Find the specified workflow option and click it
 	this.content.find('[data-cascade="data-workflow"][data-value="' + data.workflow + '"]').click();
 };
@@ -2665,7 +2663,6 @@ rc.comp.Button.execute = function() {
 	// Nothing goes above this
 	var actionButtonContext = $(this);
 	actionButtonContext.prop("disabled",true);
-	console.log('rc.comp.Button.execute');
 	// All of the below validations should be independent statements, ensuring that each
 	// validation method is called, and providing all errors after one click of the button.
 	// TODO This would be more de-coupled if the attached components could be iterated for validation
