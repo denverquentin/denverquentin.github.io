@@ -2678,6 +2678,8 @@ rc.comp.Button.execute = function() {
 	rc.enableLocalOnly(true);
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
 
+	console.log('rc.getCurrentMode() = ' + rc.getCurrentMode());
+	console.log('formValid = ' + formValid);
 	console.log('$(this) = ' + JSON.stringify($(this)));
 	console.log('$(this).closest([data-workflow]) = ' + JSON.stringify($(this).closest('[data-workflow]')));
 	console.log('workflowToExecuteId = ' + workflowToExecuteId);
