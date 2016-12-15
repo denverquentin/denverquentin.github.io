@@ -3329,9 +3329,9 @@ rc.workflow.process.LoadData = function(deferred, action, data) {
 
 rc.workflow.process.LoadPage = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
-	console.log('campaignFormId: ' + campaignFormId);
+	alert('campaignFormId: ' + campaignFormId);
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
-	console.log('campaignFormId after blank check: ' + campaignFormId);
+	alert('campaignFormId after blank check: ' + campaignFormId);
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
 		+ '&formCampaignId=' + campaignFormId + '&form=' + action.attr('data-value')
 		+ '&data=' + rc.getParam('data');
@@ -3340,9 +3340,7 @@ rc.workflow.process.LoadPage = function(deferred, action, data) {
 
 rc.workflow.process.TrafficController = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
-	console.log('campaignFormId: ' + campaignFormId);
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
-	console.log('campaignFormId after blank check: ' + campaignFormId);
 	var redirectTo = rc.pageCampaignTrafficControllerRoute + '?id=' + rc.campaignId
 		+ '&formCampaignId=' + campaignFormId + '&form=' + rc.getParam('form')
 		+ '&data=' + rc.getParam('data');
