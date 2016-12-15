@@ -3219,6 +3219,8 @@ rc.workflow.forceFail = function(deferred, quenchGuid, msg) {
 }
 
 rc.workflow.execute = function(guid,actionButtonContext) {
+	console.log('.workflow.execute');
+	console.log('actionButtonContext = ' + JSON.stringify(actionButtonContext));
 	//if workflow trigger in the context of an action button,
 	//always disable the actionButton which was source of the event
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
