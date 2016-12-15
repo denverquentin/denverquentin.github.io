@@ -2640,8 +2640,10 @@ rc.comp.Button = function(container, data) {
 	this.content.find('.rc-name').text(data.text);
 	this.content.find('.rc-icon').addClass(data.icon);
 	var workflow_list = this.content.find('.dropdown-menu');// Populate the list of workflows
+	console.log('workflow_list = ' + JSON.stringify(workflow_list));
 	$('#rc-workflows-list').find('.rc-container-workflow').each(function() {
 		var context = $(this);
+		console.log('looping in the button');
 		var item = $('<li><a class="rc-cursor-pointer rc-cascade-value rc-cascade-dropdown-text"></a></li>');
 		item.find('a').attr('data-cascade', 'data-workflow');
 		item.find('a').attr('data-value', context.attr('id')); // guid
