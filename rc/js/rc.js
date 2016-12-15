@@ -2676,12 +2676,6 @@ rc.comp.Button.execute = function() {
 	// TODO Perhaps this call should be in rc.validateInput.isFormValid()
 	rc.enableLocalOnly(true);
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
-
-	console.log('rc.getCurrentMode() = ' + rc.getCurrentMode());
-	console.log('formValid = ' + formValid);
-	console.log('$(this) = ' + JSON.stringify($(this)));
-	console.log('$(this).closest([data-workflow]) = ' + JSON.stringify($(this).closest('[data-workflow]')));
-	console.log('workflowToExecuteId = ' + workflowToExecuteId);
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
 		rc.workflow.execute(workflowToExecuteId, actionButtonContext);
 	} else {
@@ -3218,8 +3212,6 @@ rc.workflow.forceFail = function(deferred, quenchGuid, msg) {
 }
 
 rc.workflow.execute = function(guid,actionButtonContext) {
-	console.log('.workflow.execute');
-	console.log('actionButtonContext = ' + JSON.stringify(actionButtonContext));
 	//if workflow trigger in the context of an action button,
 	//always disable the actionButton which was source of the event
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
@@ -3230,7 +3222,6 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 	var retroactiveFailureFlow = rc.workflow.retroactiveFailure.promise();
 	rc.workflow.executingMap[guid] = true;
 	// Add actions
-	console.log('bout to loop');
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
 		var action_type = action.attr('data-context');
@@ -3277,7 +3268,6 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 };
 
 rc.workflow.process = function(type, guid, data, actionButtonContext) {
-	console.log('rc.workflow.process');
 	//always disable action button when executing any action
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
 	// Find and execute
