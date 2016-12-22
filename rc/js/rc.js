@@ -2076,9 +2076,7 @@ rc.comp.Cart = function(container, data) {
 	this.component.find('.cart-header-text').text(data.header);
 	// Actions: Required as properties here so that they can access the "this" value
 	this.send = rc.comp.Cart.send;
-	if (rc.isEditMode) {
-		this.done = rc.comp.Cart.done;
-	}
+	this.done = rc.comp.Cart.done;
 	this.getOptionGroup = rc.comp.Cart.getOptionGroup;
 	this.appendProductRow = rc.comp.Cart.appendProductRow;
 	this.recalculateTotal = rc.comp.Cart.recalculateTotal;
@@ -2181,7 +2179,6 @@ rc.comp.Cart.send = function(deferred, send) {
 };
 
 rc.comp.Cart.done = function(deferred, send, recv, meta) {
-	console.log('rc.comp.Cart.done');
 	//create select elements in cart-select
 	var selectElem = this.component.find(".cart-select");
 	//clear it out
@@ -2964,11 +2961,9 @@ rc.comp.Session = function(container, data) {
 	this.headers = this.component.find('.rc-component-headers');
 	this.content = this.component.find('.rc-component-content');
 	//static view component data
-	if (rc.isEditMode) {
-		var selectDataArray = [{id:'title',text:'Title'}, {id:'description',text:'Description'},
-			{id:'from-date',text:'From Date'}, {id:'to-date',text:'To Date'}];
-		rc.initializeViewSelector(this,selectDataArray,['title','description','from-date','to-date']);
-	}
+	var selectDataArray = [{id:'title',text:'Title'}, {id:'description',text:'Description'},
+		{id:'from-date',text:'From Date'}, {id:'to-date',text:'To Date'}];
+	rc.initializeViewSelector(this,selectDataArray,['title','description','from-date','to-date']);
 	data.header = data.header || "Event Session";
 	this.component.find('.session-header-text').text(data.header);
 	// Actions: Required as properties here so that they can access the "this" value
