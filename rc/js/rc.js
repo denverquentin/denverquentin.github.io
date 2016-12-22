@@ -645,6 +645,7 @@ rc.ui.addMessageToComponent = function(component,message,type,showInMode) {
 	message = message || '';
 	messageBox.addClass(type);
 	messageBox.find(".message-header").text(rc.ui.MessageHeaders[type]);
+	messageBox.find(".message-text").text(message);
 	$(component).closest(".rc-container-column").prepend(messageBox);
 	showInMode= showInMode || "edit";
 	if (showInMode==="edit") {
