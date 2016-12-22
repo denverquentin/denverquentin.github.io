@@ -2839,7 +2839,9 @@ rc.comp.HtmlBlock = function(container, data) {
 	$.data(htmlContainer[0],"html-content",data.text);
 	var styleAttrText = htmlContainer.attr("style");
 	viewContainer.html(data.text).attr("style",styleAttrText);
-	rc.comp.HtmlBlock.initializeHTMLEditor(this.component,data.text);
+	if (rc.isEditMode) {
+		rc.comp.HtmlBlock.initializeHTMLEditor(this.component,data.text);
+	}
 };
 
 rc.comp.HtmlBlock.initializeHTMLEditor = function(component, dataText) {
