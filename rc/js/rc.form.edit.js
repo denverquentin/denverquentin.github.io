@@ -10,6 +10,8 @@ rc.initializeFormAppInDesignMode = function() {
 	console.log('rc.initializeFormAppInDesignMode');
 	rc.comp.initialize('.modal');// Copy data templates in modal templates
 	rc.comp.initialize('.page-header');// Initialize actions in the page header
+	// Component list sorting
+	$('#rc-container-list').({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
 	// Which page mode is set?
 	$('#rc-page-container').find('.page-header [data-value="' + rc.getParam('mode') + '"]').click();
 	//on view change refresh html block elements to toggle between html<->text views

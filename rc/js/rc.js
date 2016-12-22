@@ -16,8 +16,6 @@ rc.sessionId;/* litle Session Id */
 var sessionList = {};
 
 rc.initializeFormApp = function() {
-	// Component list sorting
-	$('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
 	$('#rc-component-overview--attach-image').on('change',function() {/* Inline image data */
 		var freader = new FileReader();
