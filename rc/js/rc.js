@@ -235,6 +235,11 @@ rc.selectFormData.done = function(data) {
 	rc.comp.updateContentCSS($("html"));
 	//validations flag
 	rc.validationsEnabled = data.data['validations-enabled'] || "false";
+	/* todo: can move
+	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/css/bootstrap-toggle.min.css
+	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js
+	into "edit mode" block once this code is refactored into the rc.form.edit.js file
+	*/
 	$("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
 	// Theme
 	if (data.data['theme-href'] && data.data['theme-name']) {
@@ -2838,6 +2843,7 @@ rc.comp.HtmlBlock = function(container, data) {
 };
 
 rc.comp.HtmlBlock.initializeHTMLEditor = function(component, dataText) {
+	console.log('rc.comp.HtmlBlock.initializeHTMLEditor');
 	var htmlContainer = component.find('.rc-component-content .rc-value');
 	var htmlViewContainer = component.find('.rc-component-html-view-content .rc-value');
 	var editor = CodeMirror(function(elt) {component.find(".rc-component-html-editor").append(elt);},

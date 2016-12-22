@@ -707,7 +707,6 @@ rc.upsertFormData.exportFormComponent = function(list, item) {
 		} else {
 			$(item).find('.form-group').removeClass('has-error');
 		}
-		data.data['text'] = rc.stripTags(data.data["text"],"script");
 	}
 	if (data.type == 'url-link') {
 		data.data['label'] = item.find(".rc-url-label input.form-control").val();
