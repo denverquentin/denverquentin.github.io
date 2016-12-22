@@ -1986,11 +1986,12 @@ rc.comp.Attribute.render = function(event) {
 		var checkboxTemplateHTML = $('#rc-component-merge-field-checkbox .rc-value-container').html();
 		this.component.find(".rc-value-container").html(checkboxTemplateHTML);
 	} else if (attributeData.attributeDataType && attributeData.attributeDataType.toLowerCase() == 'date') {
+		console.log('INITIALIZING DATE FIELD');
 		//keep the default which is a text field   
 		var checkboxTemplateHTML = $('#rc-component-cm-attribute .rc-value-container').html();
-		this.component.find(".rc-value-container").html(checkboxTemplateHTML);         
-		this.component.find("input.form-control").datepicker({orientation:"bottom"});
+		this.component.find(".rc-value-container").html(checkboxTemplateHTML);
 		//initialize datepicker
+		this.component.find("input.form-control").datepicker({orientation:"bottom"});
 	} else {
 		//keep the default which is a text field   
 		var checkboxTemplateHTML = $('#rc-component-cm-attribute .rc-value-container').html();

@@ -702,11 +702,12 @@ rc.upsertFormData.exportFormComponent = function(list, item) {
 	if (data.type == 'html-block') {
 		data.data['text'] = $.data(item.find(".rc-component-html-content .rc-value")[0],"html-content");
 		if (data.data['text'].indexOf("<script") != -1) {
-			rc.ui.addMessageToComponent(item,'Script tag is not allowed in HTML block, will be removed.', rc.ui.WARNING);
+			rc.ui.addMessageToComponent(item,'The script tag is not allowed in HTML block. Please remove it to save your change.', rc.ui.WARNING);
 			$(item).find('.form-group').addClass('has-error');
 		} else {
 			$(item).find('.form-group').removeClass('has-error');
 		}
+		console.log('bout to strip out script tag');
 		data.data['text'] = rc.stripTags(data.data["text"],"script");
 	}
 	if (data.type == 'url-link') {
