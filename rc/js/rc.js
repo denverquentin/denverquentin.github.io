@@ -495,7 +495,9 @@ rc.guid = function() {/* Create a random ID for the component */
 
 rc.stripTags = function(valueText,tag) {
 	var s = valueText || '';
+	console.log('before strip tag = ' + s);
 	s = s.replace(RegExp('<\/?' + tag + '[^<>]*>', 'gi'), '');
+	console.log('after strip tag = ' + s);
 	return s;
 };
 
@@ -643,7 +645,6 @@ rc.ui.addMessageToComponent = function(component,message,type,showInMode) {
 	message = message || '';
 	messageBox.addClass(type);
 	messageBox.find(".message-header").text(rc.ui.MessageHeaders[type]);
-	messageBox.find(".message-text").text(message).addClass("animated shake");
 	$(component).closest(".rc-container-column").prepend(messageBox);
 	showInMode= showInMode || "edit";
 	if (showInMode==="edit") {
@@ -1986,7 +1987,6 @@ rc.comp.Attribute.render = function(event) {
 		var checkboxTemplateHTML = $('#rc-component-merge-field-checkbox .rc-value-container').html();
 		this.component.find(".rc-value-container").html(checkboxTemplateHTML);
 	} else if (attributeData.attributeDataType && attributeData.attributeDataType.toLowerCase() == 'date') {
-		console.log('INITIALIZING DATE FIELD');
 		//keep the default which is a text field   
 		var checkboxTemplateHTML = $('#rc-component-cm-attribute .rc-value-container').html();
 		this.component.find(".rc-value-container").html(checkboxTemplateHTML);
