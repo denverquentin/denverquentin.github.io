@@ -1212,7 +1212,7 @@ rc.comp.insertWorkflow = function(container, container_data) {
 		rc.comp.insertWorkflowAction(item.find('.rc-container-workflow-content'), { guid: rc.guid() });
 	}
 	// Sortable - todo: what does this do? needed in customer view mode????
-	//item.find('.rc-container-workflow-content').sortable({handle:'.rc-container-handle',opacity:0.5,placeholder:'rc-state-highlight well',revert:true});
+	item.find('.rc-container-workflow-content').sortable({handle:'.rc-container-handle',opacity:0.5,placeholder:'rc-state-highlight well',revert:true});
 	//add event listener to dropdown to detect overflow and flip drop direction
 	item.find(".dropdown").on('show.bs.dropdown',rc.ui.flipOverflownDropdown);
 	return item;
