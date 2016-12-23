@@ -174,7 +174,6 @@ rc.selectFieldInfo = function() {
 };
 
 rc.selectFieldInfo.done = function(response) {
-	console.log('rc.selectFieldInfo.done', response);
 	var list = $('#rc-modal-insert-component--merge-field-list');
 	$(response).each(function() {
 		var item = list.find('[data-api-name="' + this.Name + '"]');

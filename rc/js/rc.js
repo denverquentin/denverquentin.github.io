@@ -498,9 +498,7 @@ rc.guid = function() {/* Create a random ID for the component */
 
 rc.stripTags = function(valueText,tag) {
 	var s = valueText || '';
-	console.log('before strip tag = ' + s);
 	s = s.replace(RegExp('<\/?' + tag + '[^<>]*>', 'gi'), '');
-	console.log('after strip tag = ' + s);
 	return s;
 };
 
