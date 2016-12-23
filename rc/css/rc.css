@@ -412,12 +412,12 @@
 	width:100%;
 }
 
-.rc-text-align-center {
-	text-align:center;
-}
-
 .rc-text-align-left {
 	text-align:left;
+}
+/*
+.rc-text-align-center {
+	text-align:center;
 }
 
 .rc-text-align-right {
@@ -451,11 +451,6 @@
 	height:50px;
 }
 
-.rc-state-highlight {
-	height:1.5em;
-	line-height:1.2em;
-}
-
 .rc-zindex-sm {
 	z-index:-100;
 }
@@ -466,6 +461,11 @@
 
 .rc-zindex-lg {
 	z-index:100;
+}
+*/
+.rc-state-highlight {
+	height:1.5em;
+	line-height:1.2em;
 }
 
 .rc-hidden-empty:empty {
@@ -488,7 +488,7 @@
 .rc-state-highlight + .rc-requires-only-child {
 	display:block;
 }
-
+/*
 .rc-currency-usd:before {
 	content:"$";
 }
@@ -496,7 +496,7 @@
 .rc-currency-eur:before {
 	content:"?";
 }
-
+*/
 .rc-component-content {
 	clear:both;
 }
