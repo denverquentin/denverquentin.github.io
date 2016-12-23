@@ -3090,27 +3090,8 @@ rc.comp.Session.appendSessionRow = function(session) {
 	rowTemplate.attr("data-session-slot",productSlotId);
 	rowTemplate.find(".session-name").text(session.name);
 	rowTemplate.find(".session-description").text(session.description);
-	console.log('session.StartDateTime = '+ session.StartDateTime);
-	console.log('session.EndDateTime = '+ session.EndDateTime);
 	var startDate = moment(session.StartDateTime).format('MM/DD/YYYY h:mm a');
 	var endDate = moment(session.EndDateTime).format('MM/DD/YYYY h:mm a');
-	console.log('moment startDate = '+ startDate);
-	console.log('moment endDate = '+ endDate);
-
-	var newStartDate = new Date(session.StartDateTime);
-	var newEndDate = new Date(session.EndDateTime);
-	console.log('newStartDate = '+ newStartDate);
-	console.log('newEndDate = '+ newEndDate);
-
-	console.log('newStartDate formatted = '+ $.datepicker.formatDate('MM/DD/YYY h:mm a', newStartDate));
-	console.log('newEndDate formatted = '+ $.datepicker.formatDate('MM/DD/YYY h:mm a', newStartDate));
-
-/*
-	var newStartDate = $.datepicker.parseDate('', session.StartDateTime);
-	var newEndDate = $.datepicker.parseDate('', session.EndDateTime);
-	console.log('newStartDate = '+ newStartDate);
-	console.log('newEndDate = '+ newEndDate);
-*/
 	rowTemplate.find(".session-startDate").text(startDate);
 	rowTemplate.find(".session-endDate").text(endDate);
 	var sessionEntryRow = rowTemplate.filter(".session-entry-row")[0];
