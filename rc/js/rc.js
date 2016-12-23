@@ -3096,6 +3096,15 @@ rc.comp.Session.appendSessionRow = function(session) {
 	var endDate = moment(session.EndDateTime).format('MM/DD/YYYY h:mm a');
 	console.log('moment startDate = '+ startDate);
 	console.log('moment endDate = '+ endDate);
+
+	var newStartDate = new Date(session.StartDateTime);
+	var newEndDate = new Date(session.EndDateTime);
+	console.log('newStartDate = '+ newStartDate);
+	console.log('newEndDate = '+ newEndDate);
+
+	console.log('newStartDate formatted = '+ $.datepicker.formatDate('MM/DD/YYY h:mm a', newStartDate));
+	console.log('newEndDate formatted = '+ $.datepicker.formatDate('MM/DD/YYY h:mm a', newStartDate));
+
 /*
 	var newStartDate = $.datepicker.parseDate('', session.StartDateTime);
 	var newEndDate = $.datepicker.parseDate('', session.EndDateTime);
