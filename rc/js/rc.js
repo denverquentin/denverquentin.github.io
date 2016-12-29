@@ -246,7 +246,8 @@ rc.selectFormData.done = function(data) {
 	}
 	rc.ui.markProcessingDone();// Unmark processing
 	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
-	rc.selectData();// Trigger record selection?
+	// sloppy code - doing a request for no good reason
+	//rc.selectData();// Trigger record selection?
 };
 
 // Select record data
