@@ -16,18 +16,7 @@ rc.sessionId;/* litle Session Id */
 var sessionList = {};
 
 rc.initializeFormApp = function() {
-//	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
-	$('#rc-component-overview--attach-image').on('change',function() {/* Inline image data */
-		var freader = new FileReader();
-		var context = $('#rc-component-overview--attach-image');
-		context.removeAttr('data-image-data');
-		if (this.files && this.files[0]) {
-			freader.onloadend = function(event) {
-				context.attr('data-image-data', event.target.result);
-			};
-			freader.readAsDataURL(this.files[0]);
-		}
-	});
+	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
 	rc.selectFormInfoList();// Load the form data
 	rc.events.on('form-loaded-with-data',function(event) {
 		//functions to initialize components which depends on all components + data load
@@ -120,36 +109,6 @@ rc.setParam = function(name, data) {
 	window.location.hash = hash;
 };
 
-// todo: do we want to keep this? will change yearly
-// is only called from rc.workflow.integrations.Sage so need to change that code first
-rc.CreditCardType = function(ccNum) {
-	if (ccNum == undefined || ccNum == '') {
-		return '';
-	}
-	var visa = new RegExp("^4[0-9]{12}(?:[0-9]{3})?$");
-	var master = new RegExp("^5[1-5][0-9]{14}$");
-	var amex = new RegExp("^3[47][0-9]{13}$");
-	var diners = new RegExp("^3(?:0[0-5]|[68][0-9])[0-9]{11}$");
-	var discover = new RegExp("^6(?:011|5[0-9]{2})[0-9]{12}$");
-	var jcb = new RegExp("^(?:2131|1800|35/d{3})/d{11}$");
-	if (visa.exec(ccNum) != null) {
-		return "visa";
-	} else if (master.exec(ccNum) != null) {
-		return "mastercard";
-	} else if (amex.exec(ccNum) != null) {
-		return "amex";
-	} else if (diners.exec(ccNum) != null) {
-		return "diners club";
-	} else if (discover.exec(ccNum) != null) {
-		return "discover";
-	} else if (jcb.exec(ccNum) != null) {
-		return "jcb";
-	} else {
-		return "undefined";
-	}
-	return '';
-};
-
 rc.selectFormInfoList = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
@@ -178,7 +137,7 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 		item.find('a').attr('data-value', info.id);
 		item.find('a').text(info.name);
 		divider.before(item)
-		// Also add to the workflow menues
+		// Also add to the workflow menu
 		var item_clone = item.clone();
 		item_clone.find('a').attr('data-cascade', 'data-value');
 		menu.append(item_clone);
@@ -292,6 +251,7 @@ rc.selectFormData.done = function(data) {
 
 // Select record data
 rc.selectData = function(deferred, send) {
+	console.log('rc.selectData: send = ' + send);
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectData;
@@ -317,11 +277,11 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 	// render cart products with their quantities
 	rc.comp.Cart.renderUpsertData(recv);
 	rc.comp.Attribute.renderUpsertData(recv);
-	//restore campaign ask state
+	// restore campaign ask state
 	rc.comp.CampaignAsk.populateData(recv);
 	// render sessions with their quantities
 	rc.comp.Session.renderUpsertData(recv);
-	//if a old record before introducing the giving toggle on form
+	// if a old record before introducing the giving toggle on form
 	var workflowActionGivingFlag = $('[data-cascade="exclude-giving"][is-old="true"]');
 	if (workflowActionGivingFlag && workflowActionGivingFlag.length>0) {
 		//override the data in exclude-giving flag with that of batch-upload record

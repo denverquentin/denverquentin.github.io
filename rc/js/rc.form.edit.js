@@ -10,6 +10,17 @@ rc.initializeFormAppInDesignMode = function() {
 	console.log('rc.initializeFormAppInDesignMode');
 	rc.comp.initialize('.modal');// Copy data templates in modal templates
 	rc.comp.initialize('.page-header');// Initialize actions in the page header
+	$('#rc-component-overview--attach-image').on('change',function() {/* Inline image data */
+		var freader = new FileReader();
+		var context = $('#rc-component-overview--attach-image');
+		context.removeAttr('data-image-data');
+		if (this.files && this.files[0]) {
+			freader.onloadend = function(event) {
+				context.attr('data-image-data', event.target.result);
+			};
+			freader.readAsDataURL(this.files[0]);
+		}
+	});
 	// Component list sorting
 	$('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
 	// Which page mode is set?
