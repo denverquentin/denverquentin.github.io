@@ -16,7 +16,7 @@ rc.sessionId;/* litle Session Id */
 var sessionList = {};
 
 rc.initializeFormApp = function() {
-	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
+//	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
 	$('#rc-component-overview--attach-image').on('change',function() {/* Inline image data */
 		var freader = new FileReader();
 		var context = $('#rc-component-overview--attach-image');
@@ -974,6 +974,17 @@ rc.ui.toggleDescription = function() {
 		}
 	}
 };
+
+rc.ui.showProcessingModal = function() {
+	rc.ui.showProcessingModal.queue.push(true);
+	$('#rc-modal-processing').modal('show');
+}
+
+rc.ui.releaseProcessingModal = function() {
+	rc.ui.showProcessingModal.queue.pop();
+	if (rc.ui.showProcessingModal.queue.length == 0) {$('#rc-modal-processing').modal('hide');}
+}
+rc.ui.showProcessingModal.queue = [];
 
 rc.comp.initialize = function(component, data) {
 	data = data || {};// Check data

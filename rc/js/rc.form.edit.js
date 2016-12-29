@@ -236,17 +236,6 @@ rc.ui.markUnsavedChanges = function() {
 	$('#rc-ui-icon-unsaved-changes').show();
 };
 
-rc.ui.showProcessingModal = function() {
-	rc.ui.showProcessingModal.queue.push(true);
-	$('#rc-modal-processing').modal('show');
-}
-
-rc.ui.releaseProcessingModal = function() {
-	rc.ui.showProcessingModal.queue.pop();
-	if (rc.ui.showProcessingModal.queue.length == 0) {$('#rc-modal-processing').modal('hide');}
-}
-rc.ui.showProcessingModal.queue = [];
-
 rc.modal.loadContainerCSS = function() {
 	var component = $('.rc-selected').filter(':first');
 	var context = $(this).find('.rc-cascade-value-target');
