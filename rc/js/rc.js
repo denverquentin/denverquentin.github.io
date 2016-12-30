@@ -17,7 +17,10 @@ var sessionList = {};
 
 rc.initializeFormApp = function() {
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
-	rc.selectFormInfoList();// Load the form data
+
+
+
+	// todo: not sure it the following code is needed - if is, figure out how to call it
 	rc.events.on('form-loaded-with-data',function(event) {
 		//functions to initialize components which depends on all components + data load
 		//here we have guarantee all components and data is loaded
@@ -25,6 +28,142 @@ rc.initializeFormApp = function() {
 		rc.ui.setDropdownVisible();
 		rc.ui.removeRedundantOpacity();
 	});
+};
+
+rc.selectFormData = function() {
+	// Set the page name param
+	var form = rc.paramFormId || rc.getParam('formId');
+	rc.setParam('formId', $(this).attr('data-value') || form);
+	// Set the form link element
+	var href = '#{base}/' + rc.ns + 'campaign_designform?id=#{cid}&formId=#{fid}';
+	href = href.replace('#{base}', '//' + rc.siteUrl);
+	href = href.replace('#{cid}', rc.campaignId);
+	href = href.replace('#{fid}', rc.getParam('formId'));
+	$('.page-header a.fa-link').attr('href', href);
+	// Load that page
+	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('formId'),rc.selectFormData.done,{escape:false});
+	rc.ui.markProcessing();// Mark processing
+};
+
+rc.selectFormData.done = function(data) {
+	data = data || {};
+	data.containers = data.containers || [];
+	data.workflows = data.workflows || [];
+	data.data = data.data || {};
+	// Apply Page Level CSS
+	rc.comp.importContentCSS($("html"), data.styles);
+	rc.comp.updateContentCSS($("html"));
+	//validations flag
+	rc.validationsEnabled = data.data['validations-enabled'] || "false";
+	/* todo: can move
+	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/css/bootstrap-toggle.min.css
+	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js
+	into "edit mode" block once this code is refactored into the rc.form.edit.js file
+	*/
+	$("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
+	// Theme
+	if (data.data['theme-href'] && data.data['theme-name']) {
+		$('#rc-theme-link').attr('href', data.data['theme-href']);
+		$('#rc-theme-link').attr('data-name', data.data['theme-name']);
+	} else {
+		$('#rc-theme-menu').find('[data-value=""]').click();
+	}
+	// Empty the product slots, before deleting the container so they can be reused.
+	rc.reInitProductSlots();
+	// Empty existing container
+	$('#rc-container-list').empty();
+	$('#rc-workflows-list').empty();
+	// Add workflow names to dropdown
+	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
+	item_list.empty();
+	$(data.workflows).each(function(at, data) {
+		try {
+			var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
+			item.attr('data-cascade', 'data-value');
+			item.attr('data-value', data.data.guid);
+			item.text(rc.text(data.data.name));
+			// Add to workflow menu list
+			item_list.append(item.wrap('<li></li>').parent());
+		} catch (message) {
+			console.error('[ERROR]', message);
+		}
+	});
+	// Process data
+	$(data.workflows).each(function(at, data) {
+		rc.comp.insertWorkflow('#rc-workflows-list', data);
+	});
+	// Process data
+	$(data.containers).each(function(at, data) {
+		rc.comp.insertColumnList('#rc-container-list', data);
+	});
+	// Process copy-param clicks
+	$('.dropdown-menu[data-original-target]').each(function() {
+		var name = $(this).attr('data-original-target');
+		$(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
+	});
+	// No form containers?
+	if ($('#rc-container-list').is(':empty')) {
+		$('#rc-container-list-messages').slideDown();
+	} else {
+		$('#rc-container-list-messages').slideUp();
+	}
+	rc.ui.markProcessingDone();// Unmark processing
+	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
+	// sloppy code - doing a request for no good reason - won't do anything without a parameter
+	//rc.selectData();// Trigger record selection?
+};
+
+// todo: nothing calling this method passes in a send parameter so method never does anything
+rc.selectData = function(deferred, send) {
+	console.log('rc.selectData: send = ' + send);
+	deferred = deferred || new jQuery.Deferred();
+	send = send || {};
+	send.__action = rc.actions.selectData;
+	rc.comp.remoting.send(deferred, send, rc.selectData.done, rc.selectData.fail);
+	return deferred.promise();
+};
+
+// todo: think this method always needs to execute - may rename if no longer need selectData
+rc.selectData.done = function(deferred, send, recv, meta) {
+	// Assign default values to all the fields
+	// This will be overwritten by field data values, if any.
+	rc.rollupDefaultValues();
+	// Cache form-controls with a name attribute
+	var controls = $('.form-control[name]');
+	rc.dataModal.BatchUploadModel = $.extend(rc.dataModal.BatchUploadModel, recv);
+	// Loop over the received data, and assign to fields as found
+	$.each(recv, function(name, data) {
+		rc.validateProductSlot(name,data);
+		controls.filter('[name="' + name + '"]').val(data);
+		if (controls.filter('[name="' + name + '"]').val() == 'true') {
+			controls.filter('[name="' + name + '"]').filter('[type="checkbox"]').prop("checked", "checked");
+		}
+	});
+	// render cart products with their quantities
+	rc.comp.Cart.renderUpsertData(recv);
+	rc.comp.Attribute.renderUpsertData(recv);
+	// restore campaign ask state
+	rc.comp.CampaignAsk.populateData(recv);
+	// render sessions with their quantities
+	rc.comp.Session.renderUpsertData(recv);
+	// if a old record before introducing the giving toggle on form
+	var workflowActionGivingFlag = $('[data-cascade="exclude-giving"][is-old="true"]');
+	if (workflowActionGivingFlag && workflowActionGivingFlag.length>0) {
+		//override the data in exclude-giving flag with that of batch-upload record
+		//as workflow action should not overwrite batch-upload record
+		if (recv && recv[rc.ns+'exclude_giving__c']) {
+			$('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
+		}
+	}
+	rc.events.trigger("form-loaded-with-data");
+};
+
+rc.selectData.fail = function(deferred, send, recv, meta) {
+	console.error('rc.selectData.fail');
+	console.error('this', this);
+	console.error('send', send);
+	console.error('recv', recv);
+	console.error('meta', meta);
 };
 
 rc.initializeParams = function() {
@@ -107,199 +246,6 @@ rc.setParam = function(name, data) {
 		}
 	}
 	window.location.hash = hash;
-};
-
-rc.selectFormInfoList = function(deferred, send) {
-	deferred = deferred || new jQuery.Deferred();
-	send = send || {};
-	send.__action = rc.actions.selectFormInfoList;
-	rc.comp.remoting.send(deferred, send, rc.selectFormInfoList.done, rc.selectFormInfoList.fail);
-	return deferred.promise();
-};
-
-rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
-	// Reset the list
-	var list = $('#rc-form-name-list');
-	list.find('.rc-form-name').remove();
-	// Reset the dropdown text name
-	list.siblings().find('.dropdown-toggle-text').html('&nbsp;');
-	// Find the workflow action menus
-	var menu = $('[data-dropdown-menu="form-list"]');
-	menu.empty();
-	// Reset the dropdown text name
-	menu.siblings().find('.dropdown-toggle-text').html('&nbsp;');
-	// Find the divider. It acts as a lower anchor
-	var divider = list.find('.divider');
-	// Process data
-	$(recv).each(function(at, info) {
-		var item = $('<li class="rc-form-name"><a class="rc-cursor-pointer rc-cascade-value rc-toggle-active rc-cascade-dropdown-text rc-link"></a></li>');
-		item.find('a').attr('data-cascade', 'data-page');
-		item.find('a').attr('data-value', info.id);
-		item.find('a').text(info.name);
-		divider.before(item)
-		// Also add to the workflow menu
-		var item_clone = item.clone();
-		item_clone.find('a').attr('data-cascade', 'data-value');
-		menu.append(item_clone);
-	});
-	// Initialize items
-	rc.comp.initialize(list);
-	rc.comp.initialize(menu);
-	// When the form item is clicked, reselect the form data
-	list.find('.rc-link').on('click', rc.selectFormData);
-	// Is there a page already selected? Or just choose the first page?
-	var form = rc.paramForm || rc.getParam('form');
-	if (form) {
-		$('.rc-link[data-value="' + form+ '"]').click();
-	} else {
-		$('.rc-link:first').click();
-	}
-	// Mark resolved?
-	if (deferred && deferred.resolve) {deferred.resolve();}
-};
-
-rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
-	console.error('rc.selectFormInfoList.fail');
-	console.error('this', this);
-	console.error('send', send);
-	console.error('recv', recv);
-	console.error('meta', meta);
-};
-
-rc.selectFormData = function() {
-	// Set the page name param
-	var form = rc.paramForm || rc.getParam('form');
-	rc.setParam('form', $(this).attr('data-value') || form);
-	// Set the form link element
-	var href = '#{base}/' + rc.ns + 'campaign_designform?1&id=#{cpid}#!mode=view&form=#{form}';
-	href = href.replace('#{base}', '//' + rc.siteUrl);
-	href = href.replace('#{cpid}', rc.campaignId);
-	href = href.replace('#{fcid}', rc.paramFormCampaignId);
-	href = href.replace('#{form}', rc.getParam('form'));
-	$('.page-header a.fa-link').attr('href', href);
-	// Load that page
-	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('form'),rc.selectFormData.done,{escape:false});
-	rc.ui.markProcessing();// Mark processing
-};
-
-rc.selectFormData.done = function(data) {
-	data = data || {};
-	data.containers = data.containers || [];
-	data.workflows = data.workflows || [];
-	data.data = data.data || {};
-	// Apply Page Level CSS
-	rc.comp.importContentCSS($("html"), data.styles);
-	rc.comp.updateContentCSS($("html"));
-	//validations flag
-	rc.validationsEnabled = data.data['validations-enabled'] || "false";
-	/* todo: can move
-	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/css/bootstrap-toggle.min.css
-	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js
-	into "edit mode" block once this code is refactored into the rc.form.edit.js file
-	*/
-	$("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
-	// Theme
-	if (data.data['theme-href'] && data.data['theme-name']) {
-		$('#rc-theme-link').attr('href', data.data['theme-href']);
-		$('#rc-theme-link').attr('data-name', data.data['theme-name']);
-	} else {
-		$('#rc-theme-menu').find('[data-value=""]').click();
-	}
-	// Empty the product slots, before deleting the container so they can be reused.
-	rc.reInitProductSlots();
-	// Empty existing container
-	$('#rc-container-list').empty();
-	$('#rc-workflows-list').empty();
-	// Add workflow names to dropdown
-	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
-	item_list.empty();
-	$(data.workflows).each(function(at, data) {
-		try {
-			var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
-			item.attr('data-cascade', 'data-value');
-			item.attr('data-value', data.data.guid);
-			item.text(rc.text(data.data.name));
-			// Add to workflow menu list
-			item_list.append(item.wrap('<li></li>').parent());
-		} catch (message) {
-			console.error('[ERROR]', message);
-		}
-	});
-	// Process data
-	$(data.workflows).each(function(at, data) {
-		rc.comp.insertWorkflow('#rc-workflows-list', data);
-	});
-	// Process data
-	$(data.containers).each(function(at, data) {
-		rc.comp.insertColumnList('#rc-container-list', data);
-	});
-	// Process copy-param clicks
-	$('.dropdown-menu[data-original-target]').each(function() {
-		var name = $(this).attr('data-original-target');
-		$(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
-	});
-	// No form containers?
-	if ($('#rc-container-list').is(':empty')) {
-		$('#rc-container-list-messages').slideDown();
-	} else {
-		$('#rc-container-list-messages').slideUp();
-	}
-	rc.ui.markProcessingDone();// Unmark processing
-	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
-	// sloppy code - doing a request for no good reason
-	//rc.selectData();// Trigger record selection?
-};
-
-// Select record data
-rc.selectData = function(deferred, send) {
-	console.log('rc.selectData: send = ' + send);
-	deferred = deferred || new jQuery.Deferred();
-	send = send || {};
-	send.__action = rc.actions.selectData;
-	rc.comp.remoting.send(deferred, send, rc.selectData.done, rc.selectData.fail);
-	return deferred.promise();
-};
-
-rc.selectData.done = function(deferred, send, recv, meta) {
-	// Assign default values to all the fields
-	// This will be overwritten by field data values, if any.
-	rc.rollupDefaultValues();
-	// Cache form-controls with a name attribute
-	var controls = $('.form-control[name]');
-	rc.dataModal.BatchUploadModel = $.extend(rc.dataModal.BatchUploadModel, recv);
-	// Loop over the received data, and assign to fields as found
-	$.each(recv, function(name, data) {
-		rc.validateProductSlot(name,data);
-		controls.filter('[name="' + name + '"]').val(data);
-		if (controls.filter('[name="' + name + '"]').val() == 'true') {
-			controls.filter('[name="' + name + '"]').filter('[type="checkbox"]').prop("checked", "checked");
-		}
-	});
-	// render cart products with their quantities
-	rc.comp.Cart.renderUpsertData(recv);
-	rc.comp.Attribute.renderUpsertData(recv);
-	// restore campaign ask state
-	rc.comp.CampaignAsk.populateData(recv);
-	// render sessions with their quantities
-	rc.comp.Session.renderUpsertData(recv);
-	// if a old record before introducing the giving toggle on form
-	var workflowActionGivingFlag = $('[data-cascade="exclude-giving"][is-old="true"]');
-	if (workflowActionGivingFlag && workflowActionGivingFlag.length>0) {
-		//override the data in exclude-giving flag with that of batch-upload record
-		//as workflow action should not overwrite batch-upload record
-		if (recv && recv[rc.ns+'exclude_giving__c']) {
-			$('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
-		}
-	}
-	rc.events.trigger("form-loaded-with-data");
-};
-
-rc.selectData.fail = function(deferred, send, recv, meta) {
-	console.error('rc.selectData.fail');
-	console.error('this', this);
-	console.error('send', send);
-	console.error('recv', recv);
-	console.error('meta', meta);
 };
 
 rc.initializeSessionId = function(isTestMode,sessionId) {
@@ -527,7 +473,7 @@ rc.ui.markProcessing.queue = [];
 rc.ui.setDropdownVisible = function() {
 	var mergeFieldsSelector = "  #rc-page-container .rc-component-content [data-field-hidden='true'] .rc-opacity-md "
 		+ ", #rc-page-container .rc-component-merge-field-content.rc-opacity-md ";
-	$(mergeFieldsSelector).each( function(index, mergeField) {
+	$(mergeFieldsSelector).each(function(index, mergeField) {
 		mergeField = $(mergeField);
 		var childTargetElements = mergeField.find("[data-opacity-target='true'], .rc-field-menu");
 		mergeField.removeClass("rc-opacity-md");
@@ -1103,7 +1049,7 @@ rc.comp.pickListValues = function() {
 rc.comp.remoting.send = function(deferred, send, done, fail) {
 	send.__campaign = send.__campaign || rc.campaignId;
 	send.__mode = send.__mode || rc.getParam('mode');
-	send.__form = send.__form || rc.getParam('form') || rc.paramForm || null;
+	send.__form = send.__form || rc.getParam('formId') || rc.paramFormId || null;
 	send.__data = send.__data || rc.getParam('data') || rc.paramData || null;
 	deferred = deferred || new jQuery.Deferred();
 	done = done || function(send, recv, meta) {};
@@ -3299,6 +3245,8 @@ rc.workflow.process.Javascript = function(deferred, action, data) {
 	}
 };
 
+// todo: don't think this LoadData function - aka Refresh Data does anything
+// since null is passed in
 rc.workflow.process.LoadData = function(deferred, action, data) {
 	rc.selectData(deferred, null);
 };
@@ -3307,7 +3255,7 @@ rc.workflow.process.LoadPage = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
-		+ '&formCampaignId=' + campaignFormId + '&form=' + action.attr('data-value')
+		+ '&formCampaignId=' + campaignFormId + '&formId=' + action.attr('data-value')
 		+ '&data=' + rc.getParam('data');
 	window.location = redirectTo;
 };
@@ -3316,7 +3264,7 @@ rc.workflow.process.TrafficController = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignTrafficControllerRoute + '?id=' + rc.campaignId
-		+ '&formCampaignId=' + campaignFormId + '&form=' + rc.getParam('form')
+		+ '&formCampaignId=' + campaignFormId + '&formId=' + rc.getParam('formId')
 		+ '&data=' + rc.getParam('data');
 	window.location = redirectTo;
 };

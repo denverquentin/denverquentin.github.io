@@ -10,6 +10,8 @@ rc.initializeFormAppInDesignMode = function() {
 	console.log('rc.initializeFormAppInDesignMode');
 	rc.comp.initialize('.modal');// Copy data templates in modal templates
 	rc.comp.initialize('.page-header');// Initialize actions in the page header
+	// make components "movable" on the page
+	$('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
 	$('#rc-component-overview--attach-image').on('change',function() {/* Inline image data */
 		var freader = new FileReader();
 		var context = $('#rc-component-overview--attach-image');
@@ -21,8 +23,8 @@ rc.initializeFormAppInDesignMode = function() {
 			freader.readAsDataURL(this.files[0]);
 		}
 	});
-	// Component list sorting
-	$('#rc-container-list').sortable({placeholder:'rc-state-highlight well',handle:'.rc-container-handle'});
+
+	rc.selectFormInfoList();
 	// Which page mode is set?
 	$('#rc-page-container').find('.page-header [data-value="' + rc.getParam('mode') + '"]').click();
 	//on view change refresh html block elements to toggle between html<->text views
@@ -33,6 +35,63 @@ rc.initializeFormAppInDesignMode = function() {
 	rc.events.on('view-change',rc.rollupDefaultValues);
 	rc.initializeModals();
 	rc.initializeHeaderButtons();
+};
+
+rc.selectFormInfoList = function(deferred, send) {
+	deferred = deferred || new jQuery.Deferred();
+	send = send || {};
+	send.__action = rc.actions.selectFormInfoList;
+	rc.comp.remoting.send(deferred, send, rc.selectFormInfoList.done, rc.selectFormInfoList.fail);
+	return deferred.promise();
+};
+
+rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
+	// Reset the list
+	var list = $('#rc-form-name-list');
+	list.find('.rc-form-name').remove();
+	// Reset the dropdown text name
+	list.siblings().find('.dropdown-toggle-text').html('&nbsp;');
+	// Find the workflow action menus
+	var menu = $('[data-dropdown-menu="form-list"]');
+	menu.empty();
+	// Reset the dropdown text name
+	menu.siblings().find('.dropdown-toggle-text').html('&nbsp;');
+	// Find the divider. It acts as a lower anchor
+	var divider = list.find('.divider');
+	// Process data
+	$(recv).each(function(at, info) {
+		var item = $('<li class="rc-form-name"><a class="rc-cursor-pointer rc-cascade-value rc-toggle-active rc-cascade-dropdown-text rc-link"></a></li>');
+		item.find('a').attr('data-cascade', 'data-page');
+		item.find('a').attr('data-value', info.id);
+		item.find('a').text(info.name);
+		divider.before(item)
+		// Also add to the workflow menu
+		var item_clone = item.clone();
+		item_clone.find('a').attr('data-cascade', 'data-value');
+		menu.append(item_clone);
+	});
+	// Initialize items
+	rc.comp.initialize(list);
+	rc.comp.initialize(menu);
+	// When the form item is clicked, reselect the form data
+	list.find('.rc-link').on('click', rc.selectFormData);
+	// Is there a page already selected? Or just choose the first page?
+	var form = rc.paramFormId || rc.getParam('formId');
+	if (form) {
+		$('.rc-link[data-value="' + form+ '"]').click();
+	} else {
+		$('.rc-link:first').click();
+	}
+	// Mark resolved?
+	if (deferred && deferred.resolve) {deferred.resolve();}
+};
+
+rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
+	console.error('rc.selectFormInfoList.fail');
+	console.error('this', this);
+	console.error('send', send);
+	console.error('recv', recv);
+	console.error('meta', meta);
 };
 
 rc.rollupPlaceholderValues = function(event, placeholderValues) {
@@ -219,7 +278,7 @@ rc.deleteFormData = function() {
 	$('.page-header [data-action="rc-action-save"]').button('deleting');
 	$('.page-header [data-action="rc-action-save"]').addClass('btn-danger');
 	// Send to salesforce
-	rc.remoting.invokeAction(rc.actions.deleteFormData, rc.campaignId, rc.getParam('form'), rc.deleteFormData.done);
+	rc.remoting.invokeAction(rc.actions.deleteFormData, rc.campaignId, rc.getParam('formId'), rc.deleteFormData.done);
 	// Mark processing
 	rc.ui.markProcessing();
 };
@@ -546,7 +605,7 @@ rc.upsertFormData = function(send, deferred) {
 		rc.ui.markProcessing();
 	}
 	if ('update' == send.type) {
-		rc.remoting.invokeAction(rc.actions.upsertFormData, rc.campaignId, rc.getParam('form'), send.form, function(recv, meta) {
+		rc.remoting.invokeAction(rc.actions.upsertFormData, rc.campaignId, rc.getParam('formId'), send.form, function(recv, meta) {
 			rc.upsertFormData.done(deferred, send, recv, meta);
 		});
 		rc.ui.markProcessing();
@@ -564,8 +623,8 @@ rc.upsertFormData.done = function(deferred, send, recv, meta) {
 	$('.page-header [data-action="rc-action-save"]').button('save');// Toggle the button
 	rc.ui.markProcessingDone({modified:false});// Unmark processing
 	// If the returned ID is different from the current one, redirect
-	if (rc.getParam('form') != recv.id) {
-		rc.setParam('form', recv.id);
+	if (rc.getParam('formId') != recv.id) {
+		rc.setParam('formId', recv.id);
 		rc.selectFormInfoList();
 	} else {
 		rc.selectFormData();
