@@ -114,7 +114,7 @@ rc.selectFormData.done = function(data) {
 	rc.ui.markProcessingDone();// Unmark processing
 	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
 	// sloppy code - doing a request for no good reason - won't do anything without a parameter
-	//rc.selectData();// Trigger record selection?
+	rc.selectData();// Trigger record selection?
 };
 
 // todo: nothing calling this method passes in a send parameter so method never does anything
@@ -3875,7 +3875,8 @@ rc.validateInput.isFormValid = function() {
 
 //manually validate the field 
 rc.validateInput.validateField = function(field) {
-	console.log('validateField = ' + JSON.stringify(field));
+	// todo: this code is broken for picklists - at least for the state picklist
+	//console.log('validateField = ' + JSON.stringify(field));
 	if (!field) {
 		return;
 	}
