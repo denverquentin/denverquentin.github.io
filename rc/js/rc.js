@@ -3879,7 +3879,7 @@ rc.validateInput.validateField = function(field) {
 	if (!field) {
 		return;
 	}
-	$("#rc-page-container").bootstrapValidator('revalidateField', field);
+	$('#rc-page-container').bootstrapValidator('revalidateField', field);
 };
 
 rc.validatorsRequiringCountry = ['zipCode','iban','phone'];
