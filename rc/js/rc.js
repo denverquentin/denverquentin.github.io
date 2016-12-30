@@ -129,6 +129,9 @@ rc.selectData = function(deferred, send) {
 
 // todo: think this method always needs to execute - may rename if no longer need selectData
 rc.selectData.done = function(deferred, send, recv, meta) {
+	console.log('rc.selectData.done: send = ' + send);
+	console.log('rc.selectData.done: recv = ' + recv);
+	console.log('rc.selectData.done: meta = ' + meta);
 	// Assign default values to all the fields
 	// This will be overwritten by field data values, if any.
 	rc.rollupDefaultValues();
