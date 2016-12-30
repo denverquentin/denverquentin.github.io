@@ -3875,7 +3875,7 @@ rc.validateInput.isFormValid = function() {
 
 //manually validate the field 
 rc.validateInput.validateField = function(field) {
-	console.log('validateField = ' + field);
+	console.log('validateField = ' + JSON.stringify(field));
 	if (!field) {
 		return;
 	}
