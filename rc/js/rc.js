@@ -3875,13 +3875,14 @@ rc.validateInput.isFormValid = function() {
 
 //manually validate the field 
 rc.validateInput.validateField = function(field) {
+	console.log('validateField = ' + field);
 	if (!field) {
 		return;
 	}
-	$("#rc-page-container").bootstrapValidator('revalidateField',field);
+	$("#rc-page-container").bootstrapValidator('revalidateField', field);
 };
 
-rc.validatorsRequiringCountry = ["zipCode","iban","phone"];
+rc.validatorsRequiringCountry = ['zipCode','iban','phone'];
 
 //use default validator for these fields
 rc.validateInput.fieldValidator = {};
