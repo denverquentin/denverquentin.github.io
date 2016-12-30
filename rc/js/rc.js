@@ -119,9 +119,10 @@ rc.selectFormData.done = function(data) {
 
 // todo: nothing calling this method passes in a send parameter so method never does anything
 rc.selectData = function(deferred, send) {
-	console.log('rc.selectData: send = ' + send);
+	console.log('rc.selectData: send param = ' + send);
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
+	console.log('rc.selectData: send = ' + JSON.stringify(send));
 	send.__action = rc.actions.selectData;
 	rc.comp.remoting.send(deferred, send, rc.selectData.done, rc.selectData.fail);
 	return deferred.promise();
@@ -1016,44 +1017,17 @@ rc.comp.renderDataTemplates = function(component) {
 	return component;
 };
 
-rc.comp.pickListValues = function() {
-//	var responsePickValsArr = null; use rc.picklistValsByFieldName
-	return {
-/*
-		fillPickListValues : function(keyField) {
-			rc.remoting.invokeAction(rc.actions.getPickListInfoMap, rc.ns+'batch_upload__c',this.donefunction);
-		},
-		donefunction : function(response) {
-			responsePickValsArr = response;
-			for (var fieldName in responsePickValsArr) {
-				if (hasOwnProperty.call(responsePickValsArr, fieldName)) {
-					var optionsArray = responsePickValsArr[fieldName] || [] ;
-					var picklist = $("select[data-field-name="+fieldName+"]");
-					if (!picklist) {continue;}
-					picklist.html('');
-					$(optionsArray).each(function() {
-						picklist.append($('<option>', {value:this}).text(this));
-					});
-				}
-			}
-		},
-*/
-		populatePicklistValue : function(pickListElem, fieldName) {
-			if (rc.picklistValsByFieldName == null) {
-				return pickListElem;
-			} else {
-				var optionsArray = rc.picklistValsByFieldName[fieldName] || [];
-				pickListElem.html('');
-				$(optionsArray).each(function() {
-					pickListElem.append($('<option>', { value : this }).text(this));
-				});
-			}
-		}/*,
-		getvals : function() {
-			return responsePickValsArr;
-		}*/
+rc.comp.populatePicklistValue = function(pickListElem, fieldName) {
+	if (rc.picklistValsByFieldName == null) {
+		return pickListElem;
+	} else {
+		var optionsArray = rc.picklistValsByFieldName[fieldName] || [];
+		pickListElem.html('');
+		$(optionsArray).each(function() {
+			pickListElem.append($('<option>', { value : this }).text(this));
+		});
 	}
-} ();
+};
 
 rc.comp.remoting.send = function(deferred, send, done, fail) {
 	send.__campaign = send.__campaign || rc.campaignId;
@@ -1385,7 +1359,6 @@ rc.comp.upsertColumnListComponents = function(container, column_data) {
 		$(data.components).each(function(index, component_data) {
 			rc.comp.upsertComponent(item_content, component_data);
 		});
-		//rc.comp.pickListValues.fillPickListValues();
 	});
 };
 
@@ -1499,13 +1472,13 @@ rc.comp.MergeField = function(container, data) {
 		this.component = rc.comp.insert('#rc-component-merge-field-picklist', this.container, this.data);
 		var selectList = this.component.find('.rc-field-name');
 		selectList.attr("data-field-name",data.name);
-		rc.comp.pickListValues.populatePicklistValue(selectList,data.name);
+		rc.comp.populatePicklistValue(selectList,data.name);
 	} else if (data['type'] == 'MULTIPICKLIST') {
 		this.component = rc.comp.insert('#rc-component-merge-field-picklist', this.container, this.data);
 		var selectList = this.component.find('.rc-field-name');
 		selectList.attr("data-field-name",data.name);
 		selectList.prop('multiple',true);
-		rc.comp.pickListValues.populatePicklistValue(selectList,data.name);
+		rc.comp.populatePicklistValue(selectList,data.name);
 	} else if (data['type'] == 'BOOLEAN') {
 		this.component = rc.comp.insert('#rc-component-merge-field-checkbox', this.container, this.data);
 	} else {
