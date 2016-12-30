@@ -1382,7 +1382,7 @@ rc.comp.upsertColumnListComponents = function(container, column_data) {
 		$(data.components).each(function(index, component_data) {
 			rc.comp.upsertComponent(item_content, component_data);
 		});
-		rc.comp.pickListValues.fillPickListValues();
+		//rc.comp.pickListValues.fillPickListValues();
 	});
 };
 
