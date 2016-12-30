@@ -18,7 +18,11 @@ var sessionList = {};
 rc.initializeFormApp = function() {
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
 
+	if (!rc.isEditMode) {
+		// need to load selectedForm data
+		// have picklist code use the picklist js attribute
 
+	}
 
 	// todo: not sure it the following code is needed - if is, figure out how to call it
 	rc.events.on('form-loaded-with-data',function(event) {
@@ -1010,8 +1014,9 @@ rc.comp.renderDataTemplates = function(component) {
 };
 
 rc.comp.pickListValues = function() {
-	var responsePickValsArr = null;
+//	var responsePickValsArr = null; use rc.picklistValsByFieldName
 	return {
+/*
 		fillPickListValues : function(keyField) {
 			rc.remoting.invokeAction(rc.actions.getPickListInfoMap, rc.ns+'batch_upload__c',this.donefunction);
 		},
@@ -1029,20 +1034,21 @@ rc.comp.pickListValues = function() {
 				}
 			}
 		},
-		populatePicklistValue : function(pickListElem,fieldName) {
-			if (responsePickValsArr == null) {
+*/
+		populatePicklistValue : function(pickListElem, fieldName) {
+			if (rc.picklistValsByFieldName == null) {
 				return pickListElem;
 			} else {
-				var optionsArray = responsePickValsArr[fieldName] || [];
+				var optionsArray = rc.picklistValsByFieldName[fieldName] || [];
 				pickListElem.html('');
 				$(optionsArray).each(function() {
 					pickListElem.append($('<option>', { value : this }).text(this));
 				});
 			}
-		},
+		}/*,
 		getvals : function() {
 			return responsePickValsArr;
-		}
+		}*/
 	}
 } ();
 
