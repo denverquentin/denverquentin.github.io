@@ -1513,7 +1513,7 @@ rc.comp.CampaignAsk = function(container, data) {
 	this.component.find('.text-1').text(data['text-1']);
 	this.component.find('.text-2').text(data['text-2']);
 	// Actions: Required as properties here so that they can access the "this" value
-	//this.send = rc.comp.CampaignAsk.send;
+	this.send = rc.comp.CampaignAsk.send;
 	this.done = rc.comp.CampaignAsk.done;
 	this.component.find('.input-group').attr('data-required', data.required);
 };
