@@ -46,8 +46,6 @@ rc.loadCustomerView = function() {
 	if (data.data['theme-href'] && data.data['theme-name']) {
 		$('#rc-theme-link').attr('href', data.data['theme-href']);
 		$('#rc-theme-link').attr('data-name', data.data['theme-name']);
-//	} else { todo: need this else block???? test themes in view & edit mode
-//		$('#rc-theme-menu').find('[data-value=""]').click();
 	}
 	// Empty the product slots, before deleting the container so they can be reused.
 //	rc.reInitProductSlots();
