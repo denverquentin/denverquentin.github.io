@@ -1554,8 +1554,8 @@ rc.comp.CampaignAsk.done = function(deferred, send, recv, meta) {
 		$('.rc-component-campaign-ask-other .rc-error-label').remove();
 	};
 	// Load results
-	//$(recv).each(function() {
-	$(rc.campaignAskRecords).each(function() {
+	$(recv).each(function() {
+	//$(rc.campaignAskRecords).each(function() {
 		var content = rc.cleanKeysToLower(this);
 		var givingFrequency = content[rc.ns+'giving_frequency__c'] || '';
 		var givingType = content[rc.ns+'giving_type__c'] || '';
