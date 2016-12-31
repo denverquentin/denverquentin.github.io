@@ -94,6 +94,89 @@ rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
 	console.error('meta', meta);
 };
 
+rc.selectFormData = function() {
+	// Set the page name param
+	var form = rc.paramFormId || rc.getParam('formId');
+	rc.setParam('formId', $(this).attr('data-value') || form);
+	// Set the form link element
+	var href = '#{base}/' + rc.ns + 'campaign_designform?id=#{cid}&formId=#{fid}';
+	href = href.replace('#{base}', '//' + rc.siteUrl);
+	href = href.replace('#{cid}', rc.campaignId);
+	href = href.replace('#{fid}', rc.getParam('formId'));
+	$('.page-header a.fa-link').attr('href', href);
+	// Load that page
+	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('formId'),rc.selectFormData.done,{escape:false});
+	rc.ui.markProcessing();// Mark processing
+};
+
+rc.selectFormData.done = function(data) {
+	data = data || {};
+	data.containers = data.containers || [];
+	data.workflows = data.workflows || [];
+	data.data = data.data || {};
+	// Apply Page Level CSS
+	rc.comp.importContentCSS($("html"), data.styles);
+	rc.comp.updateContentCSS($("html"));
+	//validations flag
+	rc.validationsEnabled = data.data['validations-enabled'] || "false";
+	/* todo: can move
+	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/css/bootstrap-toggle.min.css
+	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js
+	into "edit mode" block once this code is refactored into the rc.form.edit.js file
+	*/
+	$("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
+	// Theme
+	if (data.data['theme-href'] && data.data['theme-name']) {
+		$('#rc-theme-link').attr('href', data.data['theme-href']);
+		$('#rc-theme-link').attr('data-name', data.data['theme-name']);
+	} else {
+		$('#rc-theme-menu').find('[data-value=""]').click();
+	}
+	// Empty the product slots, before deleting the container so they can be reused.
+	rc.reInitProductSlots();
+	// Empty existing container
+	$('#rc-container-list').empty();
+	$('#rc-workflows-list').empty();
+	// Add workflow names to dropdown
+	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
+	item_list.empty();
+	$(data.workflows).each(function(at, data) {
+		try {
+			var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
+			item.attr('data-cascade', 'data-value');
+			item.attr('data-value', data.data.guid);
+			item.text(rc.text(data.data.name));
+			// Add to workflow menu list
+			item_list.append(item.wrap('<li></li>').parent());
+		} catch (message) {
+			console.error('[ERROR]', message);
+		}
+	});
+	// Process data
+	$(data.workflows).each(function(at, data) {
+		rc.comp.insertWorkflow('#rc-workflows-list', data);
+	});
+	// Process data
+	$(data.containers).each(function(at, data) {
+		rc.comp.insertColumnList('#rc-container-list', data);
+	});
+	// Process copy-param clicks
+	$('.dropdown-menu[data-original-target]').each(function() {
+		var name = $(this).attr('data-original-target');
+		$(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
+	});
+	// No form containers?
+	if ($('#rc-container-list').is(':empty')) {
+		$('#rc-container-list-messages').slideDown();
+	} else {
+		$('#rc-container-list-messages').slideUp();
+	}
+	rc.ui.markProcessingDone();// Unmark processing
+	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
+	// sloppy code - doing a request for no good reason - won't do anything without a parameter
+	rc.selectData();// Trigger record selection?
+};
+
 rc.rollupPlaceholderValues = function(event, placeholderValues) {
 	var placeholderValueComponents = $('[placeholder]');
 	if (!placeholderValueComponents.length) {return;}

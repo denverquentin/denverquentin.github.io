@@ -17,11 +17,8 @@ var sessionList = {};
 
 rc.initializeFormApp = function() {
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
-
 	if (!rc.isEditMode) {
-		// need to load selectedForm data
-		// have picklist code use the picklist js attribute
-
+		rc.loadCustomerView();
 	}
 
 	// todo: not sure it the following code is needed - if is, figure out how to call it
@@ -34,23 +31,9 @@ rc.initializeFormApp = function() {
 	});
 };
 
-rc.selectFormData = function() {
-	// Set the page name param
-	var form = rc.paramFormId || rc.getParam('formId');
-	rc.setParam('formId', $(this).attr('data-value') || form);
-	// Set the form link element
-	var href = '#{base}/' + rc.ns + 'campaign_designform?id=#{cid}&formId=#{fid}';
-	href = href.replace('#{base}', '//' + rc.siteUrl);
-	href = href.replace('#{cid}', rc.campaignId);
-	href = href.replace('#{fid}', rc.getParam('formId'));
-	$('.page-header a.fa-link').attr('href', href);
-	// Load that page
-	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('formId'),rc.selectFormData.done,{escape:false});
-	rc.ui.markProcessing();// Mark processing
-};
-
-rc.selectFormData.done = function(data) {
-	data = data || {};
+// todo: finish & test
+rc.loadCustomerView = function() {
+	data = rc.selectedForm || {};
 	data.containers = data.containers || [];
 	data.workflows = data.workflows || [];
 	data.data = data.data || {};
@@ -59,25 +42,20 @@ rc.selectFormData.done = function(data) {
 	rc.comp.updateContentCSS($("html"));
 	//validations flag
 	rc.validationsEnabled = data.data['validations-enabled'] || "false";
-	/* todo: can move
-	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/css/bootstrap-toggle.min.css
-	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js
-	into "edit mode" block once this code is refactored into the rc.form.edit.js file
-	*/
-	$("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
 	// Theme
 	if (data.data['theme-href'] && data.data['theme-name']) {
 		$('#rc-theme-link').attr('href', data.data['theme-href']);
 		$('#rc-theme-link').attr('data-name', data.data['theme-name']);
-	} else {
-		$('#rc-theme-menu').find('[data-value=""]').click();
+//	} else { todo: need this else block???? test themes in view & edit mode
+//		$('#rc-theme-menu').find('[data-value=""]').click();
 	}
 	// Empty the product slots, before deleting the container so they can be reused.
-	rc.reInitProductSlots();
+//	rc.reInitProductSlots();
 	// Empty existing container
-	$('#rc-container-list').empty();
-	$('#rc-workflows-list').empty();
+//	$('#rc-container-list').empty();
+//	$('#rc-workflows-list').empty();
 	// Add workflow names to dropdown
+/*
 	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 	item_list.empty();
 	$(data.workflows).each(function(at, data) {
@@ -92,6 +70,7 @@ rc.selectFormData.done = function(data) {
 			console.error('[ERROR]', message);
 		}
 	});
+*/
 	// Process data
 	$(data.workflows).each(function(at, data) {
 		rc.comp.insertWorkflow('#rc-workflows-list', data);
@@ -100,6 +79,7 @@ rc.selectFormData.done = function(data) {
 	$(data.containers).each(function(at, data) {
 		rc.comp.insertColumnList('#rc-container-list', data);
 	});
+/*
 	// Process copy-param clicks
 	$('.dropdown-menu[data-original-target]').each(function() {
 		var name = $(this).attr('data-original-target');
@@ -113,6 +93,7 @@ rc.selectFormData.done = function(data) {
 	}
 	rc.ui.markProcessingDone();// Unmark processing
 	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
+*/
 	// sloppy code - doing a request for no good reason - won't do anything without a parameter
 	rc.selectData();// Trigger record selection?
 };
