@@ -1529,6 +1529,8 @@ rc.comp.CampaignAsk.send = function(deferred, send) {
 rc.comp.CampaignAsk.frequencyAmountMinThreshold = { };
 
 rc.comp.CampaignAsk.done = function(deferred, send, recv, meta) {
+	console.log('rc.comp.CampaignAsk: recv = ' + JSON.stringify(recv));
+
 	//ask amounts
 	var html = $('#rc-component-campaign-ask-item').html();
 	var list = $('.rc-component-campaign-ask-item-list');
