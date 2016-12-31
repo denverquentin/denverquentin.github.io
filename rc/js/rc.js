@@ -1518,7 +1518,6 @@ rc.comp.CampaignAsk = function(container, data) {
 	this.component.find('.input-group').attr('data-required', data.required);
 };
 
-/*
 rc.comp.CampaignAsk.send = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
@@ -1526,7 +1525,7 @@ rc.comp.CampaignAsk.send = function(deferred, send) {
 	rc.comp.remoting.send(deferred, send, this.done, this.fail);
 	return deferred.promise();
 };
-*/
+
 rc.comp.CampaignAsk.frequencyAmountMinThreshold = { };
 
 rc.comp.CampaignAsk.done = function(deferred, send, recv, meta) {
