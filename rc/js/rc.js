@@ -1501,6 +1501,7 @@ rc.comp.Address.populateCountryBasedOnState = function(event) {
 };
 
 rc.comp.CampaignAsk = function(container, data) {
+	console.log('rc.comp.CampaignAsk');
 	this.container = container;
 	this.type = 'CampaignAsk';
 	this.data = data || {};
@@ -1512,11 +1513,12 @@ rc.comp.CampaignAsk = function(container, data) {
 	this.component.find('.text-1').text(data['text-1']);
 	this.component.find('.text-2').text(data['text-2']);
 	// Actions: Required as properties here so that they can access the "this" value
-	this.send = rc.comp.CampaignAsk.send;
+	//this.send = rc.comp.CampaignAsk.send;
 	this.done = rc.comp.CampaignAsk.done;
 	this.component.find('.input-group').attr('data-required', data.required);
 };
 
+/*
 rc.comp.CampaignAsk.send = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
@@ -1524,7 +1526,7 @@ rc.comp.CampaignAsk.send = function(deferred, send) {
 	rc.comp.remoting.send(deferred, send, this.done, this.fail);
 	return deferred.promise();
 };
-
+*/
 rc.comp.CampaignAsk.frequencyAmountMinThreshold = { };
 
 rc.comp.CampaignAsk.done = function(deferred, send, recv, meta) {
@@ -1551,7 +1553,8 @@ rc.comp.CampaignAsk.done = function(deferred, send, recv, meta) {
 		$('.rc-component-campaign-ask-other .rc-error-label').remove();
 	};
 	// Load results
-	$(recv).each(function() {
+	//$(recv).each(function() {
+	$(rc.campaignAskRecords).each(function() {
 		var content = rc.cleanKeysToLower(this);
 		var givingFrequency = content[rc.ns+'giving_frequency__c'] || '';
 		var givingType = content[rc.ns+'giving_type__c'] || '';
