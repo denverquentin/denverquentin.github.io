@@ -27,7 +27,7 @@ rc.initializeFormAppInDesignMode = function() {
 	rc.selectFormInfoList();
 	// Which page mode is set?
 	$('#rc-page-container').find('.page-header [data-value="' + rc.getParam('mode') + '"]').click();
-	//on view change refresh html block elements to toggle between html<->text views
+	//on view change, refresh html block elements to toggle between html<->text views
 	rc.events.on('view-change',rc.comp.HtmlBlock.refreshView);
 	// on view change, toggle placeholder values shown in fields
 	rc.events.on('view-change',rc.rollupPlaceholderValues);

@@ -47,8 +47,8 @@ rc.loadCustomerView = function() {
 	// Empty the product slots, before deleting the container so they can be reused.
 //	rc.reInitProductSlots();
 	// Empty existing container
-//	$('#rc-container-list').empty();
-//	$('#rc-workflows-list').empty();
+	$('#rc-container-list').empty();
+	$('#rc-workflows-list').empty();
 	// Add workflow names to dropdown
 /*
 	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
