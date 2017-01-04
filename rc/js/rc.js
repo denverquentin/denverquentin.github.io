@@ -1283,7 +1283,6 @@ rc.comp.upsertColumnListColumns = function(container, max_position, column_data)
 };
 
 rc.comp.upsertColumnListComponents = function(container, column_data) {
-	console.log('rc.comp.upsertColumnListComponents');
 	$(column_data).each(function(position, data) {
 		data.components = rc.filterComponentData(data.components);
 		var data = data || {};
