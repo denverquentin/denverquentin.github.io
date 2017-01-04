@@ -2,9 +2,6 @@
 Feel free to put loads of comments in the code and be sure to minify
 this script any time it's edited. The Campaign_DesignForm.page should
 always load the minified version. */
-/* The rc variable below will already be declared before this script is loaded.
-That way we can reference variables set in our VF Page that we wouldn't have access to here.
-*/
 rc = rc || {};
 rc.ui = rc.ui || {};
 rc.comp = rc.comp || {};
@@ -17,7 +14,7 @@ var sessionList = {};
 
 rc.initializeFormApp = function() {
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
-	if (!rc.isEditMode) {
+	if (!rc.isEditMode) {/* Load if not in edit mode - data for edit mode is loaded in rc.form.edit.js */
 		rc.loadCustomerView();
 	}
 
@@ -83,14 +80,7 @@ rc.loadCustomerView = function() {
 		var name = $(this).attr('data-original-target');
 		$(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
 	});
-	// No form containers?
-	if ($('#rc-container-list').is(':empty')) {
-		$('#rc-container-list-messages').slideDown();
-	} else {
-		$('#rc-container-list-messages').slideUp();
-	}
 	rc.ui.markProcessingDone();// Unmark processing
-	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
 */
 	// sloppy code - doing a request for no good reason - won't do anything without a parameter
 	rc.selectData();// Trigger record selection?
