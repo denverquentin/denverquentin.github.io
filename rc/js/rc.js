@@ -1453,8 +1453,6 @@ rc.comp.Address.populateCountryBasedOnState = function(event) {
 	if (isFromPicklist>0) {countryInputElem.val("US");} else {countryInputElem.val("");}
 };
 
-rc.comp.CampaignAsk.frequencyAmountMinThreshold = { };
-
 rc.comp.CampaignAsk = function(container, data) {
 	console.log('rc.comp.CampaignAsk');
 	this.container = container;
@@ -1578,7 +1576,8 @@ rc.comp.CampaignAsk = function(container, data) {
 			askOtherArray.push(otherElem);
 		}
 		//Note: Keeping minimum threshold amound in map to validate other amount when submitting the form.
-		rc.comp.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
+		//rc.comp.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
+		rc.comp.CampaignAsk.setFrequencyAmountMinThreshold(content[rc.ns+'giving_frequency__c'], content[rc.ns+'minimum_amount_threshold__c']);
 	});
 	freqList.empty();
 	otherContainer.empty();
@@ -1594,6 +1593,14 @@ rc.comp.CampaignAsk = function(container, data) {
 
 	// end new code that eliminates ajax call
 	this.component.find('.input-group').attr('data-required', data.required);
+};
+
+rc.comp.CampaignAsk.frequencyAmountMinThreshold = { };
+
+rc.comp.CampaignAsk.setFrequencyAmountMinThreshold = function(key, val) {
+	//Note: Keeping minimum threshold amound in map to validate other amount when submitting the form
+//	rc.comp.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
+	rc.comp.CampaignAsk.frequencyAmountMinThreshold[key] = val;
 };
 
 /* old code - delete once refactor is complete
