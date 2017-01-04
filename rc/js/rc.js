@@ -44,44 +44,14 @@ rc.loadCustomerView = function() {
 		$('#rc-theme-link').attr('href', data.data['theme-href']);
 		$('#rc-theme-link').attr('data-name', data.data['theme-name']);
 	}
-	// Empty the product slots, before deleting the container so they can be reused.
-//	rc.reInitProductSlots();
-	// Empty existing container
-	//$('#rc-container-list').empty();
-	//$('#rc-workflows-list').empty();
-	// Add workflow names to dropdown
-/*
-	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
-	item_list.empty();
-	$(data.workflows).each(function(at, data) {
-		try {
-			var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
-			item.attr('data-cascade', 'data-value');
-			item.attr('data-value', data.data.guid);
-			item.text(rc.text(data.data.name));
-			// Add to workflow menu list
-			item_list.append(item.wrap('<li></li>').parent());
-		} catch (message) {
-			console.error('[ERROR]', message);
-		}
-	});
-*/
 	// Process data
 	$(data.workflows).each(function(at, data) {
-		rc.comp.insertWorkflow('#rc-workflows-list', data);
+		//rc.comp.insertWorkflow('#rc-workflows-list', data);
 	});
 	// Process data
 	$(data.containers).each(function(at, data) {
 		rc.comp.insertColumnList('#rc-container-list', data);
 	});
-/*
-	// Process copy-param clicks
-	$('.dropdown-menu[data-original-target]').each(function() {
-		var name = $(this).attr('data-original-target');
-		$(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
-	});
-	rc.ui.markProcessingDone();// Unmark processing
-*/
 	// sloppy code - doing a request for no good reason - won't do anything without a parameter
 	rc.selectData();// Trigger record selection?
 };
@@ -1332,7 +1302,7 @@ rc.comp.upsertColumnListComponents = function(container, column_data) {
 };
 
 rc.comp.upsertComponent = function(container, component_data) {
-	// Sanity
+	console.log('rc.comp.upsertComponent');
 	var data = component_data || {};
 	data.data = data.data || {};
 	data.data['guid'] = data.data['guid'] || rc.guid();
