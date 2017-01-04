@@ -1020,7 +1020,6 @@ rc.comp.importContentCSS = function(component, styles) {
 };
 
 rc.comp.insertWorkflow = function(container, container_data) {
-	console.log('rc.comp.insertWorkflow');
 	container_data = container_data || {};
 	container_data.actions = container_data.actions || [];
 	container_data.data = container_data.data || {};
@@ -1055,7 +1054,6 @@ rc.comp.insertWorkflow = function(container, container_data) {
 };
 
 rc.comp.insertWorkflowAction = function(container, container_data) {
-	console.log('rc.comp.insertWorkflowAction');
 	container_data = container_data || {};
 	container_data.context = container_data.context || 'then';
 	container_data.data = container_data.data || {};
@@ -1220,7 +1218,6 @@ rc.comp.validateWorkflowAction = function(event,details) {
 };
 
 rc.comp.insertColumnList = function(container, container_data) {
-	console.log('rc.comp.insertColumnList');
 	container_data = container_data || {};
 	container_data.data = container_data.data || {};
 	container_data.data.columns = parseInt(container_data.data.columns || '1');
@@ -1252,7 +1249,6 @@ rc.comp.deleteColumnListColumns = function(container, max_position) {
 }
 
 rc.comp.upsertColumnListColumns = function(container, max_position, column_data) {
-	console.log('rc.comp.upsertColumnListColumns');
 	// Check column data
 	column_data = column_data || [];
 	// Add new items
@@ -1287,15 +1283,13 @@ rc.comp.upsertColumnListColumns = function(container, max_position, column_data)
 };
 
 rc.comp.upsertColumnListComponents = function(container, column_data) {
+	console.log('rc.comp.upsertColumnListComponents');
 	$(column_data).each(function(position, data) {
-		//filter component Data
 		data.components = rc.filterComponentData(data.components);
-		// Find column
 		var data = data || {};
 		var item_selector = '.rc-container-column[data-position="' + position + '"]';
 		var item = container.find(item_selector);
 		var item_content = item.find('.rc-container-column-content');
-		// Update contents
 		$(data.components).each(function(index, component_data) {
 			rc.comp.upsertComponent(item_content, component_data);
 		});
@@ -1303,7 +1297,6 @@ rc.comp.upsertColumnListComponents = function(container, column_data) {
 };
 
 rc.comp.upsertComponent = function(container, component_data) {
-	console.log('rc.comp.upsertComponent');
 	var data = component_data || {};
 	data.data = data.data || {};
 	data.data['guid'] = data.data['guid'] || rc.guid();
