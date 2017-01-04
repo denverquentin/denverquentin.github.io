@@ -46,7 +46,7 @@ rc.loadCustomerView = function() {
 	}
 	// Process data
 	$(data.workflows).each(function(at, data) {
-		//rc.comp.insertWorkflow('#rc-workflows-list', data);
+		rc.comp.insertWorkflow('#rc-workflows-list', data);
 	});
 	// Process data
 	$(data.containers).each(function(at, data) {
