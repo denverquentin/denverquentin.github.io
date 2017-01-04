@@ -1627,20 +1627,6 @@ rc.comp.CampaignAsk.getAskValueFromMergeFields = function(result) {
 	}
 };
 
-rc.comp.CampaignAsk.populateUpsertData = function(send) {
-	var askAmount = rc.comp.CampaignAsk.getAskValue();
-	if (askAmount && askAmount.frequency) {
-		send[rc.ns+'giving_giving_frequency__c'] = askAmount.frequency;
-		if (askAmount.finalAmount) {send[rc.ns+'giving_giving_amount__c'] = askAmount.finalAmount;}
-		if (askAmount.frequency != rc.givingFreqOnePymt) {
-			send[rc.ns+'giving_is_sustainer__c'] = 'true';
-		} else {
-			send[rc.ns+'giving_is_sustainer__c'] = 'false';
-		}
-	}
-	return send;
-};
-
 rc.comp.CampaignAsk.getAskValue = function() {
 	var campaignAsk = rc.comp.CampaignAsk.getComponentAskValue();
 	//if component is not on the page, read data from the model
@@ -1686,6 +1672,20 @@ rc.comp.CampaignAsk.getComponentAskValue = function() {
 	}
 	return result;
 };
+/*	todo: next 2 methods are not referenced anywhere - delete soon
+rc.comp.CampaignAsk.populateUpsertData = function(send) {
+	var askAmount = rc.comp.CampaignAsk.getAskValue();
+	if (askAmount && askAmount.frequency) {
+		send[rc.ns+'giving_giving_frequency__c'] = askAmount.frequency;
+		if (askAmount.finalAmount) {send[rc.ns+'giving_giving_amount__c'] = askAmount.finalAmount;}
+		if (askAmount.frequency != rc.givingFreqOnePymt) {
+			send[rc.ns+'giving_is_sustainer__c'] = 'true';
+		} else {
+			send[rc.ns+'giving_is_sustainer__c'] = 'false';
+		}
+	}
+	return send;
+};
 
 rc.comp.CampaignAsk.validateMergeFieldsAskValue = function() {
 	//check if giving frequenncy field is exist on the page
@@ -1702,7 +1702,7 @@ rc.comp.CampaignAsk.validateMergeFieldsAskValue = function() {
 	}
 	return true;
 };
-
+*/
 // Validate Campaign Ask amount entered
 rc.comp.CampaignAsk.validateAskValue = function() {
 	var askValue = rc.comp.CampaignAsk.getAskValue();
