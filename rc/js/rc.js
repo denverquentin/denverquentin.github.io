@@ -1453,8 +1453,151 @@ rc.comp.Address.populateCountryBasedOnState = function(event) {
 	if (isFromPicklist>0) {countryInputElem.val("US");} else {countryInputElem.val("");}
 };
 
+rc.comp.CampaignAsk.frequencyAmountMinThreshold = { };
+
 rc.comp.CampaignAsk = function(container, data) {
 	console.log('rc.comp.CampaignAsk');
+	this.container = container;
+	this.type = 'CampaignAsk';
+	this.data = data || {};
+	this.data.data = this.data.data || {};
+	this.component = rc.comp.insert('#rc-component-campaign-ask', this.container, this.data);
+	this.headers = this.component.find('.rc-component-headers');
+	this.content = this.component.find('.rc-component-content');
+	// Copy text values
+	this.component.find('.text-1').text(data['text-1']);
+	this.component.find('.text-2').text(data['text-2']);
+	// start new code that eliminates ajax call
+	//ask amounts
+	var html = $('#rc-component-campaign-ask-item').html();
+	var list = $('.rc-component-campaign-ask-item-list');
+	var campaignAskContainer = list.closest(".rc-component-campaign-ask > .rc-component-campaign-ask-content");
+	//frequency
+	var freqArray = [];
+	var freqHtml = $('#rc-component-campaign-ask-freq-item').html();
+	var freqList = campaignAskContainer.find(".rc-toggle-primary-container.rc-campaign-ask-frequency-list");
+	//other text field
+	var askOtherArray = [];
+	var otherHtml = $('#rc-component-campaign-ask-other-item').html();
+	var otherContainer = campaignAskContainer.find(".rc-component-campaign-ask-other");
+	list.empty();
+	// Define show/hide functions
+	var showOther = function() {
+		$('.rc-component-campaign-ask-other').show();
+	};
+	var hideOther = function() {
+		$('.rc-component-campaign-ask-other').hide();
+		$('.rc-component-campaign-ask-other input').val('');
+		$('.rc-component-campaign-ask-other .rc-error-label').remove();
+	};
+
+
+	// Load results
+	//$(recv).each(function() {
+	$(rc.campaignAskRecords).each(function() {
+		var content = rc.cleanKeysToLower(this);
+		var givingFrequency = content[rc.ns+'giving_frequency__c'] || '';
+		var givingType = content[rc.ns+'giving_type__c'] || '';
+		var freq = $(freqHtml);
+		freq.removeAttr("id");
+		freq.attr("data-show",".rc-amount[data-giving-frequency='" + givingFrequency + "']");
+		freq.attr("data-hide",".rc-amount[data-giving-frequency]");
+		freq.attr('data-value', givingFrequency);
+		freq.text(givingFrequency);
+		freq.on('click', hideOther);
+		campaignAskContainer.find(".note[data-giving-frequency='" + givingFrequency + "']").show();
+		if (!freqArray.length) { freq.removeClass("rc-margin-xs"); }
+		freqArray.push(freq);
+		if (content[rc.ns+'ask_1_amount__c']) {
+			var item = $(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_1_amount__c']);
+			item.text('$' + content[rc.ns+'ask_1_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_2_amount__c']) {
+			var item = $(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_2_amount__c']);
+			item.text('$' + content[rc.ns+'ask_2_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_3_amount__c']) {
+			var item = $(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_3_amount__c']);
+			item.text('$' + content[rc.ns+'ask_3_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_4_amount__c']) {
+			var item = $(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_4_amount__c']);
+			item.text('$' + content[rc.ns+'ask_4_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_5_amount__c']) {
+			var item = $(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.attr('data-value', content[rc.ns+'ask_5_amount__c']);
+			item.text('$' + content[rc.ns+'ask_5_amount__c']);
+			item.addClass('rc-editSelection');
+			item.on('click', hideOther);
+			list.append(item);
+		}
+		if (content[rc.ns+'ask_other__c']) {
+			var item = $(html);
+			item.removeAttr('id');
+			item.attr('data-giving-frequency', givingFrequency);
+			item.attr('data-giving-type', givingType);
+			item.text('Other..');
+			item.addClass('rc-editSelection');
+			item.on('click', showOther);
+			list.append(item);
+			var otherElem = $(otherHtml);
+			otherElem.attr('data-giving-frequency', givingFrequency);
+			otherElem.attr('data-giving-type', givingType);
+			askOtherArray.push(otherElem);
+		}
+		//Note: Keeping minimum threshold amound in map to validate other amount when submitting the form.
+		rc.comp.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
+	});
+	freqList.empty();
+	otherContainer.empty();
+	if (freqArray && freqArray.length > 0) {freqArray[0].removeClass('');}
+	freqList.append(freqArray);
+	otherContainer.append(askOtherArray);
+	if (rc.campaignAskRecords.length == 0) {list.append('<div class="alert alert-warning">No ask values configured!</div>');}
+	rc.comp.initialize(campaignAskContainer);
+	// Set the first one active
+	$('.rc-campaign-ask-frequency-list .btn').filter(':first').click();
+	// Validate CampaignAsk section against payment Processor
+	rc.comp.validateCampaignAskSection();
+
+	// end new code that eliminates ajax call
+	this.component.find('.input-group').attr('data-required', data.required);
+};
+
+/* old code - delete once refactor is complete
+rc.comp.CampaignAsk = function(container, data) {
 	this.container = container;
 	this.type = 'CampaignAsk';
 	this.data = data || {};
@@ -1479,7 +1622,6 @@ rc.comp.CampaignAsk.send = function(deferred, send) {
 	return deferred.promise();
 };
 
-rc.comp.CampaignAsk.frequencyAmountMinThreshold = { };
 
 rc.comp.CampaignAsk.done = function(deferred, send, recv, meta) {
 	console.log('rc.comp.CampaignAsk: recv = ' + JSON.stringify(recv));
@@ -1606,6 +1748,7 @@ rc.comp.CampaignAsk.done = function(deferred, send, recv, meta) {
 	// Validate CampaignAsk section against payment Processor
 	rc.comp.validateCampaignAskSection();
 };
+*/
 
 rc.comp.CampaignAsk.getAskValueFromMergeFields = function(result) {
 	result['finalAmount'] = 0;
