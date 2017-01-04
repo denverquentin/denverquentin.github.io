@@ -47,10 +47,10 @@ rc.loadCustomerView = function() {
 	// Empty the product slots, before deleting the container so they can be reused.
 //	rc.reInitProductSlots();
 	// Empty existing container
-	$('#rc-container-list').empty();
-	$('#rc-workflows-list').empty();
+	//$('#rc-container-list').empty();
+	//$('#rc-workflows-list').empty();
 	// Add workflow names to dropdown
-/*
+
 	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 	item_list.empty();
 	$(data.workflows).each(function(at, data) {
@@ -65,7 +65,7 @@ rc.loadCustomerView = function() {
 			console.error('[ERROR]', message);
 		}
 	});
-*/
+
 	// Process data
 	$(data.workflows).each(function(at, data) {
 		rc.comp.insertWorkflow('#rc-workflows-list', data);
