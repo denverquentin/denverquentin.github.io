@@ -50,7 +50,7 @@ rc.loadCustomerView = function() {
 	//$('#rc-container-list').empty();
 	//$('#rc-workflows-list').empty();
 	// Add workflow names to dropdown
-
+/*
 	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 	item_list.empty();
 	$(data.workflows).each(function(at, data) {
@@ -65,7 +65,7 @@ rc.loadCustomerView = function() {
 			console.error('[ERROR]', message);
 		}
 	});
-
+*/
 	// Process data
 	$(data.workflows).each(function(at, data) {
 		rc.comp.insertWorkflow('#rc-workflows-list', data);
@@ -74,14 +74,22 @@ rc.loadCustomerView = function() {
 	$(data.containers).each(function(at, data) {
 		rc.comp.insertColumnList('#rc-container-list', data);
 	});
-/*
+
 	// Process copy-param clicks
 	$('.dropdown-menu[data-original-target]').each(function() {
 		var name = $(this).attr('data-original-target');
 		$(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
 	});
 	rc.ui.markProcessingDone();// Unmark processing
-*/
+
+
+	// No form containers?
+	if ($('#rc-container-list').is(':empty')) {
+		$('#rc-container-list-messages').slideDown();
+	} else {
+		$('#rc-container-list-messages').slideUp();
+	}
+
 	// sloppy code - doing a request for no good reason - won't do anything without a parameter
 	rc.selectData();// Trigger record selection?
 };
