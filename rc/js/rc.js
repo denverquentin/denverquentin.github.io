@@ -28,32 +28,29 @@ rc.initializeFormApp = function() {
 	});
 };
 
-// todo: finish & test
 rc.loadCustomerView = function() {
 	data = rc.selectedForm || {};
 	data.containers = data.containers || [];
 	data.workflows = data.workflows || [];
 	data.data = data.data || {};
-	// Apply Page Level CSS
+	// apply Page Level CSS
 	rc.comp.importContentCSS($("html"), data.styles);
 	rc.comp.updateContentCSS($("html"));
-	//validations flag
+	// validations flag
 	rc.validationsEnabled = data.data['validations-enabled'] || "false";
-	// Theme
+	// set Theme if configured
 	if (data.data['theme-href'] && data.data['theme-name']) {
 		$('#rc-theme-link').attr('href', data.data['theme-href']);
 		$('#rc-theme-link').attr('data-name', data.data['theme-name']);
 	}
-	// Process data
-	$(data.workflows).each(function(at, data) {
+	$(data.workflows).each(function(at, data) {/* set workflows */
 		rc.comp.insertWorkflow('#rc-workflows-list', data);
 	});
-	// Process data
-	$(data.containers).each(function(at, data) {
+	$(data.containers).each(function(at, data) {/* set columns/components */
 		rc.comp.insertColumnList('#rc-container-list', data);
 	});
-	// sloppy code - doing a request for no good reason - won't do anything without a parameter
-	rc.selectData();// Trigger record selection?
+	// todo: figure out what to do with the next method
+	rc.selectData();
 };
 
 // todo: nothing calling this method passes in a send parameter so method never does anything
@@ -1023,6 +1020,7 @@ rc.comp.importContentCSS = function(component, styles) {
 };
 
 rc.comp.insertWorkflow = function(container, container_data) {
+	console.log('rc.comp.insertWorkflow');
 	container_data = container_data || {};
 	container_data.actions = container_data.actions || [];
 	container_data.data = container_data.data || {};
@@ -1057,6 +1055,7 @@ rc.comp.insertWorkflow = function(container, container_data) {
 };
 
 rc.comp.insertWorkflowAction = function(container, container_data) {
+	console.log('rc.comp.insertWorkflowAction');
 	container_data = container_data || {};
 	container_data.context = container_data.context || 'then';
 	container_data.data = container_data.data || {};
@@ -1221,6 +1220,7 @@ rc.comp.validateWorkflowAction = function(event,details) {
 };
 
 rc.comp.insertColumnList = function(container, container_data) {
+	console.log('rc.comp.insertColumnList');
 	container_data = container_data || {};
 	container_data.data = container_data.data || {};
 	container_data.data.columns = parseInt(container_data.data.columns || '1');
@@ -1252,6 +1252,7 @@ rc.comp.deleteColumnListColumns = function(container, max_position) {
 }
 
 rc.comp.upsertColumnListColumns = function(container, max_position, column_data) {
+	console.log('rc.comp.upsertColumnListColumns');
 	// Check column data
 	column_data = column_data || [];
 	// Add new items
