@@ -40,7 +40,6 @@ rc.initializeFormApp = function() {
 
 		// only do this method call if the "data" parameter is set - elminates ajax request to SF
 		var dataParam = rc.getParam('data');
-		console.log('data param = ' + dataParam);
 		if (dataParam != null && dataParam != '') {
 			rc.selectData();
 		} else {
