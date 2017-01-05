@@ -51,30 +51,31 @@ rc.loadCustomerView = function() {
 	$(data.containers).each(function(at, data) {/* set columns/components */
 		rc.comp.insertColumnList('#rc-container-list', data);
 	});
-	// todo: figure out what to do with the next method
-	rc.selectData();
+
+	// Assign default values to all the fields
+	// This will be overwritten by field data values, if any.
+	rc.rollupDefaultValues();
+
+	// only do this method call if the "data" parameter is set - elminates ajax request to SF
+	var dataParam = rc.getParam('data');
+	console.log('data param = ' + dataParam);
+	if (dataParam != null && dataParam != '') {
+		rc.selectData();
+	} else {// todo: need this else stmt?
+		rc.events.trigger("form-loaded-with-data");
+	}
 };
 
-// todo: nothing calling this method passes in a send parameter so method never does anything
 rc.selectData = function(deferred, send) {
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
-	console.log('rc.selectData: send = ' + JSON.stringify(send));
 	send.__action = rc.actions.selectData;
 	rc.comp.remoting.send(deferred, send, rc.selectData.done, rc.selectData.fail);
 	return deferred.promise();
 };
 
-// todo: think this method always needs to execute - may rename if no longer need selectData
 rc.selectData.done = function(deferred, send, recv, meta) {
-	console.log('rc.selectData.done: send = ' + JSON.stringify(send));
-	console.log('rc.selectData.done: recv = ' + JSON.stringify(recv));
-	console.log('rc.selectData.done: meta = ' + JSON.stringify(meta));
-	// Assign default values to all the fields
-	// This will be overwritten by field data values, if any.
-	rc.rollupDefaultValues();
-	// Cache form-controls with a name attribute
-	var controls = $('.form-control[name]');
+	var controls = $('.form-control[name]');/* cache form-controls with a name attribute */
 	rc.dataModal.BatchUploadModel = $.extend(rc.dataModal.BatchUploadModel, recv);
 	// Loop over the received data, and assign to fields as found
 	$.each(recv, function(name, data) {
@@ -84,18 +85,16 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 			controls.filter('[name="' + name + '"]').filter('[type="checkbox"]').prop("checked", "checked");
 		}
 	});
-	// render cart products with their quantities
+	// set values retrieved from BU record
 	rc.comp.Cart.renderUpsertData(recv);
 	rc.comp.Attribute.renderUpsertData(recv);
-	// restore campaign ask state
 	rc.comp.CampaignAsk.populateData(recv);
-	// render sessions with their quantities
 	rc.comp.Session.renderUpsertData(recv);
 	// if a old record before introducing the giving toggle on form
 	var workflowActionGivingFlag = $('[data-cascade="exclude-giving"][is-old="true"]');
 	if (workflowActionGivingFlag && workflowActionGivingFlag.length>0) {
-		//override the data in exclude-giving flag with that of batch-upload record
-		//as workflow action should not overwrite batch-upload record
+		/* override the data in exclude-giving flag with that of batch-upload record
+		as workflow action should not overwrite batch-upload record */
 		if (recv && recv[rc.ns+'exclude_giving__c']) {
 			$('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
 		}
