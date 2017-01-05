@@ -20,10 +20,9 @@ rc.initializeFormApp = function() {
 		rc.loadCustomerView();
 	}
 
-	// todo: not sure it the following code is needed - if is, figure out how to call it
 	rc.events.on('form-loaded-with-data',function(event) {
-		//functions to initialize components which depends on all components + data load
-		//here we have guarantee all components and data is loaded
+		/* functions to initialize components which depends on all components + data load
+		here we have guarantee all components and data is loaded */
 		rc.validate.initialize(); /* if validations enabled initialize the scene */
 		rc.ui.setDropdownVisible();
 		rc.ui.removeRedundantOpacity();
@@ -51,18 +50,16 @@ rc.loadCustomerView = function() {
 	$(data.containers).each(function(at, data) {/* set columns/components */
 		rc.comp.insertColumnList('#rc-container-list', data);
 	});
-
-	// Assign default values to all the fields
-	// This will be overwritten by field data values, if any.
-	rc.rollupDefaultValues();
+	
+	rc.rollupDefaultValues();/* Assign default values to all the fields */
 
 	// only do this method call if the "data" parameter is set - elminates ajax request to SF
 	var dataParam = rc.getParam('data');
 	console.log('data param = ' + dataParam);
 	if (dataParam != null && dataParam != '') {
 		rc.selectData();
-	} else {// todo: need this else stmt?
-		//rc.events.trigger("form-loaded-with-data");
+	} else { // all done - trigger event to finish
+		rc.events.trigger("form-loaded-with-data");
 	}
 };
 
@@ -1046,7 +1043,7 @@ rc.comp.insertWorkflow = function(container, container_data) {
 	if (container_data.actions.length == 0) {
 		rc.comp.insertWorkflowAction(item.find('.rc-container-workflow-content'), { guid: rc.guid() });
 	}
-	// Sortable - todo: what does this do? needed in customer view mode????
+	// Sortable
 	item.find('.rc-container-workflow-content').sortable({handle:'.rc-container-handle',opacity:0.5,placeholder:'rc-state-highlight well',revert:true});
 	//add event listener to dropdown to detect overflow and flip drop direction
 	item.find(".dropdown").on('show.bs.dropdown',rc.ui.flipOverflownDropdown);
@@ -3307,8 +3304,6 @@ rc.wf.process.Javascript = function(deferred, action, data) {
 	}
 };
 
-// todo: don't think this LoadData function - aka Refresh Data does anything
-// since null is passed in
 rc.wf.process.LoadData = function(deferred, action, data) {
 	rc.selectData(deferred, null);
 };

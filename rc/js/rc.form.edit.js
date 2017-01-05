@@ -169,8 +169,7 @@ rc.selectFormData.done = function(data) {
 	}
 	rc.ui.markProcessingDone();// Unmark processing
 	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
-	// sloppy code - doing a request for no good reason - won't do anything without a parameter
-	rc.selectData();// Trigger record selection?
+	rc.selectData();
 };
 
 rc.rollupPlaceholderValues = function(event, placeholderValues) {
