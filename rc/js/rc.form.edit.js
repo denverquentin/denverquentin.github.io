@@ -6,6 +6,7 @@ rc = rc || {};
 rc.ui = rc.ui || {};
 rc.modal = rc.modal || {};
 
+/* this method is called at the bottom of this file */
 rc.initializeFormAppInDesignMode = function() {
 	console.log('rc.initializeFormAppInDesignMode');
 	rc.comp.initialize('.modal');// Copy data templates in modal templates
@@ -875,7 +876,7 @@ rc.upsertFormData.exportFormComponent = function(list, item) {
 		data.data['required'] = item.find('.input-group').attr('data-required') == 'true';
 	}
 	//save validators data
-	var validatorData = rc.validateInput.populateUpsertFormData(item);
+	var validatorData = rc.validate.populateUpsertFormData(item);
 	data = $.extend(data, validatorData);
 	// Styles
 	$(item.get(0).attributes).each(function(index, attr) {

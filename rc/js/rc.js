@@ -12,7 +12,9 @@ rc.upsertData = rc.upsertData || {};
 rc.sessionId;/* litle Session Id */
 var sessionList = {};
 
+/* this method is called at the bottom of this file */
 rc.initializeFormApp = function() {
+	rc.initializeParams();
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
 	if (!rc.isEditMode) {/* Load if not in edit mode - data for edit mode is loaded in rc.form.edit.js */
 		rc.loadCustomerView();
@@ -22,7 +24,7 @@ rc.initializeFormApp = function() {
 	rc.events.on('form-loaded-with-data',function(event) {
 		//functions to initialize components which depends on all components + data load
 		//here we have guarantee all components and data is loaded
-		rc.validateInput.initialize(); /* if validations enabled initialize the scene */
+		rc.validate.initialize(); /* if validations enabled initialize the scene */
 		rc.ui.setDropdownVisible();
 		rc.ui.removeRedundantOpacity();
 	});
@@ -55,7 +57,6 @@ rc.loadCustomerView = function() {
 
 // todo: nothing calling this method passes in a send parameter so method never does anything
 rc.selectData = function(deferred, send) {
-	console.log('rc.selectData: send param = ' + send);
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	console.log('rc.selectData: send = ' + JSON.stringify(send));
@@ -572,7 +573,7 @@ rc.ui.cascadeInputGroup = function() {
 	var element = $(this).closest('.input-group').find('.form-control');
 	element.val(data);
 	element.change();
-	rc.validateInput.validateField(element);
+	rc.validate.validateField(element);
 };
 
 rc.ui.cascadeValue = function() {
@@ -1353,7 +1354,7 @@ rc.comp.upsertComponent = function(container, component_data) {
 		});
 	}
 	//initialize validation data
-	rc.validateInput.initializeComponentData(container,data);
+	rc.validate.initializeComponentData(container,data);
 	// Request remote data?
 	if (item.send) {item.send();}
 };
@@ -2609,7 +2610,7 @@ rc.comp.CreditCard.format = function() {
 	data = data ? data.join(' ') : '';
 	if (oldData==data) {return;}
 	$(this).val(data);// Save data back to input
-	rc.validateInput.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
+	rc.validate.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
 };
 
 rc.comp.Button = function(container, data) {
@@ -2648,14 +2649,14 @@ rc.comp.Button.execute = function() {
 	// All of the below validations should be independent statements, ensuring that each
 	// validation method is called, and providing all errors after one click of the button.
 	// TODO This would be more de-coupled if the attached components could be iterated for validation
-	var v0 = rc.validateInput.isFormValid();
+	var v0 = rc.validate.isFormValid();
 	var v1 = rc.comp.CampaignAsk.validateAskValue();
 	var v2 = rc.comp.Cart.validate();
 	var v3 = rc.comp.Session.validate();
 	var formValid = v0 && v1 && v2 && v3;
 	//reenable the local only fields, which were disabled for validation purpose
 	//workflows should send local only data to server
-	// TODO Perhaps this call should be in rc.validateInput.isFormValid()
+	// TODO Perhaps this call should be in rc.validate.isFormValid()
 	rc.enableLocalOnly(true);
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
@@ -3778,9 +3779,9 @@ rc.upsertData.fail = function(deferred, send, recv, meta) {
 
 
 //Form validation framework start
-rc.validateInput = function() { };
+rc.validate = function() { };
 
-rc.validateInput.populateUpsertFormData = function(component) {
+rc.validate.populateUpsertFormData = function(component) {
 	var validateInfo = {};
 	var validatorDisableFlags = {};
 	if (!component) {
@@ -3809,7 +3810,7 @@ rc.validateInput.populateUpsertFormData = function(component) {
 	return { "validatorInfo":validateInfo, "validatorDisableFlags":validatorDisableFlags };
 };
 
-rc.validateInput.initializeComponentData = function(component,data) {
+rc.validate.initializeComponentData = function(component,data) {
 	if (!data.validatorDisableFlags || !data.validatorInfo) {
 		return;
 	}
@@ -3855,7 +3856,7 @@ rc.enableLocalOnly = function(enableLocalOnly) {
 };
 
 //temporary disable the local only feature, to allow validations to be fired on such fields
-rc.validateInput.initialize = function() {
+rc.validate.initialize = function() {
 	rc.enableLocalOnly(false);
 	//add default validator classes to each field configured for validation, add validator to form once
 	$('#rc-page-container').bootstrapValidator({
@@ -3868,20 +3869,20 @@ rc.validateInput.initialize = function() {
 	});
 	$('#rc-page-container .rc-component-content .form-control[name]').each(function(index,field) {
 		field = $(field);
-		rc.validateInput.initializeFieldValidator(field);
+		rc.validate.initializeFieldValidator(field);
 	});
 };
 
-rc.validateInput.isFieldValidatorsDisabled = function(field) {
+rc.validate.isFieldValidatorsDisabled = function(field) {
 	return field.closest("[data-validatation-disabled]").attr("data-validatation-disabled") == "true";
 };
 
-rc.validateInput.isFieldRequired = function(field) {
+rc.validate.isFieldRequired = function(field) {
 	return field.closest("[data-required]").attr("data-required") == "true";
 };
 
 //accepts form-control input dom component/element
-rc.validateInput.initializeFieldValidator = function(component) {
+rc.validate.initializeFieldValidator = function(component) {
 	var fieldName;
 	var validatorTypesArray;
 	var validateTypeAttr;
@@ -3901,10 +3902,10 @@ rc.validateInput.initializeFieldValidator = function(component) {
 		if (validateTypeAttr) {
 			validatorTypesArray = validateTypeAttr.split(";");
 		}
-	} else if (rc.validateInput.fieldValidator[fieldName]
-		&& rc.validateInput.fieldValidator[fieldName].length > 0) {
+	} else if (rc.validate.fieldValidator[fieldName]
+		&& rc.validate.fieldValidator[fieldName].length > 0) {
 		//check if there is a default validate entry
-		validatorTypesArray = rc.validateInput.fieldValidator[fieldName];
+		validatorTypesArray = rc.validate.fieldValidator[fieldName];
 		validateTypeAttr = validatorTypesArray.join(";");
 		component.attr('data-validate-type',validateTypeAttr);
 		component.addClass("validate-field");
@@ -3912,12 +3913,12 @@ rc.validateInput.initializeFieldValidator = function(component) {
 
 	//if system/custom validators are disabled
 	if (rc.validationsEnabled != "true" || !validatorTypesArray
-		|| rc.validateInput.isFieldValidatorsDisabled(component) == true) {
+		|| rc.validate.isFieldValidatorsDisabled(component) == true) {
 		validatorTypesArray = [];
 	}
 	var nonEmptyValidatorIndex = $.inArray("notEmpty",validatorTypesArray);
 	//check if the component is required
-	if (rc.validateInput.isFieldRequired(component) == true) {
+	if (rc.validate.isFieldRequired(component) == true) {
 		if (nonEmptyValidatorIndex == -1) {
 			validatorTypesArray.push("notEmpty");
 		}
@@ -3926,10 +3927,10 @@ rc.validateInput.initializeFieldValidator = function(component) {
 		//remove the same from array
 		validatorTypesArray.splice( validatorTypesArray, 1);
 	}
-	return rc.validateInput.initializeFieldValidatorRules(fieldName,validatorTypesArray);
+	return rc.validate.initializeFieldValidatorRules(fieldName,validatorTypesArray);
 };
 
-rc.validateInput.initializeFieldValidatorRules = function(fieldName, validatorTypesArray) {
+rc.validate.initializeFieldValidatorRules = function(fieldName, validatorTypesArray) {
 	if (!validatorTypesArray || !validatorTypesArray.length) {
 		return false;
 	}
@@ -3941,7 +3942,7 @@ rc.validateInput.initializeFieldValidatorRules = function(fieldName, validatorTy
 			continue;
 		}
 		//add code for custom validators
-		validatorRule = rc.validateInput.getValidator(validatorRule);
+		validatorRule = rc.validate.getValidator(validatorRule);
 		//merge all validation rules together into validatorRuleSet
 		validatorRuleSet = $.extend(validatorRuleSet, validatorRule);
 	}
@@ -3954,11 +3955,11 @@ rc.validateInput.initializeFieldValidatorRules = function(fieldName, validatorTy
 	return true;
 };
 
-rc.validateInput.getValidator = function(validatorType) {
-	return rc.validateInput.validatorMap[validatorType];
+rc.validate.getValidator = function(validatorType) {
+	return rc.validate.validatorMap[validatorType];
 };
 
-rc.validateInput.isFormValid = function() {
+rc.validate.isFormValid = function() {
 	var container = $('#rc-page-container');
 	var form = container.data('bootstrapValidator');
 	form.validate();
@@ -3966,7 +3967,7 @@ rc.validateInput.isFormValid = function() {
 };
 
 //manually validate the field 
-rc.validateInput.validateField = function(field) {
+rc.validate.validateField = function(field) {
 	if (!field) {
 		return;
 	}
@@ -3976,55 +3977,55 @@ rc.validateInput.validateField = function(field) {
 rc.validatorsRequiringCountry = ['zipCode','iban','phone'];
 
 //use default validator for these fields
-rc.validateInput.fieldValidator = {};
-rc.validateInput.fieldValidator[rc.ns+'address_country__c'] = ["countryCode"];
-rc.validateInput.fieldValidator[rc.ns+'address_country_name__c'] = ["country"];
-rc.validateInput.fieldValidator[rc.ns+'address_postal_code__c'] = ["zipCode"];
-rc.validateInput.fieldValidator[rc.ns+'address_state__c'] = ["state"];
-rc.validateInput.fieldValidator[rc.ns+'address_zip__c'] = ["zipCode"];
-rc.validateInput.fieldValidator[rc.ns+'address_2_city__c'] = ["city"];
-rc.validateInput.fieldValidator[rc.ns+'address_2_country__c'] = ["countryCode"];
-rc.validateInput.fieldValidator[rc.ns+'address_2_country_name__c'] = ["country"];
-rc.validateInput.fieldValidator[rc.ns+'address_2_postal_code__c'] = ["zipCode"];
-rc.validateInput.fieldValidator[rc.ns+'address_2_state__c'] = ["state"];
-rc.validateInput.fieldValidator[rc.ns+'address_2_zip__c'] = ["zipCode"];
-rc.validateInput.fieldValidator[rc.ns+'address_city__c'] = ["city"];
-rc.validateInput.fieldValidator[rc.ns+'contact_1_email__c'] = ["email"];
-rc.validateInput.fieldValidator[rc.ns+'contact_2_email__c'] = ["email"];
-rc.validateInput.fieldValidator[rc.ns+'contact_1_phone_1__c'] = ["phone"];
-rc.validateInput.fieldValidator[rc.ns+'contact_1_phone_2__c'] = ["phone"];
-rc.validateInput.fieldValidator[rc.ns+'contact_2_phone_1__c'] = ["phone"];
-rc.validateInput.fieldValidator[rc.ns+'contact_2_phone_2__c'] = ["phone"];
-rc.validateInput.fieldValidator[rc.ns+'event_purchase_giving_amount__c'] = ["amount"];
-rc.validateInput.fieldValidator[rc.ns+'giving_check_date__c'] = ["date"];
-rc.validateInput.fieldValidator[rc.ns+'giving_close_date__c'] = ["date"];
-rc.validateInput.fieldValidator[rc.ns+'giving_close_date_time__c'] = ["datetime"];
-rc.validateInput.fieldValidator[rc.ns+'giving_giving_amount__c'] = ["amount"];
-rc.validateInput.fieldValidator[rc.ns+'giving_giving_years__c'] = ["year"];
-rc.validateInput.fieldValidator[rc.ns+'giving_record_amount__c'] = ["amount"];
-rc.validateInput.fieldValidator[rc.ns+'payment_method_billing_email__c'] = ["email"];
-rc.validateInput.fieldValidator[rc.ns+'payment_method_billing_phone__c'] = ["phone"];
-rc.validateInput.fieldValidator[rc.ns+'payment_method_card_expiration_date__c'] = ["date"];
-rc.validateInput.fieldValidator[rc.ns+'payment_method_card_expiration_month__c'] = ["monthExpiration"];
-rc.validateInput.fieldValidator[rc.ns+'payment_method_card_expiration_year__c'] = ["yearExpiration"];
-rc.validateInput.fieldValidator[rc.ns+'payment_method_card_last_four_digits__c'] = ["numeric"];
-rc.validateInput.fieldValidator[rc.ns+'payment_method_card_number__c'] = ["creditCard"];
-rc.validateInput.fieldValidator[rc.ns+'payment_method_card_security_code__c'] = ["cvv"];
-rc.validateInput.fieldValidator[rc.ns+'preferences_1_end_date__c'] = ["date"];
-rc.validateInput.fieldValidator[rc.ns+'preferences_1_start_date__c'] = ["date"];
-rc.validateInput.fieldValidator[rc.ns+'preferences_2_end_date__c'] = ["date"];
-rc.validateInput.fieldValidator[rc.ns+'preferences_2_start_date__c'] = ["date"];
-rc.validateInput.fieldValidator[rc.ns+'recipient_city__c'] = ["city"];
-rc.validateInput.fieldValidator[rc.ns+'recipient_country__c'] = ["country"];
-rc.validateInput.fieldValidator[rc.ns+'recipient_email__c'] = ["email"];
-rc.validateInput.fieldValidator[rc.ns+'recipient_phone__c'] = ["phone"];
-rc.validateInput.fieldValidator[rc.ns+'recipient_postal_code__c'] = ["zipCode"];
-rc.validateInput.fieldValidator[rc.ns+'recipient_preferred_email__c'] = ["email"];
-rc.validateInput.fieldValidator[rc.ns+'recipient_preferred_phone__c'] = ["phone"];
-rc.validateInput.fieldValidator[rc.ns+'recipient_state_province__c'] = ["state"];
+rc.validate.fieldValidator = {};
+rc.validate.fieldValidator[rc.ns+'address_country__c'] = ["countryCode"];
+rc.validate.fieldValidator[rc.ns+'address_country_name__c'] = ["country"];
+rc.validate.fieldValidator[rc.ns+'address_postal_code__c'] = ["zipCode"];
+rc.validate.fieldValidator[rc.ns+'address_state__c'] = ["state"];
+rc.validate.fieldValidator[rc.ns+'address_zip__c'] = ["zipCode"];
+rc.validate.fieldValidator[rc.ns+'address_2_city__c'] = ["city"];
+rc.validate.fieldValidator[rc.ns+'address_2_country__c'] = ["countryCode"];
+rc.validate.fieldValidator[rc.ns+'address_2_country_name__c'] = ["country"];
+rc.validate.fieldValidator[rc.ns+'address_2_postal_code__c'] = ["zipCode"];
+rc.validate.fieldValidator[rc.ns+'address_2_state__c'] = ["state"];
+rc.validate.fieldValidator[rc.ns+'address_2_zip__c'] = ["zipCode"];
+rc.validate.fieldValidator[rc.ns+'address_city__c'] = ["city"];
+rc.validate.fieldValidator[rc.ns+'contact_1_email__c'] = ["email"];
+rc.validate.fieldValidator[rc.ns+'contact_2_email__c'] = ["email"];
+rc.validate.fieldValidator[rc.ns+'contact_1_phone_1__c'] = ["phone"];
+rc.validate.fieldValidator[rc.ns+'contact_1_phone_2__c'] = ["phone"];
+rc.validate.fieldValidator[rc.ns+'contact_2_phone_1__c'] = ["phone"];
+rc.validate.fieldValidator[rc.ns+'contact_2_phone_2__c'] = ["phone"];
+rc.validate.fieldValidator[rc.ns+'event_purchase_giving_amount__c'] = ["amount"];
+rc.validate.fieldValidator[rc.ns+'giving_check_date__c'] = ["date"];
+rc.validate.fieldValidator[rc.ns+'giving_close_date__c'] = ["date"];
+rc.validate.fieldValidator[rc.ns+'giving_close_date_time__c'] = ["datetime"];
+rc.validate.fieldValidator[rc.ns+'giving_giving_amount__c'] = ["amount"];
+rc.validate.fieldValidator[rc.ns+'giving_giving_years__c'] = ["year"];
+rc.validate.fieldValidator[rc.ns+'giving_record_amount__c'] = ["amount"];
+rc.validate.fieldValidator[rc.ns+'payment_method_billing_email__c'] = ["email"];
+rc.validate.fieldValidator[rc.ns+'payment_method_billing_phone__c'] = ["phone"];
+rc.validate.fieldValidator[rc.ns+'payment_method_card_expiration_date__c'] = ["date"];
+rc.validate.fieldValidator[rc.ns+'payment_method_card_expiration_month__c'] = ["monthExpiration"];
+rc.validate.fieldValidator[rc.ns+'payment_method_card_expiration_year__c'] = ["yearExpiration"];
+rc.validate.fieldValidator[rc.ns+'payment_method_card_last_four_digits__c'] = ["numeric"];
+rc.validate.fieldValidator[rc.ns+'payment_method_card_number__c'] = ["creditCard"];
+rc.validate.fieldValidator[rc.ns+'payment_method_card_security_code__c'] = ["cvv"];
+rc.validate.fieldValidator[rc.ns+'preferences_1_end_date__c'] = ["date"];
+rc.validate.fieldValidator[rc.ns+'preferences_1_start_date__c'] = ["date"];
+rc.validate.fieldValidator[rc.ns+'preferences_2_end_date__c'] = ["date"];
+rc.validate.fieldValidator[rc.ns+'preferences_2_start_date__c'] = ["date"];
+rc.validate.fieldValidator[rc.ns+'recipient_city__c'] = ["city"];
+rc.validate.fieldValidator[rc.ns+'recipient_country__c'] = ["country"];
+rc.validate.fieldValidator[rc.ns+'recipient_email__c'] = ["email"];
+rc.validate.fieldValidator[rc.ns+'recipient_phone__c'] = ["phone"];
+rc.validate.fieldValidator[rc.ns+'recipient_postal_code__c'] = ["zipCode"];
+rc.validate.fieldValidator[rc.ns+'recipient_preferred_email__c'] = ["email"];
+rc.validate.fieldValidator[rc.ns+'recipient_preferred_phone__c'] = ["phone"];
+rc.validate.fieldValidator[rc.ns+'recipient_state_province__c'] = ["state"];
 
 //standard validators
-rc.validateInput.validatorMap = {
+rc.validate.validatorMap = {
 	"notEmpty" : {
 		notEmptyRC: {
 			message: 'This field is required'
@@ -4225,5 +4226,4 @@ rc.validateInput.validatorMap = {
 };
 }(window.jQuery));
 
-rc.initializeParams();
 rc.initializeFormApp();
