@@ -24,7 +24,6 @@ rc.initializeFormApp = function() {
 		// apply Page Level CSS
 		rc.comp.importContentCSS($("html"), data.styles);
 		rc.comp.updateContentCSS($("html"));
-		// validations flag
 		rc.validationsEnabled = data.data['validations-enabled'] || "false";
 		// set Theme if configured
 		if (data.data['theme-href'] && data.data['theme-name']) {
@@ -45,21 +44,11 @@ rc.initializeFormApp = function() {
 		if (dataParam != null && dataParam != '') {
 			rc.selectData();
 		} else {
-			/* functions to initialize components which depends on all components + data load
-			here we have guarantee all components and data is loaded */
-			rc.validate.initialize(); /* if validations enabled initialize the scene */
+			rc.validate.initialize();
 			rc.ui.setDropdownVisible();
 			rc.ui.removeRedundantOpacity();
 		}
 	}
-/*
-	rc.events.on('form-loaded-with-data',function(event) {
-		console.log('event form-loaded-with-data fired');
-		rc.validate.initialize();
-		rc.ui.setDropdownVisible();
-		rc.ui.removeRedundantOpacity();
-	});
-*/
 };
 
 rc.selectData = function(deferred, send) {
@@ -95,10 +84,7 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 			$('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
 		}
 	}
-//	rc.events.trigger("form-loaded-with-data");
-	/* functions to initialize components which depends on all components + data load
-	here we have guarantee all components and data is loaded */
-	rc.validate.initialize(); /* if validations enabled initialize the scene */
+	rc.validate.initialize();
 	rc.ui.setDropdownVisible();
 	rc.ui.removeRedundantOpacity();
 };
@@ -3855,7 +3841,6 @@ rc.enableLocalOnly = function(enableLocalOnly) {
 
 //temporary disable the local only feature, to allow validations to be fired on such fields
 rc.validate.initialize = function() {
-	console.log('rc.validate.initialize');
 	rc.enableLocalOnly(false);
 	//add default validator classes to each field configured for validation, add validator to form once
 	$('#rc-page-container').bootstrapValidator({
