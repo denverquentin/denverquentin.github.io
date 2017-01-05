@@ -3312,7 +3312,7 @@ rc.wf.process.LoadPage = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
-		+ '&formCampaignId=' + campaignFormId + '&formId=' + action.attr('data-value')
+		+ '&formCampaignId=' + campaignFormId + '&form=' + action.attr('data-value')
 		+ '&data=' + rc.getParam('data');
 	window.location = redirectTo;
 };
@@ -3321,7 +3321,7 @@ rc.wf.process.TrafficController = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignTrafficControllerRoute + '?id=' + rc.campaignId
-		+ '&formCampaignId=' + campaignFormId + '&formId=' + rc.getParam('formId')
+		+ '&formCampaignId=' + campaignFormId + '&form=' + rc.getParam('form')
 		+ '&data=' + rc.getParam('data');
 	window.location = redirectTo;
 };
