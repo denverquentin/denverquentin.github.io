@@ -7,7 +7,7 @@ rc.ui = rc.ui || {};
 rc.comp = rc.comp || {};
 rc.comp.remoting = rc.comp.remoting || {};
 rc.dataModal = rc.dataModal || {};
-rc.workflow = rc.workflow || {};
+rc.wf = rc.wf || {};
 rc.upsertData = rc.upsertData || {};
 rc.sessionId;/* litle Session Id */
 var sessionList = {};
@@ -1068,7 +1068,7 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 	item.attr('id', container_data.data['guid']);
 	item.on('cascade-value-changed', rc.comp.validateWorkflowAction);
 	// Disable send payment option if already payment processor is added
-	if (container_data.method != 'send-payment' && rc.workflow.hasPaymentProcessor()) {
+	if (container_data.method != 'send-payment' && rc.wf.hasPaymentProcessor()) {
 		item.find('.dropdown-menu a[data-value="send-payment"]').attr("disabled","disabled");
 	}
 	// Manage content
@@ -2660,7 +2660,7 @@ rc.comp.Button.execute = function() {
 	rc.enableLocalOnly(true);
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
-		rc.workflow.execute(workflowToExecuteId, actionButtonContext);
+		rc.wf.execute(workflowToExecuteId, actionButtonContext);
 	} else {
 		rc.reenable(actionButtonContext);
 	}
@@ -3165,47 +3165,47 @@ rc.dataModal.getFieldByName = function(fieldName, fieldSelector) {
 };
 
 // This is used to determine which workflows are still executing. When this is empty, we reactivate the disabled button.
-rc.workflow.executingMap = {};
+rc.wf.executingMap = {};
 /* This is to allow the SendPayment 'fail' workflow to be called separately during the SaveData workflow, since the existing
 form design is to configure SendPayment and SaveData as separate actions.
 When the form processing is 'Transactional', the payment auth accept/decline won't be known until the SaveData action
-completes. The intent is that rc.workflow.retroactiveFailure will *only* have 'fail' actions and may be reject()ed when SaveData
+completes. The intent is that rc.wf.retroactiveFailure will *only* have 'fail' actions and may be reject()ed when SaveData
 results in a payment decline.  When SaveData completes successfully, the expectation is that processing will continue
 only with the "success" action on the SaveData action (per the TAOS-774 design assumptions).
 This is a workaround to provide backwards-compatibility with the current form design model.
 
 This alternate flow will always be overwritten before each currently-executing workflow, and the reference must be copied
 by the executing action in order to be saved for later. */
-rc.workflow.retroactiveFailure = null;
+rc.wf.retroactiveFailure = null;
 
 /* This is to allow configured workflow actions to "quench" the done() and fail() actions on their parent workflow.
 The quench is used when a payment is processed transactionally and the server request completes successfully, but the payment
 is declined. In that circumstance, the payment handling will quench the normal onFailure actions of the SendData workflow,
 and instead run the onFailure action(s) of the separately-configured SendPayment workflow, which is copied from
-rc.workflow.retroactiveFailure during the SendPayment workflow action.
+rc.wf.retroactiveFailure during the SendPayment workflow action.
 This is a workaround to provide backwards-compatibility with the current form design model, in which SendPayment and SendData are separate. */
-rc.workflow.quenchByGuid = {};
+rc.wf.quenchByGuid = {};
 
-rc.workflow.hasPaymentProcessor = function() {
+rc.wf.hasPaymentProcessor = function() {
 	return $('#rc-workflows-list .rc-component-workflow-action[data-method="send-payment"]').length > 0;
 };
 
-rc.workflow.forceFail = function(deferred, quenchGuid, msg) {
-	rc.workflow.quenchByGuid[quenchGuid] = true;
+rc.wf.forceFail = function(deferred, quenchGuid, msg) {
+	rc.wf.quenchByGuid[quenchGuid] = true;
 	console.log(msg);
 	deferred.reject(msg);
 }
 
-rc.workflow.execute = function(guid,actionButtonContext) {
+rc.wf.execute = function(guid,actionButtonContext) {
 	//if workflow trigger in the context of an action button,
 	//always disable the actionButton which was source of the event
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
 	var context = $('#' + guid);
 	var flow_origin = new jQuery.Deferred(); // null deferred to kickoff the flow
 	var flow = flow_origin.promise();
-	rc.workflow.retroactiveFailure = new jQuery.Deferred();
-	var retroactiveFailureFlow = rc.workflow.retroactiveFailure.promise();
-	rc.workflow.executingMap[guid] = true;
+	rc.wf.retroactiveFailure = new jQuery.Deferred();
+	var retroactiveFailureFlow = rc.wf.retroactiveFailure.promise();
+	rc.wf.executingMap[guid] = true;
 	// Add actions
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
@@ -3214,45 +3214,45 @@ rc.workflow.execute = function(guid,actionButtonContext) {
 		var action_method = action.attr('data-method');
 		if (action_type == 'then' || action_type == 'execute') { // the "execute" type is for very early versions of the form
 			flow = flow.then(function(data) {
-				return rc.workflow.process('then', action_guid, {workflowGuid:guid}, actionButtonContext);
+				return rc.wf.process('then', action_guid, {workflowGuid:guid}, actionButtonContext);
 			});
 		}
 		if (action_type == 'done') {
 			flow.done(function(data) {
-				if (!rc.workflow.quenchByGuid[guid]) {
-					return rc.workflow.process('done', action_guid, {workflowGuid:guid}, actionButtonContext);
+				if (!rc.wf.quenchByGuid[guid]) {
+					return rc.wf.process('done', action_guid, {workflowGuid:guid}, actionButtonContext);
 				}
 			});
 		}
 		if (action_type == 'fail') {
 			flow.fail(function(data) {
-				if (!rc.workflow.quenchByGuid[guid]) {
-					return rc.workflow.process('fail', action_guid, {workflowGuid:guid}, actionButtonContext);
+				if (!rc.wf.quenchByGuid[guid]) {
+					return rc.wf.process('fail', action_guid, {workflowGuid:guid}, actionButtonContext);
 				}
 			});
 			// Retroactive failure flows are always called explicitly, so we ignore the quench
 			retroactiveFailureFlow.fail(function(data) {
-				return rc.workflow.process('fail', action_guid, {workflowGuid:guid}, actionButtonContext);
+				return rc.wf.process('fail', action_guid, {workflowGuid:guid}, actionButtonContext);
 			});
 		}
 	});
 	flow.always(function() {
 		//after all workflows are complete, reenable the button
-		rc.workflow.executingMap[guid] = false;
+		rc.wf.executingMap[guid] = false;
 		if (actionButtonContext) {
 			var workflowsRunning = false;
-			for (var key in rc.workflow.executingMap) {
-				workflowsRunning = workflowsRunning || rc.workflow.executingMap[key];
+			for (var key in rc.wf.executingMap) {
+				workflowsRunning = workflowsRunning || rc.wf.executingMap[key];
 			}
 			if (!workflowsRunning) {rc.reenable(actionButtonContext);}
 		}
-		rc.workflow.quenchByGuid[guid] = null;
+		rc.wf.quenchByGuid[guid] = null;
 	});
 	// Resolve placeholder promise
 	flow_origin.resolve();
 };
 
-rc.workflow.process = function(type, guid, data, actionButtonContext) {
+rc.wf.process = function(type, guid, data, actionButtonContext) {
 	//always disable action button when executing any action
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
 	// Find and execute
@@ -3260,21 +3260,21 @@ rc.workflow.process = function(type, guid, data, actionButtonContext) {
 	deferred.workflowGuid = data.workflowGuid;
 	var action = $('#' + guid);
 	var method_map = {};
-	method_map['copy-param'] = rc.workflow.process.CopyParameter;
-	method_map['javascript'] = rc.workflow.process.Javascript;
-	method_map['load-data'] = rc.workflow.process.LoadData;
-	method_map['load-href'] = rc.workflow.process.LoadHref;
-	method_map['load-page'] = rc.workflow.process.LoadPage;
-	//method_map['send-address'] = rc.workflow.process.SendAddress;
-	//method_map['send-chatter'] = rc.workflow.process.SendChatter;
-	method_map['send-data'] = rc.workflow.process.SendData;
-	method_map['send-mail'] = rc.workflow.process.SendMail;
-	method_map['send-payment'] = rc.workflow.process.SendPayment;
-	//method_map['send-text'] = rc.workflow.process.SendText;
-	//method_map['send-twitter'] = rc.workflow.process.SendTwitter;
-	//method_map['show-alert'] = rc.workflow.process.ShowAlert;
-	method_map['traffic-controller'] = rc.workflow.process.TrafficController;
-	method_map['workflow'] = rc.workflow.process.Workflow;
+	method_map['copy-param'] = rc.wf.process.CopyParameter;
+	method_map['javascript'] = rc.wf.process.Javascript;
+	method_map['load-data'] = rc.wf.process.LoadData;
+	method_map['load-href'] = rc.wf.process.LoadHref;
+	method_map['load-page'] = rc.wf.process.LoadPage;
+	//method_map['send-address'] = rc.wf.process.SendAddress;
+	//method_map['send-chatter'] = rc.wf.process.SendChatter;
+	method_map['send-data'] = rc.wf.process.SendData;
+	method_map['send-mail'] = rc.wf.process.SendMail;
+	method_map['send-payment'] = rc.wf.process.SendPayment;
+	//method_map['send-text'] = rc.wf.process.SendText;
+	//method_map['send-twitter'] = rc.wf.process.SendTwitter;
+	//method_map['show-alert'] = rc.wf.process.ShowAlert;
+	method_map['traffic-controller'] = rc.wf.process.TrafficController;
+	method_map['workflow'] = rc.wf.process.Workflow;
 	// Execute method
 	var method_action = action.attr('data-method');
 	var method = method_map[method_action] || function(deferred, action) {};
@@ -3287,7 +3287,7 @@ rc.workflow.process = function(type, guid, data, actionButtonContext) {
 	return deferred.promise();
 };
 
-rc.workflow.process.CopyParameter = function(deferred, action, data) {
+rc.wf.process.CopyParameter = function(deferred, action, data) {
 	var parameter = $(action).attr('data-parameter');
 	var toField = $(action).attr('data-value');
 	// Copy parameter data
@@ -3295,7 +3295,7 @@ rc.workflow.process.CopyParameter = function(deferred, action, data) {
 	deferred.resolve();
 };
 
-rc.workflow.process.Javascript = function(deferred, action, data) {
+rc.wf.process.Javascript = function(deferred, action, data) {
 	deferred = deferred || new jQuery.Deferred();
 	action = action || $();
 	var action_data = action.find('.rc-fg[data-method="javascript"] .form-control').val();
@@ -3310,11 +3310,11 @@ rc.workflow.process.Javascript = function(deferred, action, data) {
 
 // todo: don't think this LoadData function - aka Refresh Data does anything
 // since null is passed in
-rc.workflow.process.LoadData = function(deferred, action, data) {
+rc.wf.process.LoadData = function(deferred, action, data) {
 	rc.selectData(deferred, null);
 };
 
-rc.workflow.process.LoadPage = function(deferred, action, data) {
+rc.wf.process.LoadPage = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
@@ -3323,7 +3323,7 @@ rc.workflow.process.LoadPage = function(deferred, action, data) {
 	window.location = redirectTo;
 };
 
-rc.workflow.process.TrafficController = function(deferred, action, data) {
+rc.wf.process.TrafficController = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignTrafficControllerRoute + '?id=' + rc.campaignId
@@ -3332,7 +3332,7 @@ rc.workflow.process.TrafficController = function(deferred, action, data) {
 	window.location = redirectTo;
 };
 
-rc.workflow.process.LoadHref = function(deferred, action, data) {
+rc.wf.process.LoadHref = function(deferred, action, data) {
 	var href = $(action).attr('data-value');
 	if (href == null || href == '') {return;}
 	if (href.match('(http:|https:)?(/?)/.+')) {
@@ -3343,19 +3343,19 @@ rc.workflow.process.LoadHref = function(deferred, action, data) {
 	return false;
 };
 
-rc.workflow.process.SendData = function(deferred, action, data) {
+rc.wf.process.SendData = function(deferred, action, data) {
 	rc.upsertData(deferred, data);
 };
 
-rc.workflow.process.SendMail = function(deferred, action, data) {
+rc.wf.process.SendMail = function(deferred, action, data) {
 	deferred = deferred || new jQuery.Deferred();
 	action = action || $();
 	var mailSendTo = action.attr("data-mail-to") || '';
 	var mailReplyTo = action.attr("data-mail-reply-to") || '';
 	var mailSubject = action.attr("data-mail-subject") || '';
 	var mailBody = action.attr("data-mail-body") || '';
-	var sendToArray = rc.workflow.process.SendMail.getFilteredMailArray(mailSendTo);
-	var replyToArray = rc.workflow.process.SendMail.getFilteredMailArray(mailReplyTo);
+	var sendToArray = rc.wf.process.SendMail.getFilteredMailArray(mailSendTo);
+	var replyToArray = rc.wf.process.SendMail.getFilteredMailArray(mailReplyTo);
 	if (!sendToArray || !sendToArray.length) {deferred.reject();}
 	var email = {};
 	email.__action = rc.actions.sendMail;
@@ -3363,19 +3363,19 @@ rc.workflow.process.SendMail = function(deferred, action, data) {
 	email.replyTo = replyToArray.length ? replyToArray[0] : '';
 	email.subject = mailSubject;
 	email.body = mailBody;
-	this.done = rc.workflow.process.SendMail.done;
+	this.done = rc.wf.process.SendMail.done;
 	rc.comp.remoting.send(deferred, email, this.done, this.fail);
 	var data = {};
 };
 
-rc.workflow.process.SendMail.done = function(deferred, send, recv, meta) {};
-rc.workflow.process.SendMail.getFilteredMailArray = function(emails) {
+rc.wf.process.SendMail.done = function(deferred, send, recv, meta) {};
+rc.wf.process.SendMail.getFilteredMailArray = function(emails) {
 	var resultArray = [];
 	var emailsArray = emails.split(",");
 	//replace merge fields with actual values.
 	for (var index=0; index < emailsArray.length; index++) {
 		var emailText = $.trim(emailsArray[index]);
-		if (emailText && rc.workflow.process.SendMail.isValidMergeField(emailText)) {
+		if (emailText && rc.wf.process.SendMail.isValidMergeField(emailText)) {
 			//find the merge field value
 			var fieldName = rc.ui.MergeFieldMap[emailText].field || '';
 			var mailText = $('input[name="'+fieldName+'"]:first').val() || '';
@@ -3384,24 +3384,24 @@ rc.workflow.process.SendMail.getFilteredMailArray = function(emails) {
 			//if control is set then dont send email : opt out option
 			if (controlValue == true) {continue;}
 			if (mailText) {resultArray.push(mailText);}
-		} else if (emailText && rc.workflow.process.SendMail.isValidEmail(emailText)) {
+		} else if (emailText && rc.wf.process.SendMail.isValidEmail(emailText)) {
 			resultArray.push(emailText);
 		}
 	}
 	return resultArray;
 }
 
-rc.workflow.process.SendMail.isValidEmail = function(emailText) {
+rc.wf.process.SendMail.isValidEmail = function(emailText) {
 	return emailText.match(/.+@.+\..+/i)!==null;
 }
 
-rc.workflow.process.SendMail.isValidMergeField = function(mergeFieldText) {
+rc.wf.process.SendMail.isValidMergeField = function(mergeFieldText) {
 	if (!mergeFieldText) {return false;}
 	var regex = new RegExp("^(<Contact Mail [1|2]>)$");
 	return regex.test(mergeFieldText);
 }
 
-rc.workflow.process.SendPayment = function(deferred, action, data) {
+rc.wf.process.SendPayment = function(deferred, action, data) {
 	// Validate fields in the payment processor?
 	// Do not validate the fields for discount codes
 	$('.form-control').filter(':visible:NOT(input.product-discount-code)').change();
@@ -3411,7 +3411,7 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 	//if nothing to process, pass the processing
 	if (cartPaymentDetails.finalAmount == 0 && askPaymentDetails.finalAmount == 0) {
 		//if no data found then skip payment processing but create payment method
-		rc.workflow.process.populateDefaultFields(action, data);
+		rc.wf.process.populateDefaultFields(action, data);
 		//and resolve the workflow action so that payment process action is green
 		return deferred.resolve();
 	}
@@ -3469,7 +3469,7 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 		// An alternative attempted was to clone the failure flow from the deferred passed to this method; however, that deferred refers only to the
 		// SendPayment action, and not the larger workflow on which the onFailure actions are defined. Consequently, we refer here to a failure
 		// flow that was copied when the current workflow was initially parsed.
-		rc.pendingPayment.deferred = rc.workflow.retroactiveFailure;
+		rc.pendingPayment.deferred = rc.wf.retroactiveFailure;
 		return deferred.resolve();
 	} else {
 		// Non-transactional / client-side handling: send payment request immediately
@@ -3480,47 +3480,47 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 			rc.ui.releaseProcessingModal();
 			deferred.reject();
 		});
-		return rc.workflow.process.SendPayment.send(paymentDeferred, action, data);
+		return rc.wf.process.SendPayment.send(paymentDeferred, action, data);
 	}
 };
 
-rc.workflow.process.SendPayment.send = function(deferred, action, data) {
+rc.wf.process.SendPayment.send = function(deferred, action, data) {
 	if (action.attr('data-value') == 'corduro') {
-		if ($('#corduro_snap #maskcorduro_snap').length == 0) {rc.workflow.integrations.Corduro(deferred, action);}
-		return rc.workflow.integrations.Corduro.send(deferred, action);
+		if ($('#corduro_snap #maskcorduro_snap').length == 0) {rc.wf.integrations.Corduro(deferred, action);}
+		return rc.wf.integrations.Corduro.send(deferred, action);
 	}
 	if (action.attr('data-value') == 'iATS') {
-		return rc.workflow.integrations.IATS(deferred, action);
+		return rc.wf.integrations.IATS(deferred, action);
 	}
 	if (action.attr('data-value') == 'Cybersource') {
-		return rc.workflow.integrations.Cybersource(deferred, action);
+		return rc.wf.integrations.Cybersource(deferred, action);
 	}
 	if (action.attr('data-value') == 'PayPal') {
-		return rc.workflow.integrations.PayPal(deferred, action);
+		return rc.wf.integrations.PayPal(deferred, action);
 	}
 	if (action.attr('data-value') == 'Litle') {
-		return rc.workflow.integrations.Litle(deferred, action);
+		return rc.wf.integrations.Litle(deferred, action);
 	}
 	if (action.attr('data-value') == 'sage') {
-		return rc.workflow.integrations.Sage(deferred, action);
+		return rc.wf.integrations.Sage(deferred, action);
 	}
 	if (action.attr('data-value') == 'Authorize.net') {
-		return rc.workflow.integrations.AuthDotNet(deferred, action);
+		return rc.wf.integrations.AuthDotNet(deferred, action);
 	}
 	if (action.attr('data-value') == 'heartland') {
-		return rc.workflow.integrations.Sage(deferred, action);
+		return rc.wf.integrations.Sage(deferred, action);
 	}
 	return deferred.reject('No payment processor found!');
 }
 
-rc.workflow.process.Workflow = function(deferred, action, data, actionButtonContext) {
-	rc.workflow.execute($(action).attr('data-value'),actionButtonContext);
+rc.wf.process.Workflow = function(deferred, action, data, actionButtonContext) {
+	rc.wf.execute($(action).attr('data-value'),actionButtonContext);
 	deferred.resolve();
 };
 
 // Method to populate default fields for payment processing even if amount is 0
-rc.workflow.process.populateDefaultFields = function(action, data) {
-	$('input[name="'+rc.ns+'payment_method_card_issuer__c"]').val(rc.workflow.process.getCreditCardType($('input[data-name="payment_method_card_number__c"]').val()));
+rc.wf.process.populateDefaultFields = function(action, data) {
+	$('input[name="'+rc.ns+'payment_method_card_issuer__c"]').val(rc.wf.process.getCreditCardType($('input[data-name="payment_method_card_number__c"]').val()));
 	$('input[data-name="'+rc.ns+'payment_method_card_number__c"]').attr('name',rc.ns+'payment_method_card_number__c');
 	$('input[data-name="'+rc.ns+'payment_method_card_security_code__c"]').attr('name',rc.ns+'payment_method_card_security_code__c');
 	$('input[name="'+rc.ns+'payment_method_payment_type__c"]').val("Charge Card");
@@ -3528,7 +3528,7 @@ rc.workflow.process.populateDefaultFields = function(action, data) {
 	$('input[name="'+rc.ns+'payment_processor__c"]').val(action.attr('data-value'));
 }
 
-rc.workflow.process.getCreditCardType = function(ccNum) {
+rc.wf.process.getCreditCardType = function(ccNum) {
 	if (ccNum == undefined || ccNum == '') {return '';}
 	var visa = new RegExp("^4[0-9]{12}(?:[0-9]{3})?$");
 	var master = new RegExp("^5[1-5][0-9]{14}$");
@@ -3623,18 +3623,18 @@ rc.upsertData = function(deferred, send) {
 						If it is not present, it's an error and we fall thru to the exception catch below.
 						Since we are using the SendPayment fail() actions to handle payment declines,
 						we quench the done() and fail() actions on the SendData workflow. */
-						rc.workflow.forceFail(pp.deferred, deferred.workflowGuid, declineMsg);
+						rc.wf.forceFail(pp.deferred, deferred.workflowGuid, declineMsg);
 					} else if (isFlagged) {
 						/* Represents a save data or other server error AFTER the payment has been processed.
 						We clear the Batch Upload Public Token to avoid overwriting the completed payment data on subsequent attempts */
 						rc.clearPublicToken(send, recv);
 						// This will force the "Save Data" failure flow rather than the "Process Payment" failure flow
-						rc.workflow.forceFail(rc.workflow.retroactiveFailure, deferred.workflowGuid, recv[rc.ns+'batch_upload_flagged_reason__c']);
+						rc.wf.forceFail(rc.wf.retroactiveFailure, deferred.workflowGuid, recv[rc.ns+'batch_upload_flagged_reason__c']);
 					}
 				} catch (message) {
 					// We clear the Batch Upload Public Token to avoid overwriting the possibly completed payment data on subsequent attempts
 					if (recv.isSuccess == 'true') {rc.clearPublicToken(send, recv);}
-					rc.workflow.forceFail(rc.workflow.retroactiveFailure, deferred.workflowGuid, message);
+					rc.wf.forceFail(rc.wf.retroactiveFailure, deferred.workflowGuid, message);
 					/* Note: I tried to use the below for "forceFail" functionality but wasn't able to in the current workflow design
 					See: http://stackoverflow.com/questions/17800176/jquery-deferred-rejecting-a-promise-from-within-a-done-filter */
 				}
@@ -3736,10 +3736,10 @@ rc.upsertData.validate = function() {
 			if (emailText==null || !emailText) {
 				continue;
 			}
-			if (rc.workflow.process.SendMail.isValidMergeField(emailText)) {
+			if (rc.wf.process.SendMail.isValidMergeField(emailText)) {
 				continue;
 			}
-			if (!rc.workflow.process.SendMail.isValidEmail(emailText)) {
+			if (!rc.wf.process.SendMail.isValidEmail(emailText)) {
 				invalidEmailsArray.push(emailText);
 			}
 		}
