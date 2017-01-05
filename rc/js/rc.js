@@ -23,6 +23,7 @@ rc.initializeFormApp = function() {
 	rc.events.on('form-loaded-with-data',function(event) {
 		/* functions to initialize components which depends on all components + data load
 		here we have guarantee all components and data is loaded */
+		console.log('event form-loaded-with-data fired');
 		rc.validate.initialize(); /* if validations enabled initialize the scene */
 		rc.ui.setDropdownVisible();
 		rc.ui.removeRedundantOpacity();
@@ -3851,6 +3852,7 @@ rc.enableLocalOnly = function(enableLocalOnly) {
 
 //temporary disable the local only feature, to allow validations to be fired on such fields
 rc.validate.initialize = function() {
+	console.log('rc.validate.initialize');
 	rc.enableLocalOnly(false);
 	//add default validator classes to each field configured for validation, add validator to form once
 	$('#rc-page-container').bootstrapValidator({
