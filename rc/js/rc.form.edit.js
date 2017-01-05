@@ -77,7 +77,7 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 	// When the form item is clicked, reselect the form data
 	list.find('.rc-link').on('click', rc.selectFormData);
 	// Is there a page already selected? Or just choose the first page?
-	var form = rc.paramFormId || rc.getParam('formId');
+	var form = rc.paramFormId || rc.getParam('form');
 	if (form) {
 		$('.rc-link[data-value="' + form+ '"]').click();
 	} else {
@@ -97,16 +97,16 @@ rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
 
 rc.selectFormData = function() {
 	// Set the page name param
-	var form = rc.paramFormId || rc.getParam('formId');
-	rc.setParam('formId', $(this).attr('data-value') || form);
+	var form = rc.paramFormId || rc.getParam('form');
+	rc.setParam('form', $(this).attr('data-value') || form);
 	// Set the form link element
-	var href = '#{base}/' + rc.ns + 'campaign_designform?id=#{cid}&formId=#{fid}';
+	var href = '#{base}/' + rc.ns + 'campaign_designform?id=#{cid}&form=#{fid}';
 	href = href.replace('#{base}', '//' + rc.siteUrl);
 	href = href.replace('#{cid}', rc.campaignId);
-	href = href.replace('#{fid}', rc.getParam('formId'));
+	href = href.replace('#{fid}', rc.getParam('form'));
 	$('.page-header a.fa-link').attr('href', href);
 	// Load that page
-	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('formId'),rc.selectFormData.done,{escape:false});
+	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('form'),rc.selectFormData.done,{escape:false});
 	rc.ui.markProcessing();// Mark processing
 };
 
@@ -356,7 +356,7 @@ rc.deleteFormData = function() {
 	$('.page-header [data-action="rc-action-save"]').button('deleting');
 	$('.page-header [data-action="rc-action-save"]').addClass('btn-danger');
 	// Send to salesforce
-	rc.remoting.invokeAction(rc.actions.deleteFormData, rc.campaignId, rc.getParam('formId'), rc.deleteFormData.done);
+	rc.remoting.invokeAction(rc.actions.deleteFormData, rc.campaignId, rc.getParam('form'), rc.deleteFormData.done);
 	// Mark processing
 	rc.ui.markProcessing();
 };
@@ -683,7 +683,7 @@ rc.upsertFormData = function(send, deferred) {
 		rc.ui.markProcessing();
 	}
 	if ('update' == send.type) {
-		rc.remoting.invokeAction(rc.actions.upsertFormData, rc.campaignId, rc.getParam('formId'), send.form, function(recv, meta) {
+		rc.remoting.invokeAction(rc.actions.upsertFormData, rc.campaignId, rc.getParam('form'), send.form, function(recv, meta) {
 			rc.upsertFormData.done(deferred, send, recv, meta);
 		});
 		rc.ui.markProcessing();
@@ -701,8 +701,8 @@ rc.upsertFormData.done = function(deferred, send, recv, meta) {
 	$('.page-header [data-action="rc-action-save"]').button('save');// Toggle the button
 	rc.ui.markProcessingDone({modified:false});// Unmark processing
 	// If the returned ID is different from the current one, redirect
-	if (rc.getParam('formId') != recv.id) {
-		rc.setParam('formId', recv.id);
+	if (rc.getParam('form') != recv.id) {
+		rc.setParam('form', recv.id);
 		rc.selectFormInfoList();
 	} else {
 		rc.selectFormData();
