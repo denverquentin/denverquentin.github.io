@@ -2,7 +2,7 @@
 #rc-page-container {
 	overflow:visible;
 }
-/*
+
 #rc-page-container[data-mode="view"] .rc-lorem-ipsum-sm:empty:after {
 	display:none !important;
 }
@@ -14,7 +14,6 @@
 #rc-page-container[data-mode="view"] .rc-lorem-ipsum-lg:empty:after {
 	display:none !important;
 }
-*/
 
 #rc-page-container[data-mode="view"] .rc-requires-edit {
 	display:none !important;
