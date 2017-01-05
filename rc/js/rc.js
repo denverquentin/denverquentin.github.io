@@ -62,7 +62,7 @@ rc.loadCustomerView = function() {
 	if (dataParam != null && dataParam != '') {
 		rc.selectData();
 	} else {// todo: need this else stmt?
-		rc.events.trigger("form-loaded-with-data");
+		//rc.events.trigger("form-loaded-with-data");
 	}
 };
 
