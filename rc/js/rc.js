@@ -1454,7 +1454,6 @@ rc.comp.Address.populateCountryBasedOnState = function(event) {
 };
 
 rc.comp.CampaignAsk = function(container, data) {
-	console.log('rc.comp.CampaignAsk');
 	this.container = container;
 	this.type = 'CampaignAsk';
 	this.data = data || {};
@@ -1489,9 +1488,7 @@ rc.comp.CampaignAsk = function(container, data) {
 		$('.rc-component-campaign-ask-other .rc-error-label').remove();
 	};
 
-
-	// Load results
-	//$(recv).each(function() {
+	// Load results - rc.campaignAskRecords variable is set in Campaign_DesignForm.page
 	$(rc.campaignAskRecords).each(function() {
 		var content = rc.cleanKeysToLower(this);
 		var givingFrequency = content[rc.ns+'giving_frequency__c'] || '';
@@ -1575,8 +1572,7 @@ rc.comp.CampaignAsk = function(container, data) {
 			otherElem.attr('data-giving-type', givingType);
 			askOtherArray.push(otherElem);
 		}
-		//Note: Keeping minimum threshold amound in map to validate other amount when submitting the form.
-		//rc.comp.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
+		//Note: Keeping minimum threshold amound in map to validate other amount when submitting the form
 		rc.comp.CampaignAsk.setFrequencyAmountMinThreshold(content[rc.ns+'giving_frequency__c'], content[rc.ns+'minimum_amount_threshold__c']);
 	});
 	freqList.empty();
@@ -1598,8 +1594,6 @@ rc.comp.CampaignAsk = function(container, data) {
 rc.comp.CampaignAsk.frequencyAmountMinThreshold = { };
 
 rc.comp.CampaignAsk.setFrequencyAmountMinThreshold = function(key, val) {
-	//Note: Keeping minimum threshold amound in map to validate other amount when submitting the form
-//	rc.comp.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
 	rc.comp.CampaignAsk.frequencyAmountMinThreshold[key] = val;
 };
 
@@ -3416,7 +3410,7 @@ rc.workflow.process.SendPayment = function(deferred, action, data) {
 	//if nothing to process, pass the processing
 	if (cartPaymentDetails.finalAmount == 0 && askPaymentDetails.finalAmount == 0) {
 		//if no data found then skip payment processing but create payment method
-		rc.workflow.integrations.populateDefaultFields(action, data);
+		rc.workflow.process.populateDefaultFields(action, data);
 		//and resolve the workflow action so that payment process action is green
 		return deferred.resolve();
 	}
@@ -3521,6 +3515,42 @@ rc.workflow.process.SendPayment.send = function(deferred, action, data) {
 rc.workflow.process.Workflow = function(deferred, action, data, actionButtonContext) {
 	rc.workflow.execute($(action).attr('data-value'),actionButtonContext);
 	deferred.resolve();
+};
+
+// Method to populate default fields for payment processing even if amount is 0
+rc.workflow.process.populateDefaultFields = function(action, data) {
+	$('input[name="'+rc.ns+'payment_method_card_issuer__c"]').val(rc.workflow.process.getCreditCardType($('input[data-name="payment_method_card_number__c"]').val()));
+	$('input[data-name="'+rc.ns+'payment_method_card_number__c"]').attr('name',rc.ns+'payment_method_card_number__c');
+	$('input[data-name="'+rc.ns+'payment_method_card_security_code__c"]').attr('name',rc.ns+'payment_method_card_security_code__c');
+	$('input[name="'+rc.ns+'payment_method_payment_type__c"]').val("Charge Card");
+	$('input[name="'+rc.ns+'batch_upload_campaign_matched__c"]').val(rc.campaignId);
+	$('input[name="'+rc.ns+'payment_processor__c"]').val(action.attr('data-value'));
+}
+
+rc.workflow.process.getCreditCardType = function(ccNum) {
+	if (ccNum == undefined || ccNum == '') {return '';}
+	var visa = new RegExp("^4[0-9]{12}(?:[0-9]{3})?$");
+	var master = new RegExp("^5[1-5][0-9]{14}$");
+	var amex = new RegExp("^3[47][0-9]{13}$");
+	var diners = new RegExp("^3(?:0[0-5]|[68][0-9])[0-9]{11}$");
+	var discover = new RegExp("^6(?:011|5[0-9]{2})[0-9]{12}$");
+	var jcb = new RegExp("^(?:2131|1800|35/d{3})/d{11}$");
+	if (visa.exec(ccNum) != null) {
+		return "visa";
+	} else if (master.exec(ccNum) != null) {
+		return "mastercard";
+	} else if (amex.exec(ccNum) != null) {
+		return "amex";
+	} else if (diners.exec(ccNum) != null) {
+		return "diners club";
+	} else if (discover.exec(ccNum) != null) {
+		return "discover";
+	} else if (jcb.exec(ccNum) != null) {
+		return "jcb";
+	} else {
+		return "undefined";
+	}
+	return '';
 };
 
 
@@ -3937,8 +3967,6 @@ rc.validateInput.isFormValid = function() {
 
 //manually validate the field 
 rc.validateInput.validateField = function(field) {
-	// todo: this code is broken for picklists - at least for the state picklist
-	//console.log('validateField = ' + JSON.stringify(field));
 	if (!field) {
 		return;
 	}

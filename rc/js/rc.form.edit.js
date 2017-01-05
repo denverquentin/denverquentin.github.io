@@ -119,11 +119,6 @@ rc.selectFormData.done = function(data) {
 	rc.comp.updateContentCSS($("html"));
 	//validations flag
 	rc.validationsEnabled = data.data['validations-enabled'] || "false";
-	/* todo: can move
-	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/css/bootstrap-toggle.min.css
-	//cdnjs.cloudflare.com/ajax/libs/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js
-	into "edit mode" block once this code is refactored into the rc.form.edit.js file
-	*/
 	$("#validations-enabled").prop("checked",rc.validationsEnabled=="true").bootstrapToggle(rc.validationsEnabled=="true"?'on':'off');
 	// Theme
 	if (data.data['theme-href'] && data.data['theme-name']) {
