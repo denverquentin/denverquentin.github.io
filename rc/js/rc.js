@@ -17,51 +17,49 @@ rc.initializeFormApp = function() {
 	rc.initializeParams();
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
 	if (!rc.isEditMode) {/* Load if not in edit mode - data for edit mode is loaded in rc.form.edit.js */
-		rc.loadCustomerView();
-	}
+		data = rc.selectedForm || {};
+		data.containers = data.containers || [];
+		data.workflows = data.workflows || [];
+		data.data = data.data || {};
+		// apply Page Level CSS
+		rc.comp.importContentCSS($("html"), data.styles);
+		rc.comp.updateContentCSS($("html"));
+		// validations flag
+		rc.validationsEnabled = data.data['validations-enabled'] || "false";
+		// set Theme if configured
+		if (data.data['theme-href'] && data.data['theme-name']) {
+			$('#rc-theme-link').attr('href', data.data['theme-href']);
+			$('#rc-theme-link').attr('data-name', data.data['theme-name']);
+		}
+		$(data.workflows).each(function(at, data) {/* set workflows */
+			rc.comp.insertWorkflow('#rc-workflows-list', data);
+		});
+		$(data.containers).each(function(at, data) {/* set columns/components */
+			rc.comp.insertColumnList('#rc-container-list', data);
+		});
+		rc.rollupDefaultValues();/* Assign default values to all the fields */
 
+		// only do this method call if the "data" parameter is set - elminates ajax request to SF
+		var dataParam = rc.getParam('data');
+		console.log('data param = ' + dataParam);
+		if (dataParam != null && dataParam != '') {
+			rc.selectData();
+		} else {
+			/* functions to initialize components which depends on all components + data load
+			here we have guarantee all components and data is loaded */
+			rc.validate.initialize(); /* if validations enabled initialize the scene */
+			rc.ui.setDropdownVisible();
+			rc.ui.removeRedundantOpacity();
+		}
+	}
+/*
 	rc.events.on('form-loaded-with-data',function(event) {
-		/* functions to initialize components which depends on all components + data load
-		here we have guarantee all components and data is loaded */
 		console.log('event form-loaded-with-data fired');
-		rc.validate.initialize(); /* if validations enabled initialize the scene */
+		rc.validate.initialize();
 		rc.ui.setDropdownVisible();
 		rc.ui.removeRedundantOpacity();
 	});
-};
-
-rc.loadCustomerView = function() {
-	data = rc.selectedForm || {};
-	data.containers = data.containers || [];
-	data.workflows = data.workflows || [];
-	data.data = data.data || {};
-	// apply Page Level CSS
-	rc.comp.importContentCSS($("html"), data.styles);
-	rc.comp.updateContentCSS($("html"));
-	// validations flag
-	rc.validationsEnabled = data.data['validations-enabled'] || "false";
-	// set Theme if configured
-	if (data.data['theme-href'] && data.data['theme-name']) {
-		$('#rc-theme-link').attr('href', data.data['theme-href']);
-		$('#rc-theme-link').attr('data-name', data.data['theme-name']);
-	}
-	$(data.workflows).each(function(at, data) {/* set workflows */
-		rc.comp.insertWorkflow('#rc-workflows-list', data);
-	});
-	$(data.containers).each(function(at, data) {/* set columns/components */
-		rc.comp.insertColumnList('#rc-container-list', data);
-	});
-	
-	rc.rollupDefaultValues();/* Assign default values to all the fields */
-
-	// only do this method call if the "data" parameter is set - elminates ajax request to SF
-	var dataParam = rc.getParam('data');
-	console.log('data param = ' + dataParam);
-	if (dataParam != null && dataParam != '') {
-		rc.selectData();
-	} else { // all done - trigger event to finish
-		rc.events.trigger("form-loaded-with-data");
-	}
+*/
 };
 
 rc.selectData = function(deferred, send) {
@@ -97,7 +95,12 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 			$('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
 		}
 	}
-	rc.events.trigger("form-loaded-with-data");
+//	rc.events.trigger("form-loaded-with-data");
+	/* functions to initialize components which depends on all components + data load
+	here we have guarantee all components and data is loaded */
+	rc.validate.initialize(); /* if validations enabled initialize the scene */
+	rc.ui.setDropdownVisible();
+	rc.ui.removeRedundantOpacity();
 };
 
 rc.selectData.fail = function(deferred, send, recv, meta) {
