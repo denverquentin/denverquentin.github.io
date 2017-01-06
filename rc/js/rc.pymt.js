@@ -1,32 +1,28 @@
 console.log('loaded rc.pymt.js');
 rc.wf.integrations = rc.wf.integrations || {};
 
+rc.wf.integrations.isModeValid = function() {
+	if (rc.getCurrentMode() != 'view') {return false;}
+	if (rc.isEditMode) {return false;}
+	return true; // all good
+}
+
 // todo: replace apex code with js code: rc.ns
 rc.wf.integrations.Corduro = function(deferred, action) {
-	// Prerequisites
-	if (!action.attr('data-auth-token')) { // '0DDD01E7-2B69-40FB-8696-B57AC21BF45E'
+	if (!rc.wf.integrations.isModeValid()) {
+		return deferred.reject('Internal error: form is not running in a public sites context.');
+	}
+	if (!action.attr('data-auth-token')) {
 		return deferred.reject('Configuration error: authorization token is blank/missing');
 	}
-	// Prerequisites
-	if (!action.attr('data-auth-only')) { // '0DDD01E7-2B69-40FB-8696-B57AC21BF45E'
+	if (!action.attr('data-auth-only')) {
 		return deferred.reject('Configuration error: auth-only (true/false) is blank/missing');
 	}
-	// Prerequisites
 	if (!action.attr('data-test-only')) {
 		return deferred.reject('Configuration error: test-only (true/false) is blank/missing');
 	}
-	// Must be in read mode
-	if (rc.getCurrentMode() != 'view') {
-		return deferred.reject('Internal error: form is not in view mode');
-	}
-	// Must not be editable (ie, must be in public form context)
-	if (rc.isEditMode) {
-		return deferred.reject('Internal error: form is not running in a public sites context.');
-	}
-	// Setup SNAP code
 	var snap_token = action.attr('data-auth-token');
-	// Production or test mode.
-	if (action.attr('data-auth-only') == 'true') {
+	if (action.attr('data-auth-only') == 'true') { // Production or test mode
 		rc.wf.integrations.Corduro.snap = new SNAP2(true, snap_token, '');
 	} else {
 		rc.wf.integrations.Corduro.snap = new SNAP2(false, '', snap_token);
@@ -60,7 +56,6 @@ rc.wf.integrations.Corduro.send = function(deferred, action) {
 	$('#corduro_snap').find('input[type="submit"]').addClass('btn btn-default');
 	$('#corduro_snap').find('select').addClass('form-control');
 	$('#corduro_snap').find('.popup_header_bill').remove();
-	// Process
 	var context = null;
 	var data_map = {};
 	//set amount
@@ -75,19 +70,19 @@ rc.wf.integrations.Corduro.send = function(deferred, action) {
 		}
 	}
 	// Standard naming
-	data_map['input[name="'+rc.ns+'address_street_line_1__c"]'] = {target:'#corduro_snap [id^="f_address1"]',fieldName:'{!nameSpaceLowerCase}address_street_line_1__c'};
-	data_map['input[name="'+rc.ns+'address_street_line_2__c"]'] = {target:'#corduro_snap [id^="f_address2"]',fieldName:'{!nameSpaceLowerCase}address_street_line_2__c'};
-	data_map['input[name="'+rc.ns+'address_city__c"]'] = {target:'#corduro_snap [id^="f_city"]',fieldName:'{!nameSpaceLowerCase}address_city__c'};
-	data_map['input[name="'+rc.ns+'address_country__c"]'] = {target:'#corduro_snap [id^="f_country"]',fieldName:'{!nameSpaceLowerCase}address_country__c'};
-	data_map['input[name="'+rc.ns+'address_postal_code__c"]'] = {target:'#corduro_snap [id^="f_zip"]',fieldName:'{!nameSpaceLowerCase}address_postal_code__c'};
-	data_map['input[name="'+rc.ns+'address_state__c"]'] = {target:'#corduro_snap [id^="f_state"]',fieldName:'{!nameSpaceLowerCase}address_state__c'};
-	data_map['input[name="'+rc.ns+'contact_1_email__c"]'] = {target:'#corduro_snap [id^="f_email"]',fieldName:'{!nameSpaceLowerCase}contact_1_email__c'};
-	data_map['input[name="'+rc.ns+'payment_method_card_holder_name__c"]'] = {target:'#corduro_snap [id^="f_name_on_card"]',fieldName:'{!nameSpaceLowerCase}payment_method_card_holder_name__c'};
+	data_map['input[name="'+rc.ns+'address_street_line_1__c"]'] = {target:'#corduro_snap [id^="f_address1"]',fieldName:rc.ns+'address_street_line_1__c'};
+	data_map['input[name="'+rc.ns+'address_street_line_2__c"]'] = {target:'#corduro_snap [id^="f_address2"]',fieldName:rc.ns+'address_street_line_2__c'};
+	data_map['input[name="'+rc.ns+'address_city__c"]'] = {target:'#corduro_snap [id^="f_city"]',fieldName:rc.ns+'address_city__c'};
+	data_map['input[name="'+rc.ns+'address_country__c"]'] = {target:'#corduro_snap [id^="f_country"]',fieldName:rc.ns+'address_country__c'};
+	data_map['input[name="'+rc.ns+'address_postal_code__c"]'] = {target:'#corduro_snap [id^="f_zip"]',fieldName:rc.ns+'address_postal_code__c'};
+	data_map['input[name="'+rc.ns+'address_state__c"]'] = {target:'#corduro_snap [id^="f_state"]',fieldName:rc.ns+'address_state__c'};
+	data_map['input[name="'+rc.ns+'contact_1_email__c"]'] = {target:'#corduro_snap [id^="f_email"]',fieldName:rc.ns+'contact_1_email__c'};
+	data_map['input[name="'+rc.ns+'payment_method_card_holder_name__c"]'] = {target:'#corduro_snap [id^="f_name_on_card"]',fieldName:rc.ns+'payment_method_card_holder_name__c'};
 	// Local only fields
-	data_map['input[data-name="'+rc.ns+'payment_method_card_number__c"]'] = {target:'#corduro_snap [id^="f_card_no"]',fieldName:'{!nameSpaceLowerCase}payment_method_card_number__c'};
-	data_map['input[name="'+rc.ns+'payment_method_card_expiration_month__c"]'] = {target:'#corduro_snap [id^="f_exp_month"]',fieldName:'{!nameSpaceLowerCase}payment_method_card_expiration_month__c'};
-	data_map['input[name="'+rc.ns+'payment_method_card_expiration_year__c"]'] = {target:'#corduro_snap [id^="f_exp_year"]',fieldName:'{!nameSpaceLowerCase}payment_method_card_expiration_year__c'};
-	data_map['input[data-name="'+rc.ns+'payment_method_card_security_code__c"]'] ={target:'#corduro_snap [id^="f_CID"]',fieldName:'{!nameSpaceLowerCase}payment_method_card_security_code__c'};
+	data_map['input[data-name="'+rc.ns+'payment_method_card_number__c"]'] = {target:'#corduro_snap [id^="f_card_no"]',fieldName:rc.ns+'payment_method_card_number__c'};
+	data_map['input[name="'+rc.ns+'payment_method_card_expiration_month__c"]'] = {target:'#corduro_snap [id^="f_exp_month"]',fieldName:rc.ns+'payment_method_card_expiration_month__c'};
+	data_map['input[name="'+rc.ns+'payment_method_card_expiration_year__c"]'] = {target:'#corduro_snap [id^="f_exp_year"]',fieldName:rc.ns+'payment_method_card_expiration_year__c'};
+	data_map['input[data-name="'+rc.ns+'payment_method_card_security_code__c"]'] ={target:'#corduro_snap [id^="f_CID"]',fieldName:rc.ns+'payment_method_card_security_code__c'};
 	// Find and convert fields
 	$.each(data_map, function(source, targetData) {
 		var data = rc.dataModal.getFieldByName(targetData.fieldName,source);
@@ -112,11 +107,9 @@ rc.wf.integrations.Corduro.done = function(deferred, action, recv) {
 	recv = recv || {};
 	deferred = deferred || new jQuery.Deferred();
 	var transactionType = action.attr("data-auth-only")=="true" ? "" : "Charge";
-	var dateValue = "{!YEAR(TODAY())}" + '-' + "{!MONTH(TODAY())}" + '-' + "{!DAY(TODAY())}";
-	var dateTimeValue = dateValue + ' ' + "{!NOW()}".substr(11, 8);
 	var isPaymentPaid = recv.approvalstatus=='APPROVED'?'true':'false';
-	//common fields
-	$('input[name="'+rc.ns+'payment_method_card_last_four_digits__c"]').val(recv.maskcardno.replace(/\*/g, ''));
+	//common input
+	$('fields[name="'+rc.ns+'payment_method_card_last_four_digits__c"]').val(recv.maskcardno.replace(/\*/g, ''));
 	$('input[name="'+rc.ns+'payment_method_card_guid__c"]').val(recv.vaultguid);
 	$('input[name="'+rc.ns+'payment_method_card_issuer__c"]').val(recv.cardtype);
 	$('input[name="'+rc.ns+'payment_method_payment_type__c"]').val("Charge Card");
@@ -124,8 +117,8 @@ rc.wf.integrations.Corduro.done = function(deferred, action, recv) {
 	$('input[name="'+rc.ns+'payment_processor__c"]').val('Corduro');
 	if (action.paymentDetails.isGiving==true) {
 		$('input[name="'+rc.ns+'giving_transaction_type__c"]').val(transactionType);
-		$('input[name="'+rc.ns+'giving_close_date__c"]').val(dateValue);
-		$('input[name="'+rc.ns+'giving_close_date_time__c"]').val(dateTimeValue);
+		$('input[name="'+rc.ns+'giving_close_date__c"]').val(rc.dateValue);
+		$('input[name="'+rc.ns+'giving_close_date_time__c"]').val(rc.dateTimeValue);
 		$('input[name="'+rc.ns+'giving_giving_frequency__c"]').val("One Payment");
 		var paidFlagGiving = action.attr("data-auth-only")=="true" ? "false" : isPaymentPaid;
 		var isPaidBool = paidFlagGiving == "true";
@@ -139,19 +132,17 @@ rc.wf.integrations.Corduro.done = function(deferred, action, recv) {
 		$('input[name="'+rc.ns+'event_purchase_giving_amount__c"]').val(action.paymentDetails.eventAmount);
 	}
 	//change status after saving data to record so we can track failures
+	console.log('recv.approvalstatus = ' + recv.approvalstatus);
 	if (recv.approvalstatus != 'APPROVED') {
 		return deferred.reject('Denied: ' + recv.approvalstatus);
 	}
-	deferred.resolve();// success
+	deferred.resolve();
 };
 
 
-///////////////////////////////////
-
-
 rc.wf.integrations.IATS = function(deferred, action) {
-	if (rc.getCurrentMode() != 'view') {// Must be in read mode
-		return deferred.reject('Internal error: form is not in view mode');
+	if (!rc.wf.integrations.isModeValid()) {
+		return deferred.reject('Internal error: form is not running in a public sites context.');
 	}
 	return rc.wf.integrations.IATS.send(deferred,action);// Initialize IATS
 };
@@ -196,8 +187,6 @@ rc.wf.integrations.IATS.send = function(deferred, action) {
 rc.wf.integrations.IATS.done = function(deferred, action, recv) {
 	recv = recv || {};
 	deferred = deferred || new jQuery.Deferred();
-	var dateValue = "{!YEAR(TODAY())}" + '-' + "{!MONTH(TODAY())}" + '-' + "{!DAY(TODAY())}";
-	var dateTimeValue = dateValue + ' ' + "{!NOW()}".substr(11, 8);
 	var isPaidBool = recv.isSuccess=='true';
 	//common fields
 	$('input[name="'+rc.ns+'payment_method_card_last_four_digits__c"]').val(recv.lastFourDigits);
@@ -235,13 +224,9 @@ rc.wf.integrations.IATS.done = function(deferred, action, recv) {
 };
 
 
-///////////////////////////////////
-
-
 rc.wf.integrations.Cybersource = function(deferred, action) {
-	// Must be in read mode
-	if (rc.getCurrentMode() != 'view') {
-		return deferred.reject('Internal error: form is not in view mode');
+	if (!rc.wf.integrations.isModeValid()) {
+		return deferred.reject('Internal error: form is not running in a public sites context.');
 	}
 	return rc.wf.integrations.Cybersource.send(deferred,action);// Initialize Cybersource
 };
@@ -287,8 +272,6 @@ rc.wf.integrations.Cybersource.send = function(deferred, action) {
 rc.wf.integrations.Cybersource.done = function(deferred, action, recv) {
 	recv = recv || {};
 	deferred = deferred || new jQuery.Deferred();
-	var dateValue = "{!YEAR(TODAY())}" + '-' + "{!MONTH(TODAY())}" + '-' + "{!DAY(TODAY())}";
-	var dateTimeValue = dateValue + ' ' + "{!NOW()}".substr(11, 8);
 	var isPaidBool = recv.isSuccess=='true';
 	//common fields
 	$('input[name="'+rc.ns+'payment_method_card_last_four_digits__c"]').val(recv.lastFourDigits);
@@ -333,13 +316,9 @@ rc.wf.integrations.Cybersource.done = function(deferred, action, recv) {
 };
 
 
-///////////////////////////////////
-
-
 rc.wf.integrations.Litle = function(deferred, action) {
-	// Must be in read mode
-	if (rc.getCurrentMode() != 'view') {
-		return deferred.reject('Internal error: form is not in view mode');
+	if (!rc.wf.integrations.isModeValid()) {
+		return deferred.reject('Internal error: form is not running in a public sites context.');
 	}
 	return rc.wf.integrations.Litle.send(deferred,action);// Initialize Litle
 };
@@ -387,8 +366,6 @@ rc.wf.integrations.Litle.send = function(deferred, action) {
 rc.wf.integrations.Litle.done = function(deferred, action, recv) {
 	recv = recv || {};
 	deferred = deferred || new jQuery.Deferred();
-	var dateValue = "{!YEAR(TODAY())}" + '-' + "{!MONTH(TODAY())}" + '-' + "{!DAY(TODAY())}";
-	var dateTimeValue = dateValue + ' ' + "{!NOW()}".substr(11, 8);
 	var isPaidBool = recv.isSuccess=='true';
 	//common fields
 	$('input[name="'+rc.ns+'payment_method_card_last_four_digits__c"]').val(recv.lastFourDigits);
@@ -442,13 +419,9 @@ rc.wf.integrations.Litle.done = function(deferred, action, recv) {
 };
 
 
-///////////////////////////////////
-
-
 rc.wf.integrations.AuthDotNet = function(deferred, action) {
-	// Must be in read mode
-	if (rc.getCurrentMode() != 'view') {
-		return deferred.reject('Internal error: form is not in view mode');
+	if (!rc.wf.integrations.isModeValid()) {
+		return deferred.reject('Internal error: form is not running in a public sites context.');
 	}
 	return rc.wf.integrations.AuthDotNet.send(deferred,action);// Initialize PayPal
 };
@@ -493,8 +466,6 @@ rc.wf.integrations.AuthDotNet.send = function(deferred, action) {
 rc.wf.integrations.AuthDotNet.done = function(deferred, action, recv) {
 	recv = recv || {};
 	deferred = deferred || new jQuery.Deferred();
-	var dateValue = "{!YEAR(TODAY())}" + '-' + "{!MONTH(TODAY())}" + '-' + "{!DAY(TODAY())}";
-	var dateTimeValue = dateValue + ' ' + "{!NOW()}".substr(11, 8);
 	var isPaidBool = recv.isSuccess=='true';
 	$('input[name="'+rc.ns+'payment_method_card_last_four_digits__c"]').val(recv.lastFourDigits);
 	$('input[data-name="'+rc.ns+'payment_method_card_number__c"]').attr('name',rc.ns+'payment_method_card_number__c');
@@ -535,12 +506,9 @@ rc.wf.integrations.AuthDotNet.done = function(deferred, action, recv) {
 };
 
 
-///////////////////////////////////
-
-
 rc.wf.integrations.PayPal = function(deferred, action) {
-	if (rc.getCurrentMode() != 'view') {
-		return deferred.reject('Internal error: form is not in view mode');
+	if (!rc.wf.integrations.isModeValid()) {
+		return deferred.reject('Internal error: form is not running in a public sites context.');
 	}
 	return rc.wf.integrations.PayPal.send(deferred,action);// Initialize PayPal
 };
@@ -586,8 +554,6 @@ rc.wf.integrations.PayPal.send = function(deferred, action) {
 rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
 	recv = recv || {};
 	deferred = deferred || new jQuery.Deferred();
-	var dateValue = "{!YEAR(TODAY())}" + '-' + "{!MONTH(TODAY())}" + '-' + "{!DAY(TODAY())}";
-	var dateTimeValue = dateValue + ' ' + "{!NOW()}".substr(11, 8);
 	var isPaidBool = recv.isSuccess=='true';
 	$('input[name="'+rc.ns+'payment_method_card_last_four_digits__c"]').val(recv.lastFourDigits);
 	$('input[data-name="'+rc.ns+'payment_method_card_number__c"]').attr('name',rc.ns+'payment_method_card_number__c');
@@ -626,19 +592,15 @@ rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
 	deferred.resolve();
 };
 
-///////////////////////////////////
 
-
-// used by both Sage & Heartland!!!!
+/* used by both Sage & Heartland! */
 rc.wf.integrations.Sage = function(deferred, action) {
-	var dateValue = "{!YEAR(TODAY())}" + '-' + "{!MONTH(TODAY())}" + '-' + "{!DAY(TODAY())}";
-	var dateTimeValue = dateValue + ' ' + "{!NOW()}".substr(11, 8);
 	var cardNumber = $('input[data-name="'+rc.ns+'payment_method_card_number__c"]').val();
 	cardNumber = cardNumber.replace(/\s/g,'');
 	var cardLast4Digits = $('input[data-name="'+rc.ns+'payment_method_card_number__c"]').val();
 	cardLast4Digits = cardLast4Digits.replace(/[^\d]+/g, '').substring(0, 16).match(/.{1,4}/g)[3];
-	$('input[name="'+rc.ns+'giving_close_date__c"]').val(dateValue);
-	$('input[name="'+rc.ns+'giving_close_date_time__c"]').val(dateTimeValue);
+	$('input[name="'+rc.ns+'giving_close_date__c"]').val(rc.dateValue);
+	$('input[name="'+rc.ns+'giving_close_date_time__c"]').val(rc.dateTimeValue);
 	$('input[data-name="'+rc.ns+'payment_method_card_number__c"]').attr('name',rc.ns+'payment_method_card_number__c');
 	$('input[data-name="'+rc.ns+'payment_method_card_security_code__c"]').attr('name',rc.ns+'payment_method_card_security_code__c');
 	$('input[name="'+rc.ns+'payment_method_card_last_four_digits__c"]').val(cardLast4Digits);
