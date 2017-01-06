@@ -55,6 +55,7 @@ rc.wf.integrations.Corduro = function(deferred, action) {
 rc.wf.integrations.Corduro.send = function(deferred, action) {
 	console.log('rc.wf.integrations.Corduro.send');
 	// Just for UI, make all the SNAP inputs into nice design (even if it is hidden)
+	console.log('$(#corduro_snap) = ' + $('#corduro_snap'));
 	$('#corduro_snap').find('input[type="text"]').addClass('form-control');
 	$('#corduro_snap').find('input[type="submit"]').addClass('btn btn-default');
 	$('#corduro_snap').find('select').addClass('form-control');
@@ -63,6 +64,7 @@ rc.wf.integrations.Corduro.send = function(deferred, action) {
 	var data_map = {};
 	//set amount
 	var snap = rc.wf.integrations.Corduro.snap;
+	console.log('snap = ' + snap);
 	if (snap) {
 		//currently corduro only support one time payment
 		if (action.paymentDetails && action.paymentDetails.frequency==='One Payment') {
@@ -89,6 +91,7 @@ rc.wf.integrations.Corduro.send = function(deferred, action) {
 	// Find and convert fields
 	$.each(data_map, function(source, targetData) {
 		var data = rc.dataModal.getFieldByName(targetData.fieldName,source);
+		console.log('data = ' + data);
 		$(targetData.target).val(data);
 	});
 	// If there were no values copied for certain required fields, set defaults
@@ -100,8 +103,10 @@ rc.wf.integrations.Corduro.send = function(deferred, action) {
 	$('#corduro_snap').find('input[type="submit"].form_button_donate').click();// Click the button
 	// If the animation is showing, it means the SNAP widget had no failures.
 	if ($('#process_animcorduro_snap').css('display') == 'block') {
+		console.log('all good');
 		$('#rc-modal-processing').modal('show');
 	} else {
+		console.log('no good');
 		$('#rc-modal-processing').modal('hide');
 	}
 };
