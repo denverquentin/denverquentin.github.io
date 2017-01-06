@@ -611,6 +611,8 @@ rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
 /* used by both Sage & Heartland! */
 rc.wf.integrations.Sage = function(deferred, action) {
 	console.log('rc.wf.integrations.Sage');
+	console.log('action = ' JSON.stringify(action));
+
 	var cardNumber = $('input[data-name="'+rc.ns+'payment_method_card_number__c"]').val();
 	cardNumber = cardNumber.replace(/\s/g,'');
 	console.log('cardNumber = ' + cardNumber);
