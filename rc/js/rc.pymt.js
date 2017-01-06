@@ -4,10 +4,13 @@ rc.wf.integrations = rc.wf.integrations || {};
 rc.wf.integrations.isModeValid = function() {
 	if (rc.getCurrentMode() != 'view') {return false;}
 	if (rc.isEditMode) {return false;}
+	console.log('rc.wf.integrations.isModeValid = true');
 	return true;// all good
 }
 
 rc.wf.integrations.Corduro = function(deferred, action) {
+	console.log('rc.wf.integrations.Corduro');
+
 	if (!rc.wf.integrations.isModeValid()) {
 		return deferred.reject('Internal error: form is not running in a public sites context.');
 	}
@@ -50,6 +53,7 @@ rc.wf.integrations.Corduro = function(deferred, action) {
 };
 
 rc.wf.integrations.Corduro.send = function(deferred, action) {
+	console.log('rc.wf.integrations.Corduro.send');
 	// Just for UI, make all the SNAP inputs into nice design (even if it is hidden)
 	$('#corduro_snap').find('input[type="text"]').addClass('form-control');
 	$('#corduro_snap').find('input[type="submit"]').addClass('btn btn-default');
@@ -103,6 +107,7 @@ rc.wf.integrations.Corduro.send = function(deferred, action) {
 };
 
 rc.wf.integrations.Corduro.done = function(deferred, action, recv) {
+	console.log('rc.wf.integrations.Corduro.done');
 	recv = recv || {};
 	deferred = deferred || new jQuery.Deferred();
 	var transactionType = action.attr('data-auth-only') == 'true' ? '' : 'Charge';
