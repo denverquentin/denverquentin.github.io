@@ -519,6 +519,7 @@ rc.wf.integrations.AuthDotNet.done = function(deferred, action, recv) {
 
 
 rc.wf.integrations.PayPal = function(deferred, action) {
+	console.log('rc.wf.integrations.PayPal');
 	if (!rc.wf.integrations.isModeValid()) {
 		return deferred.reject('Internal error: form is not running in a public sites context.');
 	}
@@ -526,6 +527,7 @@ rc.wf.integrations.PayPal = function(deferred, action) {
 };
 
 rc.wf.integrations.PayPal.send = function(deferred, action) {
+	console.log('rc.wf.integrations.PayPal.send');
 	var context = null;
 	var data_map = {};
 	var data_send_map = {};
@@ -564,6 +566,7 @@ rc.wf.integrations.PayPal.send = function(deferred, action) {
 };
 
 rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
+	console.log('rc.wf.integrations.PayPal.done');
 	recv = recv || {};
 	deferred = deferred || new jQuery.Deferred();
 	var isPaidBool = recv.isSuccess=='true';
@@ -607,10 +610,13 @@ rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
 
 /* used by both Sage & Heartland! */
 rc.wf.integrations.Sage = function(deferred, action) {
+	console.log('rc.wf.integrations.Sage');
 	var cardNumber = $('input[data-name="'+rc.ns+'payment_method_card_number__c"]').val();
 	cardNumber = cardNumber.replace(/\s/g,'');
+	console.log('cardNumber = ' + cardNumber);
 	var cardLast4Digits = $('input[data-name="'+rc.ns+'payment_method_card_number__c"]').val();
 	cardLast4Digits = cardLast4Digits.replace(/[^\d]+/g, '').substring(0, 16).match(/.{1,4}/g)[3];
+	console.log('cardLast4Digits = ' + cardLast4Digits);
 	$('input[name="'+rc.ns+'giving_close_date__c"]').val(rc.dateValue);
 	$('input[name="'+rc.ns+'giving_close_date_time__c"]').val(rc.dateTimeValue);
 	$('input[data-name="'+rc.ns+'payment_method_card_number__c"]').attr('name',rc.ns+'payment_method_card_number__c');
@@ -632,5 +638,7 @@ rc.wf.integrations.Sage = function(deferred, action) {
 	} else if (action.paymentDetails.isEvent==true) {
 		$('input[name="'+rc.ns+'event_purchase_giving_paid__c"]').val('false').prop('checked',false);
 	}
+	// todo: added this next line - working?
+	$('#rc-modal-processing').modal('hide');
 	deferred.resolve();
 };
