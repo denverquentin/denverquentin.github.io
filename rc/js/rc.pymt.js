@@ -111,7 +111,7 @@ rc.wf.integrations.Corduro.done = function(deferred, action, recv) {
 	$('fields[name="'+rc.ns+'payment_method_card_last_four_digits__c"]').val(recv.maskcardno.replace(/\*/g, ''));
 	$('input[name="'+rc.ns+'payment_method_card_guid__c"]').val(recv.vaultguid);
 	$('input[name="'+rc.ns+'payment_method_card_issuer__c"]').val(recv.cardtype);
-	$('input[name="'+rc.ns+'payment_method_payment_type__c"]').val("Charge Card");
+	$('input[name="'+rc.ns+'payment_method_payment_type__c"]').val('Charge Card');
 	$('input[name="'+rc.ns+'batch_upload_campaign_matched__c"]').val(rc.campaignId);
 	$('input[name="'+rc.ns+'payment_processor__c"]').val('Corduro');
 	if (action.paymentDetails.isGiving==true) {
@@ -575,7 +575,7 @@ rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
 		$('input[name="'+rc.ns+'giving_close_date_time__c"]').val(recv.dateTime);
 		$('input[name="'+rc.ns+'giving_transaction_type__c"]').val('Payment');
 		$('input[name="'+rc.ns+'giving_giving_frequency__c"]').val(action.paymentDetails.frequency);
-		$('input[name="'+rc.ns+'giving_paid__c"]').val(""+recv.isSuccess).prop('checked',isPaidBool);
+		$('input[name="'+rc.ns+'giving_paid__c"]').val(''+recv.isSuccess).prop('checked',isPaidBool);
 		$('input[name="'+rc.ns+'giving_giving_amount__c"]').val(action.paymentDetails.givingAmount);
 	}
 	if (action.paymentDetails.isEvent==true) {
