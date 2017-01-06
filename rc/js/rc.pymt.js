@@ -96,9 +96,12 @@ rc.wf.integrations.Corduro.send = function(deferred, action) {
 	});
 	// If there were no values copied for certain required fields, set defaults
 	context = $('#corduro_snap').find('[id^="f_country"]');
+	console.log('context1 = ' + context);
 	context.val(context.val() || 'United States');
 	context = $('#corduro_snap').find('[id^="f_email"]');
+	console.log('context2 = ' + context);
 	context.val(context.val() || 'undefined@example.com');
+	// todo: this doesn't make much sense - hide on next line then evaluate if it's hidden at bottom of method?
 	$('#process_animcorduro_snap').hide();// Hide the processing animation
 	$('#corduro_snap').find('input[type="submit"].form_button_donate').click();// Click the button
 	// If the animation is showing, it means the SNAP widget had no failures.
