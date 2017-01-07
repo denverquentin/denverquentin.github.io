@@ -582,7 +582,7 @@ rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
 	if (recv.TRANSACTIONID != undefined) {
 		$('input[name="'+rc.ns+'giving_transaction_id__c"]').val(recv.TRANSACTIONID);
 	}
-	if (action.paymentDetails.isGiving == true) {
+	if (action.paymentDetails.isGiving==true) {
 		$('input[name="'+rc.ns+'giving_close_date__c"]').val(recv.date);
 		$('input[name="'+rc.ns+'giving_close_date_time__c"]').val(recv.dateTime);
 		$('input[name="'+rc.ns+'giving_transaction_type__c"]').val('Payment');
