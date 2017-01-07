@@ -636,7 +636,5 @@ rc.wf.integrations.Sage = function(deferred, action) {
 	} else if (action.paymentDetails.isEvent==true) {
 		$('input[name="'+rc.ns+'event_purchase_giving_paid__c"]').val('false').prop('checked',false);
 	}
-	// todo: added this next line - working?
-	//$('#rc-modal-processing').modal('hide');
 	deferred.resolve();
 };
