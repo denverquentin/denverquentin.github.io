@@ -611,14 +611,10 @@ rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
 /* used by both Sage & Heartland! */
 rc.wf.integrations.Sage = function(deferred, action) {
 	console.log('rc.wf.integrations.Sage');
-	console.log('action = ' + JSON.stringify(action));
-
 	var cardNumber = $('input[data-name="'+rc.ns+'payment_method_card_number__c"]').val();
 	cardNumber = cardNumber.replace(/\s/g,'');
-	console.log('cardNumber = ' + cardNumber);
 	var cardLast4Digits = $('input[data-name="'+rc.ns+'payment_method_card_number__c"]').val();
 	cardLast4Digits = cardLast4Digits.replace(/[^\d]+/g, '').substring(0, 16).match(/.{1,4}/g)[3];
-	console.log('cardLast4Digits = ' + cardLast4Digits);
 	$('input[name="'+rc.ns+'giving_close_date__c"]').val(rc.dateValue);
 	$('input[name="'+rc.ns+'giving_close_date_time__c"]').val(rc.dateTimeValue);
 	$('input[data-name="'+rc.ns+'payment_method_card_number__c"]').attr('name',rc.ns+'payment_method_card_number__c');
@@ -641,6 +637,6 @@ rc.wf.integrations.Sage = function(deferred, action) {
 		$('input[name="'+rc.ns+'event_purchase_giving_paid__c"]').val('false').prop('checked',false);
 	}
 	// todo: added this next line - working?
-	$('#rc-modal-processing').modal('hide');
+	//$('#rc-modal-processing').modal('hide');
 	deferred.resolve();
 };
