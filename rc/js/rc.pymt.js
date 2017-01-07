@@ -4,7 +4,6 @@ rc.wf.integrations = rc.wf.integrations || {};
 rc.wf.integrations.isModeValid = function() {
 	if (rc.getCurrentMode() != 'view') {return false;}
 	if (rc.isEditMode) {return false;}
-	console.log('rc.wf.integrations.isModeValid = true');
 	return true;// all good
 }
 
@@ -519,7 +518,6 @@ rc.wf.integrations.AuthDotNet.done = function(deferred, action, recv) {
 
 
 rc.wf.integrations.PayPal = function(deferred, action) {
-	console.log('rc.wf.integrations.PayPal');
 	if (!rc.wf.integrations.isModeValid()) {
 		return deferred.reject('Internal error: form is not running in a public sites context.');
 	}
@@ -527,7 +525,6 @@ rc.wf.integrations.PayPal = function(deferred, action) {
 };
 
 rc.wf.integrations.PayPal.send = function(deferred, action) {
-	console.log('rc.wf.integrations.PayPal.send');
 	var context = null;
 	var data_map = {};
 	var data_send_map = {};
@@ -566,7 +563,6 @@ rc.wf.integrations.PayPal.send = function(deferred, action) {
 };
 
 rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
-	console.log('rc.wf.integrations.PayPal.done');
 	recv = recv || {};
 	deferred = deferred || new jQuery.Deferred();
 	var isPaidBool = recv.isSuccess=='true';
@@ -610,7 +606,6 @@ rc.wf.integrations.PayPal.done = function(deferred, action, recv) {
 
 /* used by both Sage & Heartland! */
 rc.wf.integrations.Sage = function(deferred, action) {
-	console.log('rc.wf.integrations.Sage');
 	var cardNumber = $('input[data-name="'+rc.ns+'payment_method_card_number__c"]').val();
 	cardNumber = cardNumber.replace(/\s/g,'');
 	var cardLast4Digits = $('input[data-name="'+rc.ns+'payment_method_card_number__c"]').val();
