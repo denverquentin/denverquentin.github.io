@@ -22,9 +22,9 @@ rc.initializeFormApp = function() {
 		data.workflows = data.workflows || [];
 		data.data = data.data || {};
 		// apply Page Level CSS
-		rc.comp.importContentCSS($("html"), data.styles);
-		rc.comp.updateContentCSS($("html"));
-		rc.validationsEnabled = data.data['validations-enabled'] || "false";
+		rc.comp.importContentCSS($('html'), data.styles);
+		rc.comp.updateContentCSS($('html'));
+		rc.validationsEnabled = data.data['validations-enabled'] || 'false';
 		// set Theme if configured
 		if (data.data['theme-href'] && data.data['theme-name']) {
 			$('#rc-theme-link').attr('href', data.data['theme-href']);
@@ -81,7 +81,7 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 		rc.validateProductSlot(name,data);
 		controls.filter('[name="' + name + '"]').val(data);
 		if (controls.filter('[name="' + name + '"]').val() == 'true') {
-			controls.filter('[name="' + name + '"]').filter('[type="checkbox"]').prop("checked", "checked");
+			controls.filter('[name="' + name + '"]').filter('[type="checkbox"]').prop('checked', 'checked');
 		}
 	});
 	// set values retrieved from BU record
@@ -151,9 +151,9 @@ rc.rollupDefaultValues = function(event, defaultValues) {
 	$(defaultValueComponents).each(function(index, field) {
 		var field = $(field);
 		var defaultData = field.attr('data-field-default') || '';
-		if (field.attr("type") == "checkbox") {
+		if (field.attr('type') == 'checkbox') {
 			field.attr('data-field-default', defaultData);
-			field.prop('checked', defaultData == "true");
+			field.prop('checked', defaultData == 'true');
 		} else {
 			if (field.val() == false || field.val() == '') {field.val(defaultData);}
 		}
@@ -161,11 +161,11 @@ rc.rollupDefaultValues = function(event, defaultValues) {
 }
 
 rc.reenable = function(el) {
-	if (el) {el.prop("disabled",false);}
+	if (el) {el.prop('disabled',false);}
 }
 
 rc.reInitProductSlots = function() {
-	$(".rc-component").each(function(index,component) {
+	$('.rc-component').each(function(index,component) {
 		rc.updateProductSlots($(component));
 	});
 };
@@ -194,7 +194,7 @@ rc.setParam = function(name, data) {
 };
 
 rc.initializeSessionId = function(isTestMode,sessionId) {
-	if (isTestMode == "true") {
+	if (isTestMode == 'true') {
 		rc.sessionId = rc.litleSessionIdPrefix + '-' + sessionId;
 	} else {
 		rc.sessionId = rc.litleSessionId;
@@ -204,21 +204,21 @@ rc.initializeSessionId = function(isTestMode,sessionId) {
 rc.initializeViewSelector = function(context,selectDataArray,defaultSelected) {
 	var selectedComponentString = context.data['selectedViewComponents'];
 	context.data.componentSelectDataArray = [];
-	if (selectedComponentString) {context.data.componentSelectDataArray = selectedComponentString.split(",");}
-	context.component.find(".view-component-select").select2({data: selectDataArray, placeholder: "Select view components"});
+	if (selectedComponentString) {context.data.componentSelectDataArray = selectedComponentString.split(',');}
+	context.component.find('.view-component-select').select2({data: selectDataArray, placeholder: 'Select view components'});
 	//if nothing selected atleast title is shown always
 	if (!context.data.componentSelectDataArray || context.data.componentSelectDataArray.length==0) {context.data.componentSelectDataArray = defaultSelected;}
-	context.component.find(".view-component-select").val(context.data.componentSelectDataArray).trigger("change");
-	context.component.find(".view-component-select").on("change", function (event) {
+	context.component.find('.view-component-select').val(context.data.componentSelectDataArray).trigger('change');
+	context.component.find('.view-component-select').on('change', function (event) {
 		//re-populate data array based on what is selected currently
-		context.data.componentSelectDataArray = context.component.find(".view-component-select").val();
+		context.data.componentSelectDataArray = context.component.find('.view-component-select').val();
 		rc.initializeViewSelector.rerender(context);
 	});
 };
 
 rc.initializeViewSelector.rerender = function(context) {
 	context.data.componentSelectDataArray = !context.data.componentSelectDataArray?[]:context.data.componentSelectDataArray;
-	context.component.find(".default-hide").hide();
+	context.component.find('.default-hide').hide();
 	//show components selected as view components
 	for (var index=0;index<context.data.componentSelectDataArray.length;++index) {
 		var viewClass = context.data.componentSelectDataArray[index];
