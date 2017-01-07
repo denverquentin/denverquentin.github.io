@@ -30,6 +30,21 @@ rc.initializeFormApp = function() {
 			$('#rc-theme-link').attr('href', data.data['theme-href']);
 			$('#rc-theme-link').attr('data-name', data.data['theme-name']);
 		}
+		// Add workflow names to dropdown
+		var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
+		item_list.empty();
+		$(data.workflows).each(function(at, data) {
+			try {
+				var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
+				item.attr('data-cascade', 'data-value');
+				item.attr('data-value', data.data.guid);
+				item.text(rc.text(data.data.name));
+				// Add to workflow menu list
+				item_list.append(item.wrap('<li></li>').parent());
+			} catch (message) {
+				console.error('[ERROR]', message);
+			}
+		});
 		$(data.workflows).each(function(at, data) {/* set workflows */
 			rc.comp.insertWorkflow('#rc-workflows-list', data);
 		});
