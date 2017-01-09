@@ -1,4 +1,3 @@
-console.log('loaded rc.pymt.js');
 rc.wf.integrations = rc.wf.integrations || {};
 
 rc.wf.integrations.isModeValid = function() {
@@ -54,7 +53,6 @@ rc.wf.integrations.Corduro = function(deferred, action) {
 rc.wf.integrations.Corduro.send = function(deferred, action) {
 	console.log('rc.wf.integrations.Corduro.send');
 	// Just for UI, make all the SNAP inputs into nice design (even if it is hidden)
-	console.log('$(#corduro_snap) = ' + $('#corduro_snap'));
 	$('#corduro_snap').find('input[type="text"]').addClass('form-control');
 	$('#corduro_snap').find('input[type="submit"]').addClass('btn btn-default');
 	$('#corduro_snap').find('select').addClass('form-control');
@@ -63,7 +61,6 @@ rc.wf.integrations.Corduro.send = function(deferred, action) {
 	var data_map = {};
 	//set amount
 	var snap = rc.wf.integrations.Corduro.snap;
-	console.log('snap = ' + snap);
 	if (snap) {
 		//currently corduro only support one time payment
 		if (action.paymentDetails && action.paymentDetails.frequency==='One Payment') {
@@ -90,15 +87,12 @@ rc.wf.integrations.Corduro.send = function(deferred, action) {
 	// Find and convert fields
 	$.each(data_map, function(source, targetData) {
 		var data = rc.dataModal.getFieldByName(targetData.fieldName,source);
-		console.log('data = ' + data);
 		$(targetData.target).val(data);
 	});
 	// If there were no values copied for certain required fields, set defaults
 	context = $('#corduro_snap').find('[id^="f_country"]');
-	console.log('context1 = ' + context);
 	context.val(context.val() || 'United States');
 	context = $('#corduro_snap').find('[id^="f_email"]');
-	console.log('context2 = ' + context);
 	context.val(context.val() || 'undefined@example.com');
 	// todo: this doesn't make much sense - hide on next line then evaluate if it's hidden at bottom of method?
 	$('#process_animcorduro_snap').hide();// Hide the processing animation
