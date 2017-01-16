@@ -257,6 +257,9 @@ rc.prodMap[rc.ns+'product_18_product_code__c'] = rc.ns+'product_18';
 rc.prodMap[rc.ns+'product_19_product_code__c'] = rc.ns+'product_19';
 rc.prodMap[rc.ns+'product_20_product_code__c'] = rc.ns+'product_20';
 
+console.log('rc.productSlots = ' + rc.productSlots);
+console.log('rc.prodMap = ' + rc.prodMap);
+
 rc.getProductSlot = function() {
 	if (rc.productSlots.length==0) {return null;}
 	return rc.productSlots.shift();
@@ -3104,8 +3107,8 @@ rc.comp.Session.populateSetupSaveData = function(component,data) {
 rc.comp.Session.populateUpsertData = function(send) {
 	console.log('send = ' + JSON.stringify(send));
 	if (!send) {return;}
-	var rowTemplate = $($("#rc-component-session-row-template").html());
-	console.log('rowTemplate = ' + JSON.stringify(rowTemplate));
+	//var rowTemplate = $($("#rc-component-session-row-template").html());
+	//console.log('rowTemplate = ' + JSON.stringify(rowTemplate));
 	var sessionElemList = $(".rc-component .rc-component-session-content .session-entry-row");
 	console.log('sessionElemList = ' + JSON.stringify(sessionElemList));
 	$(sessionElemList).each(function(index,sessionElem) {
