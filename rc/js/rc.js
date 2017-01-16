@@ -3102,10 +3102,14 @@ rc.comp.Session.populateSetupSaveData = function(component,data) {
 };
 
 rc.comp.Session.populateUpsertData = function(send) {
+	console.log('send = ' + JSON.stringify(send));
 	if (!send) {return;}
 	var rowTemplate = $($("#rc-component-session-row-template").html());
+	console.log('rowTemplate = ' + rowTemplate);
 	var sessionElemList = $(".rc-component .rc-component-session-content .session-entry-row");
+	console.log('sessionElemList = ' + sessionElemList);
 	$(sessionElemList).each(function(index,sessionElem) {
+		console.log('sessionElem = ' + sessionElem);
 		sessionElem = $(sessionElem);
 		var sessionSlot = sessionElem.attr("data-session-slot");
 		var fieldNamePrefix = rc.productSlotPrefixMap[sessionSlot];
