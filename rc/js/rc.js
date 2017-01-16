@@ -3105,11 +3105,11 @@ rc.comp.Session.populateUpsertData = function(send) {
 	console.log('send = ' + JSON.stringify(send));
 	if (!send) {return;}
 	var rowTemplate = $($("#rc-component-session-row-template").html());
-	console.log('rowTemplate = ' + rowTemplate);
+	console.log('rowTemplate = ' + JSON.stringify(rowTemplate));
 	var sessionElemList = $(".rc-component .rc-component-session-content .session-entry-row");
-	console.log('sessionElemList = ' + sessionElemList);
+	console.log('sessionElemList = ' + JSON.stringify(sessionElemList));
 	$(sessionElemList).each(function(index,sessionElem) {
-		console.log('sessionElem = ' + sessionElem);
+		console.log('sessionElem = ' + JSON.stringify(sessionElem));
 		sessionElem = $(sessionElem);
 		var sessionSlot = sessionElem.attr("data-session-slot");
 		var fieldNamePrefix = rc.productSlotPrefixMap[sessionSlot];
