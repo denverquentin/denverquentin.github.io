@@ -3111,18 +3111,15 @@ rc.comp.Session.populateUpsertData = function(send) {
 	//console.log('rowTemplate = ' + JSON.stringify(rowTemplate));
 	var sessionElemList = $(".rc-component .rc-component-session-content .session-entry-row");
 	console.log('sessionElemList = ' + JSON.stringify(sessionElemList));
-
-	console.log('sessionElemList 2 = ' + JSON.stringify($(sessionElemList)));
-
 	$(sessionElemList).each(function(index,sessionElem) {
 		console.log('index = ' + index);
 		console.log('sessionElem = ' + JSON.stringify(sessionElem));
-		sessionElem = $(sessionElem);
+		//sessionElem = $(sessionElem);
 		console.log('sessionElem 2 = ' + JSON.stringify(sessionElem));
 		var sessionSlot = sessionElem.attr("data-session-slot");
 		console.log('sessionSlot = ' + sessionSlot);
-		console.log('WTF IS rc.productSlotPrefixMap = ' + rc.productSlotPrefixMap);
-		var fieldNamePrefix = rc.productSlotPrefixMap[sessionSlot];
+		console.log('WTF IS rc.productSlotPrefixMap = ' + rc.prodMap);
+		var fieldNamePrefix = rc.prodMap[sessionSlot];
 		console.log('fieldNamePrefix = ' + fieldNamePrefix);
 
 		var sessionId = sessionElem.attr("data-session-id");
@@ -3147,10 +3144,10 @@ rc.comp.Session.populateUpsertData = function(send) {
 };
 
 rc.comp.Session.renderUpsertData = function(send) {
-	var productSlotList = rc.getKeys(rc.productSlotPrefixMap);
+	var productSlotList = rc.getKeys(rc.prodMap);
 	for (var index=0;index<productSlotList.length;++index) {
 		var productSlot = productSlotList[index];
-		var prefix = rc.productSlotPrefixMap[productSlot];
+		var prefix = rc.prodMap[productSlot];
 		var sessionId = send[productSlot];
 		//if type to be managed by session component.
 		if (!!sessionId && send[prefix+'_type__c']=='Session') {
