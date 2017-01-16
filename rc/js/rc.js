@@ -3112,9 +3112,8 @@ rc.comp.Session.populateUpsertData = function(send) {
 	var sessionElemList = $(".rc-component .rc-component-session-content .session-entry-row");
 	console.log('sessionElemList = ' + JSON.stringify(sessionElemList));
 	$(sessionElemList).each(function(index,sessionElem) {
-		console.log('index = ' + index);
 		console.log('sessionElem = ' + JSON.stringify(sessionElem));
-		//sessionElem = $(sessionElem);
+		sessionElem = $(sessionElem);
 		console.log('sessionElem 2 = ' + JSON.stringify(sessionElem));
 		var sessionSlot = sessionElem.attr("data-session-slot");
 		console.log('sessionSlot = ' + sessionSlot);
