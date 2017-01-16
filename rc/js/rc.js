@@ -3592,7 +3592,7 @@ rc.upsertData = function(deferred, send) {
 		return deferred.reject('Internal error: form must be in view mode to process user input.');
 	}
 	//populate events shopping cart data
-	send = rc.comp.Cart.populateUpsertData(send);
+	//send = rc.comp.Cart.populateUpsertData(send);
 	//populate events session data
 	send = rc.comp.Session.populateUpsertData(send);
 	send = rc.comp.Attribute.populateUpsertData(send);
