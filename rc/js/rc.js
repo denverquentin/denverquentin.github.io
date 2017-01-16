@@ -258,7 +258,7 @@ rc.prodMap[rc.ns+'product_19_product_code__c'] = rc.ns+'product_19';
 rc.prodMap[rc.ns+'product_20_product_code__c'] = rc.ns+'product_20';
 
 console.log('rc.productSlots = ' + rc.productSlots);
-console.log('rc.prodMap = ' + rc.prodMap);
+console.log('rc.prodMap = ' + JSON.toString(rc.prodMap));
 
 rc.getProductSlot = function() {
 	if (rc.productSlots.length==0) {return null;}
