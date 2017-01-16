@@ -3111,13 +3111,25 @@ rc.comp.Session.populateUpsertData = function(send) {
 	//console.log('rowTemplate = ' + JSON.stringify(rowTemplate));
 	var sessionElemList = $(".rc-component .rc-component-session-content .session-entry-row");
 	console.log('sessionElemList = ' + JSON.stringify(sessionElemList));
+
+	console.log('sessionElemList 2 = ' + JSON.stringify($(sessionElemList)));
+
 	$(sessionElemList).each(function(index,sessionElem) {
+		console.log('index = ' + index);
 		console.log('sessionElem = ' + JSON.stringify(sessionElem));
 		sessionElem = $(sessionElem);
+		console.log('sessionElem 2 = ' + JSON.stringify(sessionElem));
 		var sessionSlot = sessionElem.attr("data-session-slot");
+		console.log('sessionSlot = ' + sessionSlot);
+		console.log('WTF IS rc.productSlotPrefixMap = ' + rc.productSlotPrefixMap);
 		var fieldNamePrefix = rc.productSlotPrefixMap[sessionSlot];
+		console.log('fieldNamePrefix = ' + fieldNamePrefix);
+
 		var sessionId = sessionElem.attr("data-session-id");
+		console.log('sessionId = ' + sessionId);
+
 		var sessionType = sessionElem.attr("data-session-type");
+		console.log('sessionType = ' + sessionType);
 		if (sessionElem.find(".register-link").hasClass("selected-session")) {
 			send[sessionSlot] = sessionId;
 			send[fieldNamePrefix+'_type__c'] = sessionType;
@@ -3129,6 +3141,7 @@ rc.comp.Session.populateUpsertData = function(send) {
 			send[fieldNamePrefix+'_type__c'] = sessionType;
 			send[fieldNamePrefix+'_quantity__c'] = -1;
 		}
+		console.log('send AT END = ' + JSON.stringify(send));
 	});
 	return send;
 };
@@ -3592,7 +3605,7 @@ rc.upsertData = function(deferred, send) {
 		return deferred.reject('Internal error: form must be in view mode to process user input.');
 	}
 	//populate events shopping cart data
-	//send = rc.comp.Cart.populateUpsertData(send);
+	send = rc.comp.Cart.populateUpsertData(send);
 	//populate events session data
 	send = rc.comp.Session.populateUpsertData(send);
 	send = rc.comp.Attribute.populateUpsertData(send);
