@@ -257,9 +257,6 @@ rc.prodMap[rc.ns+'product_18_product_code__c'] = rc.ns+'product_18';
 rc.prodMap[rc.ns+'product_19_product_code__c'] = rc.ns+'product_19';
 rc.prodMap[rc.ns+'product_20_product_code__c'] = rc.ns+'product_20';
 
-console.log('rc.productSlots = ' + rc.productSlots);
-console.log('rc.prodMap = ' + JSON.stringify(rc.prodMap));
-
 rc.getProductSlot = function() {
 	if (rc.productSlots.length==0) {return null;}
 	return rc.productSlots.shift();
@@ -3105,27 +3102,14 @@ rc.comp.Session.populateSetupSaveData = function(component,data) {
 };
 
 rc.comp.Session.populateUpsertData = function(send) {
-	console.log('send = ' + JSON.stringify(send));
 	if (!send) {return;}
-	//var rowTemplate = $($("#rc-component-session-row-template").html());
-	//console.log('rowTemplate = ' + JSON.stringify(rowTemplate));
 	var sessionElemList = $(".rc-component .rc-component-session-content .session-entry-row");
-	console.log('sessionElemList = ' + JSON.stringify(sessionElemList));
 	$(sessionElemList).each(function(index,sessionElem) {
-		console.log('sessionElem = ' + JSON.stringify(sessionElem));
 		sessionElem = $(sessionElem);
-		console.log('sessionElem 2 = ' + JSON.stringify(sessionElem));
 		var sessionSlot = sessionElem.attr("data-session-slot");
-		console.log('sessionSlot = ' + sessionSlot);
-		console.log('WTF IS rc.productSlotPrefixMap = ' + rc.prodMap);
 		var fieldNamePrefix = rc.prodMap[sessionSlot];
-		console.log('fieldNamePrefix = ' + fieldNamePrefix);
-
 		var sessionId = sessionElem.attr("data-session-id");
-		console.log('sessionId = ' + sessionId);
-
 		var sessionType = sessionElem.attr("data-session-type");
-		console.log('sessionType = ' + sessionType);
 		if (sessionElem.find(".register-link").hasClass("selected-session")) {
 			send[sessionSlot] = sessionId;
 			send[fieldNamePrefix+'_type__c'] = sessionType;
@@ -3137,7 +3121,6 @@ rc.comp.Session.populateUpsertData = function(send) {
 			send[fieldNamePrefix+'_type__c'] = sessionType;
 			send[fieldNamePrefix+'_quantity__c'] = -1;
 		}
-		console.log('send AT END = ' + JSON.stringify(send));
 	});
 	return send;
 };
