@@ -37,7 +37,7 @@ rc.initializeFormApp = function() {
 		console.log('data.workflows = ' + JSON.stringify(data.workflows));
 		item_list.empty();
 		$(data.workflows).each(function(at, data) {
-			console.log('at = ' + JSON.stringify(at));
+			console.log('data = ' + JSON.stringify(data));
 			try {
 				var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
 				item.attr('data-cascade', 'data-value');
