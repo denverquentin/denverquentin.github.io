@@ -3317,15 +3317,28 @@ rc.wf.process.LoadPage = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
-		+ '&formCampaignId=' + campaignFormId + '&form=' + action.attr('data-value')
+		+ '&formCampaignId=' + campaignFormId + '&form=' + $(action).attr('data-value')
 		+ '&data=' + rc.getParam('data');
 
 	console.log('rc.paramFormCampaignId = ' + rc.paramFormCampaignId);
 	console.log('campaignFormId = ' + campaignFormId);
 	console.log('rc.getParam(data) = ' + rc.getParam('data'));
-	console.log('action.attr(data-value) = ' + action.attr('data-value'));
+	console.log('action.attr(data-value) = ' + $(action).attr('data-value'));
+	console.log('redirectTo = ' + redirectTo);
 //	window.location = redirectTo;
 };
+
+/*
+rc.workflow.process.LoadPage = function(deferred, action, data) {
+	var redirectTo = '{!$Page.Campaign_DesignForm}'
+	+ '?' + 'id={!$CurrentPage.Parameters.Id}'
+	+ '&' + 'formCampaignId={!BLANKVALUE($CurrentPage.Parameters.FormCampaignId, $CurrentPage.Parameters.Id)}'
+	+ '&' + 'form=' + action.attr('data-value')
+	+ '&' + 'data=' + rc.getParam('data');
+
+	window.location = redirectTo;
+};
+*/
 
 rc.wf.process.TrafficController = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
@@ -3348,7 +3361,6 @@ rc.wf.process.LoadHref = function(deferred, action, data) {
 };
 
 rc.wf.process.SendData = function(deferred, action, data) {
-	console.log('rc.wf.process.SendData');
 	rc.upsertData(deferred, data);
 };
 
