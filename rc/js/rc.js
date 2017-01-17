@@ -3349,7 +3349,6 @@ rc.wf.process.LoadHref = function(deferred, action, data) {
 
 rc.wf.process.SendData = function(deferred, action, data) {
 	console.log('rc.wf.process.SendData');
-	console.log(' = ' + );
 	rc.upsertData(deferred, data);
 };
 
