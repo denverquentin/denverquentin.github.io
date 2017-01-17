@@ -44,6 +44,7 @@ rc.initializeFormApp = function() {
 				item.attr('data-value', data.data.guid);
 				item.text(rc.text(data.data.name));
 				// Add to workflow menu list
+				console.log('item = ' + item);
 				console.log('item = ' + JSON.stringify(item));
 				item_list.append(item.wrap('<li></li>').parent());
 			} catch (message) {
