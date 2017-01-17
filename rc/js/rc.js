@@ -32,13 +32,15 @@ rc.initializeFormApp = function() {
 		}
 		// Add workflow names to dropdown - important if there are more than one or are chained
 		var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
+		console.log('item_list = ' + item_list);
 		console.log('rc.initializeFormApp');
-		console.log('data.workflows = ' + data.workflows);
+		console.log('data.workflows = ' + JSON.stringify(data.workflows));
 		item_list.empty();
 		$(data.workflows).each(function(at, data) {
-			console.log('at = ' + at);
+			console.log('at = ' + JSON.stringify(at));
 			try {
 				var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
+				console.log('item = ' + JSON.stringify(item));
 				item.attr('data-cascade', 'data-value');
 				item.attr('data-value', data.data.guid);
 				item.text(rc.text(data.data.name));
