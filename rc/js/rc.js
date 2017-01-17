@@ -32,8 +32,8 @@ rc.initializeFormApp = function() {
 		}
 		// Add workflow names to dropdown - important if there are more than one or are chained
 		var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
-		console.log('item_list = ' + item_list);
 		console.log('rc.initializeFormApp');
+		console.log('item_list = ' + JSON.stringify(item_list));
 		console.log('data.workflows = ' + JSON.stringify(data.workflows));
 		item_list.empty();
 		$(data.workflows).each(function(at, data) {
@@ -50,6 +50,7 @@ rc.initializeFormApp = function() {
 				console.error('[ERROR]', message);
 			}
 		});
+		console.log('item_list FINAL = ' + JSON.stringify(item_list));
 		$(data.workflows).each(function(at, data) {/* set workflows */
 			rc.comp.insertWorkflow('#rc-workflows-list', data);
 		});

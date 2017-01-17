@@ -138,11 +138,14 @@ rc.selectFormData.done = function(data) {
 	$('#rc-workflows-list').empty();
 	// Add workflow names to dropdown
 	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
+	console.log('item_list = ' + JSON.stringify(item_list));
+	console.log('data.workflows = ' + JSON.stringify(data.workflows));
 	item_list.empty();
 	$(data.workflows).each(function(at, data) {
 		console.log('at = ' + at);
 		try {
 			var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
+			console.log('item = ' + JSON.stringify(item));
 			item.attr('data-cascade', 'data-value');
 			item.attr('data-value', data.data.guid);
 			item.text(rc.text(data.data.name));
@@ -152,6 +155,7 @@ rc.selectFormData.done = function(data) {
 			console.error('[ERROR]', message);
 		}
 	});
+	console.log('item_list FINAL = ' + JSON.stringify(item_list));
 	// Process data
 	$(data.workflows).each(function(at, data) {
 		rc.comp.insertWorkflow('#rc-workflows-list', data);
