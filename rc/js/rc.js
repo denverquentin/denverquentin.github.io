@@ -3324,7 +3324,7 @@ rc.wf.process.LoadPage = function(deferred, action, data) {
 	console.log('campaignFormId = ' + campaignFormId);
 	console.log('rc.getParam(data) = ' + rc.getParam('data'));
 	console.log('action.attr(data-value) = ' + action.attr('data-value'));
-	window.location = redirectTo;
+//	window.location = redirectTo;
 };
 
 rc.wf.process.TrafficController = function(deferred, action, data) {
