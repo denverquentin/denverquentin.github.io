@@ -115,6 +115,8 @@ rc.selectFormData.done = function(data) {
 	data = data || {};
 	data.containers = data.containers || [];
 	data.workflows = data.workflows || [];
+	console.log('rc.selectFormData.done');
+	console.log('data.workflows = ' + data.workflows);
 	data.data = data.data || {};
 	// Apply Page Level CSS
 	rc.comp.importContentCSS($("html"), data.styles);
@@ -138,6 +140,7 @@ rc.selectFormData.done = function(data) {
 	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 	item_list.empty();
 	$(data.workflows).each(function(at, data) {
+		console.log('at = ' + at);
 		try {
 			var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
 			item.attr('data-cascade', 'data-value');
