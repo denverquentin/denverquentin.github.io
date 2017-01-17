@@ -145,11 +145,11 @@ rc.selectFormData.done = function(data) {
 		console.log('at = ' + at);
 		try {
 			var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
-			console.log('item = ' + JSON.stringify(item));
 			item.attr('data-cascade', 'data-value');
 			item.attr('data-value', data.data.guid);
 			item.text(rc.text(data.data.name));
 			// Add to workflow menu list
+			console.log('item = ' + JSON.stringify(item));
 			item_list.append(item.wrap('<li></li>').parent());
 		} catch (message) {
 			console.error('[ERROR]', message);
