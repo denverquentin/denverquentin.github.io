@@ -3312,11 +3312,18 @@ rc.wf.process.LoadData = function(deferred, action, data) {
 };
 
 rc.wf.process.LoadPage = function(deferred, action, data) {
+	console.log('rc.wf.process.LoadPage');
+	console.log('action = ' + JSON.stringify(action));
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
 		+ '&formCampaignId=' + campaignFormId + '&form=' + action.attr('data-value')
 		+ '&data=' + rc.getParam('data');
+
+	console.log('rc.paramFormCampaignId = ' + rc.paramFormCampaignId);
+	console.log('campaignFormId = ' + campaignFormId);
+	console.log('rc.getParam(data) = ' + rc.getParam('data'));
+	console.log('action.attr(data-value) = ' + action.attr('data-value'));
 	window.location = redirectTo;
 };
 
@@ -3341,6 +3348,8 @@ rc.wf.process.LoadHref = function(deferred, action, data) {
 };
 
 rc.wf.process.SendData = function(deferred, action, data) {
+	console.log('rc.wf.process.SendData');
+	console.log(' = ' + );
 	rc.upsertData(deferred, data);
 };
 
