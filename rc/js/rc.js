@@ -15,6 +15,8 @@ var sessionList = {};
 /* this method is called at the bottom of this file */
 rc.initializeFormApp = function() {
 	rc.initializeParams();
+	// todo: does this need tp be improved?
+	console.log('rc.params = ' + rc.params);
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
 	if (!rc.isEditMode) {/* Load if not in edit mode - data for edit mode is loaded in rc.form.edit.js */
 		data = rc.selectedForm || {};
