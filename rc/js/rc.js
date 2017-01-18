@@ -3208,7 +3208,7 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
 	var context = $('#' + guid);
 	console.log('rc.wf.execute');
-	console.log('context = ' + context);
+	console.log('context = ' + JSON.stringify(context));
 	var flow_origin = new jQuery.Deferred(); // null deferred to kickoff the flow
 	var flow = flow_origin.promise();
 	rc.wf.retroactiveFailure = new jQuery.Deferred();
@@ -3217,7 +3217,7 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	// Add actions
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
-		console.log('action = ' + action);
+		console.log('action = ' + JSON.stringify(action));
 		console.log('action.attr(data-value) = ' + action.attr('data-value'));
 		var action_type = action.attr('data-context');
 		var action_guid = action.attr('id');
@@ -3269,9 +3269,9 @@ rc.wf.process = function(type, guid, data, actionButtonContext) {
 	// Find and execute
 	var deferred = new jQuery.Deferred();
 	deferred.workflowGuid = data.workflowGuid;
-	console.log('deferred.workflowGuid');
+	console.log('deferred.workflowGuid = ' + deferred.workflowGuid);
 	var action = $('#' + guid);
-	console.log('action = ' + action);
+	console.log('action = ' + JSON.stringify(action));
 	var method_map = {};
 	method_map['copy-param'] = rc.wf.process.CopyParameter;
 	method_map['javascript'] = rc.wf.process.Javascript;
@@ -3292,7 +3292,6 @@ rc.wf.process = function(type, guid, data, actionButtonContext) {
 	var method_action = action.attr('data-method');
 	console.log('method_action = ' + method_action);
 	var method = method_map[method_action] || function(deferred, action) {};
-	console.log('method = ' + method);
 	try {
 		var method_result = new method(deferred, action, data, actionButtonContext);
 	} catch (action_excp) {
