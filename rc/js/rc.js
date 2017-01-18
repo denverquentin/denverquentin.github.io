@@ -73,6 +73,7 @@ rc.initializeFormApp = function() {
 };
 
 rc.selectData = function(deferred, send) {
+	console.log('rc.selectData');
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectData;
