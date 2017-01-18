@@ -124,6 +124,7 @@ rc.selectData.fail = function(deferred, send, recv, meta) {
 rc.initializeParams = function() {
 	rc.params = {};
 	var hash = (window.location.hash || '#!mode=view').substring(2);
+	console.log('hash = ' + hash);
 	if (hash == null) {return;}
 	$(hash.split('&')).each(function() {
 		var data = this.split('=');
