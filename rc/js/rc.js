@@ -62,7 +62,10 @@ rc.initializeFormApp = function() {
 			rc.comp.insertColumnList('#rc-container-list', data);
 		});
 		rc.rollupDefaultValues();/* Assign default values to all the fields */
-
+		var formParam = rc.getParam('form');
+		if (formParam == null || formParam == '') {// set form param if blank
+			rc.setParam('form', rc.selectedForm);
+		}
 		// only do this method call if the "data" parameter is set - elminates ajax request to SF
 		var dataParam = rc.getParam('data');
 		if (dataParam != null && dataParam != '') {
