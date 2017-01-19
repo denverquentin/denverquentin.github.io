@@ -34,7 +34,15 @@ rc.initializeFormAppInDesignMode = function() {
 	rc.events.on('view-change',rc.rollupPlaceholderValues);
 	// on view change, toggle default values shown in fields
 	rc.events.on('view-change',rc.rollupDefaultValues);
-	rc.rollupDefaultValues();/* Assign default values to all the fields */
+
+	rc.events.on('form-loaded-with-data',function(event) {
+		console.log('form-loaded-with-data FIRED!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+		//functions to initialize components which depends on all components + data load
+		//here we have guarantee all components and data is loaded
+		rc.validateInput.initialize();
+		rc.ui.setDropdownVisible();
+		rc.ui.removeRedundantOpacity();
+	});
 	rc.initializeModals();
 	rc.initializeHeaderButtons();
 };
@@ -708,7 +716,6 @@ rc.upsertFormData.done = function(deferred, send, recv, meta) {
 	recv = recv || {};
 	$('.page-header [data-action="rc-action-save"]').button('save');// Toggle the button
 	rc.ui.markProcessingDone({modified:false});// Unmark processing
-	rc.rollupDefaultValues();/* Assign default values to all the fields */
 	// If the returned ID is different from the current one, redirect
 	if (rc.getParam('form') != recv.id) {
 		rc.setParam('form', recv.id);
