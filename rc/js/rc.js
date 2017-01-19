@@ -144,7 +144,8 @@ is different the rc.getParam which only looks for params after a #
 */
 rc.getParamVal = function(name) {
 	console.log('rc.getParamVal');
-	var match = window.location.search.match(/[^=&?]+\s*=\s*[^&#]*/g);
+	console.log('location.href = ' + window.location.href);
+	var match = window.location.href.match(/[^=&?]+\s*=\s*[^&#]*/g);
 	console.log('name = ' + name);
 	console.log('match.length = ' + match.length);
 	console.log('match = ' + match);
