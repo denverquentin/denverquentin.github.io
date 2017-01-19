@@ -62,12 +62,8 @@ rc.initializeFormApp = function() {
 			rc.comp.insertColumnList('#rc-container-list', data);
 		});
 		rc.rollupDefaultValues();/* Assign default values to all the fields */
-		var formParam = rc.getParam('form');
-		if (formParam == null || formParam == '') {// set form param if blank
-			rc.setParam('form', rc.selectedForm);
-		}
 		// only do this method call if the "data" parameter is set - elminates ajax request to SF
-		var dataParam = rc.getParam('data');
+		var dataParam = rc.getParamVal('data');
 		if (dataParam != null && dataParam != '') {
 			rc.selectData();
 		} else {
@@ -126,24 +122,6 @@ rc.selectData.fail = function(deferred, send, recv, meta) {
 };
 
 rc.initializeParams = function() {
-	var match = window.location.search.match(/[^=&?]+\s*=\s*[^&#]*/g);
-	for (var i = match.length; i--;) {
-		var spl = match[i].split("=");
-		var name = spl[0];
-		var value = spl[1];
-		if (value == 'true') {value = true;}
-		if (value == 'false') {value = false;}
-		rc.params[name] = value;
-//		rc.setParam(name, value);
-//		rc.params[name] = rc.params[name] || [];
-//		rc.params[name].push(value);
-	}
-
-	console.log('id = ' + rc.getParam('id'));
-	console.log('form = ' + rc.getParam('form'));
-	console.log('data = ' + rc.getParam('data'));
-
-/*
 	var hash = (window.location.hash || '#!mode=view').substring(2);
 	if (hash == null) {return;}
 	$(hash.split('&')).each(function() {
@@ -154,30 +132,37 @@ rc.initializeParams = function() {
 		// Save param
 		rc.setParam(data[0], data[1]);
 	});
-*/
 };
 
 rc.getParam = function(name) {
-	//if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return 'view';}
+	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return 'view';}
 	return rc.params[name] || null;
 };
 
+/* rc.getParamVal method looks for a parameter with the name passed in.
+is different the rc.getParam which only looks for params after a #
+*/
+rc.getParamVal = function(name) {
+	var match = window.location.search.match(/[^=&?]+\s*=\s*[^&#]*/g);
+	for (var i = match.length; i--;) {
+		var spl = match[i].split("=");
+		if (name == spl[0]) {
+			return spl[1];
+		}
+	}
+	return null;
+}
+
 rc.setParam = function(name, data) {
-	//if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
-	rc.params[name] = data;
-	console.log('rc.setParam - rc.params = ' + rc.params);
-	// let's selectively add new param=vals to the url and stop using hashes?
+	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
 	var hash = '';
 	for (name in rc.params) {
-		console.log('rc.setParam - name = ' + name);
 		data = rc.params[name];
-		console.log('rc.setParam - data = ' + data);
 		if (data != null) {
 			hash += hash == '' ? '#' : '&';
 			hash += name + '=' + data;
 		}
 	}
-//	window.location.search = window.location.search + ;
 	window.location.hash = hash;
 };
 
