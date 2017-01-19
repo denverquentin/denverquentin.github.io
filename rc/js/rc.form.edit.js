@@ -36,6 +36,11 @@ rc.initializeFormAppInDesignMode = function() {
 	rc.events.on('view-change',rc.rollupDefaultValues);
 	rc.initializeModals();
 	rc.initializeHeaderButtons();
+	// todo: want to do this???
+	var modeParam = rc.getParam('mode');
+	if (modeParam == null || modeParam == '') {// default to view if not set
+		rc.setModeView();
+	}
 };
 
 rc.selectFormInfoList = function(deferred, send) {

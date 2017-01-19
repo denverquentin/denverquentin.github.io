@@ -130,10 +130,10 @@ rc.initializeParams = function() {
 		var value = spl[1];
 		if (value == 'true') {value = true;}
 		if (value == 'false') {value = false;}
-		// Save param
+		rc.params[name] = value;
 //		rc.setParam(name, value);
-		rc.params[name] = rc.params[name] || [];
-		rc.params[name].push(value);
+//		rc.params[name] = rc.params[name] || [];
+//		rc.params[name].push(value);
 	}
 
 	console.log('id = ' + rc.getParam('id'));
