@@ -122,7 +122,7 @@ rc.selectData.fail = function(deferred, send, recv, meta) {
 };
 
 rc.initializeParams = function() {
-	var hash = (window.location.hash || '#!mode=view').substring(2);
+	var hash = (window.location.hash || '#mode=view').substring(1);
 	if (hash == null) {return;}
 	$(hash.split('&')).each(function() {
 		var data = this.split('=');
@@ -155,7 +155,8 @@ rc.getParamVal = function(name) {
 
 rc.setParam = function(name, data) {
 	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
-	var hash = '';
+	rc.params[name] = data;
+	var hash = '';// rebuild the hash
 	for (name in rc.params) {
 		data = rc.params[name];
 		if (data != null) {
