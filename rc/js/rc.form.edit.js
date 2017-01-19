@@ -182,7 +182,6 @@ rc.selectFormData.done = function(data) {
 };
 
 rc.rollupPlaceholderValues = function(event, placeholderValues) {
-	console.log('rc.rollupPlaceholderValues');
 	var placeholderValueComponents = $('[placeholder]');
 	if (!placeholderValueComponents.length) {return;}
 	$(placeholderValueComponents).each(function(index, field) {
