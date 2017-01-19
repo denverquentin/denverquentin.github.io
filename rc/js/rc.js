@@ -3,6 +3,7 @@ Feel free to put loads of comments in the code and be sure to minify
 this script any time it's edited. The Campaign_DesignForm.page should
 always load the minified version. */
 rc = rc || {};
+rc.params = {};
 rc.ui = rc.ui || {};
 rc.comp = rc.comp || {};
 rc.comp.remoting = rc.comp.remoting || {};
@@ -122,7 +123,6 @@ rc.selectData.fail = function(deferred, send, recv, meta) {
 };
 
 rc.initializeParams = function() {
-	rc.params = {};
 	var match = window.location.search.match(/[^=&?]+\s*=\s*[^&#]*/g);
 	for (var i = match.length; i--;) {
 		var spl = match[i].split("=");
@@ -131,13 +131,13 @@ rc.initializeParams = function() {
 		if (value == 'true') {value = true;}
 		if (value == 'false') {value = false;}
 		// Save param
-		rc.setParam(name, value);
-//		rc.params[name] = rc.params[name] || [];
-//		rc.params[name].push(value);
+//		rc.setParam(name, value);
+		rc.params[name] = rc.params[name] || [];
+		rc.params[name].push(value);
 	}
 
-	console.log('id = ' +  + rc.getParam('id'));
-	console.log('form = ' +  + rc.getParam('form'));
+	console.log('id = ' + rc.getParam('id'));
+	console.log('form = ' + rc.getParam('form'));
 	console.log('data = ' + rc.getParam('data'));
 
 /*
@@ -155,21 +155,26 @@ rc.initializeParams = function() {
 };
 
 rc.getParam = function(name) {
-	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return 'view';}
+	//if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return 'view';}
 	return rc.params[name] || null;
 };
 
 rc.setParam = function(name, data) {
-	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
+	//if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
 	rc.params[name] = data;
+	console.log('rc.setParam - rc.params = ' + rc.params);
+	// let's selectively add new param=vals to the url and stop using hashes?
 	var hash = '';
 	for (name in rc.params) {
+		console.log('rc.setParam - name = ' + name);
 		data = rc.params[name];
+		console.log('rc.setParam - data = ' + data);
 		if (data != null) {
 			hash += hash == '' ? '#' : '&';
 			hash += name + '=' + data;
 		}
 	}
+//	window.location.search = window.location.search + ;
 	window.location.hash = hash;
 };
 
