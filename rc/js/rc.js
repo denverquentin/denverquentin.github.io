@@ -121,10 +121,43 @@ rc.selectData.fail = function(deferred, send, recv, meta) {
 	console.error('meta', meta);
 };
 
+/*
+
+var str = "http://www.somewhere.com/index.html?field[]=history&field[]=science&field[]=math";
+
+var match = str.match(/[^=&?]+\s*=\s*[^&#]*/g);
+var obj = {};
+
+for (var i = match.length; i--;) {
+  var spl = match[i].split("=");
+  var name = spl[0].replace("[]", "");
+  var value = spl[1];
+  obj[name] = obj[name] || [];
+  obj[name].push(value);
+}
+
+console.log(' = ' + );
+console.log(' = ' + );
+console.log(' = ' + );
+
+obj["field"].join(", ")​​
+*/
 rc.initializeParams = function() {
 	rc.params = {};
+	var match = str.match(/[^=&?]+\s*=\s*[^&#]*/g);
+	for (var i = match.length; i--;) {
+		var spl = match[i].split("=");
+		var name = spl[0];
+		var value = spl[1];
+		if (value == 'true') {value = true;}
+		if (value == 'false') {value = false;}
+		// Save param
+		rc.setParam(name, value);
+//		rc.params[name] = rc.params[name] || [];
+//		rc.params[name].push(value);
+	}
+/*
 	var hash = (window.location.hash || '#!mode=view').substring(2);
-	console.log('hash = ' + hash);
 	if (hash == null) {return;}
 	$(hash.split('&')).each(function() {
 		var data = this.split('=');
@@ -134,6 +167,26 @@ rc.initializeParams = function() {
 		// Save param
 		rc.setParam(data[0], data[1]);
 	});
+*/
+};
+
+rc.getParam = function(name) {
+	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return 'view';}
+	return rc.params[name] || null;
+};
+
+rc.setParam = function(name, data) {
+	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
+	rc.params[name] = data;
+	var hash = '';
+	for (name in rc.params) {
+		data = rc.params[name];
+		if (data != null) {
+			hash += hash == '' ? '#' : '&';
+			hash += name + '=' + data;
+		}
+	}
+	window.location.hash = hash;
 };
 
 rc.applyDefaultAttributeDefaultValues = function(component, defaultValues) {
@@ -184,25 +237,6 @@ rc.reInitProductSlots = function() {
 
 rc.getCurrentMode = function() {
 	return rc.getParam('mode') || 'view';
-};
-
-rc.getParam = function(name) {
-	if (/false/.test(rc.isEditMode) && /mode/.test(name)) {return 'view';}
-	return rc.params[name] || null;
-};
-
-rc.setParam = function(name, data) {
-	if (/false/.test(rc.isEditMode) && /mode/.test(name)) {return;}
-	rc.params[name] = data;
-	var hash = '';
-	for (name in rc.params) {
-		data = rc.params[name];
-		if (data != null) {
-			hash += hash == '' ? '#!' : '&';
-			hash += name + '=' + data;
-		}
-	}
-	window.location.hash = hash;
 };
 
 rc.initializeSessionId = function(isTestMode,sessionId) {
