@@ -143,6 +143,7 @@ rc.getParam = function(name) {
 is different the rc.getParam which only looks for params after a #
 */
 rc.getParamVal = function(name) {
+	console.log('rc.getParamVal');
 	var match = window.location.search.match(/[^=&?]+\s*=\s*[^&#]*/g);
 	console.log('name = ' + name);
 	console.log('match.length = ' + match.length);
