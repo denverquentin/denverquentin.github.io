@@ -139,21 +139,6 @@ rc.getParam = function(name) {
 	return rc.params[name] || null;
 };
 
-// specific to finding the data parameter which can be ?data, &data or #data
-rc.getDataParamVal = function() {
-	console.log('rc.getParamVal');
-	var match = window.location.href.match(/[^=&?]+\s*=\s*[^&#]*/g);
-	for (var i = match.length; i--;) {
-		var spl = match[i].split("=");
-		if (spl[0] == 'data' || spl[0] == '#data') {
-			return spl[1];
-		}
-	}
-	return null;
-}
-//https://connectqf-developer-edition.na30.force.com/ngoc/campaign_designform?id=70136000000HCBYAA4#data=a53d24f550aed64eb24fb459f336ef4036253494735cecba994fdd1d2a9bccb4
-
-
 rc.setParam = function(name, data) {
 	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
 	rc.params[name] = data;
@@ -167,6 +152,19 @@ rc.setParam = function(name, data) {
 	}
 	window.location.hash = hash;
 };
+
+// specific to finding the data parameter which can be ?data, &data or #data
+rc.getDataParamVal = function() {
+	console.log('rc.getParamVal');
+	var match = window.location.href.match(/[^=&?]+\s*=\s*[^&#]*/g);
+	for (var i = match.length; i--;) {
+		var spl = match[i].split("=");
+		if (spl[0].toLowerCase() == 'data' || spl[0].toLowerCase() == '#data') {
+			return spl[1];
+		}
+	}
+	return null;
+}
 
 rc.applyDefaultAttributeDefaultValues = function(component, defaultValues) {
 	var component = $(component) || {};
