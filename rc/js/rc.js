@@ -121,27 +121,6 @@ rc.selectData.fail = function(deferred, send, recv, meta) {
 	console.error('meta', meta);
 };
 
-/*
-
-var str = "http://www.somewhere.com/index.html?field[]=history&field[]=science&field[]=math";
-
-var match = str.match(/[^=&?]+\s*=\s*[^&#]*/g);
-var obj = {};
-
-for (var i = match.length; i--;) {
-  var spl = match[i].split("=");
-  var name = spl[0].replace("[]", "");
-  var value = spl[1];
-  obj[name] = obj[name] || [];
-  obj[name].push(value);
-}
-
-console.log(' = ' + );
-console.log(' = ' + );
-console.log(' = ' + );
-
-obj["field"].join(", ")​​
-*/
 rc.initializeParams = function() {
 	rc.params = {};
 	var match = str.match(/[^=&?]+\s*=\s*[^&#]*/g);
@@ -156,6 +135,11 @@ rc.initializeParams = function() {
 //		rc.params[name] = rc.params[name] || [];
 //		rc.params[name].push(value);
 	}
+
+	console.log('id = ' +  + rc.getParam('id'));
+	console.log('form = ' +  + rc.getParam('form'));
+	console.log('data = ' + rc.getParam('data'));
+
 /*
 	var hash = (window.location.hash || '#!mode=view').substring(2);
 	if (hash == null) {return;}
