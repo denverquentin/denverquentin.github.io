@@ -63,7 +63,7 @@ rc.initializeFormApp = function() {
 		});
 		rc.rollupDefaultValues();/* Assign default values to all the fields */
 		// only do this method call if the "data" parameter is set - elminates ajax request to SF
-		var dataParam = rc.getParamVal('data');
+		var dataParam = rc.getDataParamVal('data');
 		if (dataParam != null && dataParam != '') {
 			rc.selectData();
 		} else {
