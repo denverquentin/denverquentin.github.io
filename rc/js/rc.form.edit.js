@@ -34,15 +34,6 @@ rc.initializeFormAppInDesignMode = function() {
 	rc.events.on('view-change',rc.rollupPlaceholderValues);
 	// on view change, toggle default values shown in fields
 	rc.events.on('view-change',rc.rollupDefaultValues);
-
-	rc.events.on('form-loaded-with-data',function(event) {
-		console.log('form-loaded-with-data FIRED!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-		//functions to initialize components which depends on all components + data load
-		//here we have guarantee all components and data is loaded
-		rc.validateInput.initialize();
-		rc.ui.setDropdownVisible();
-		rc.ui.removeRedundantOpacity();
-	});
 	rc.initializeModals();
 	rc.initializeHeaderButtons();
 };
@@ -190,6 +181,7 @@ rc.selectFormData.done = function(data) {
 };
 
 rc.rollupPlaceholderValues = function(event, placeholderValues) {
+	console.log('rc.rollupPlaceholderValues');
 	var placeholderValueComponents = $('[placeholder]');
 	if (!placeholderValueComponents.length) {return;}
 	$(placeholderValueComponents).each(function(index, field) {

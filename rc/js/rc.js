@@ -108,7 +108,6 @@ rc.selectData.done = function(deferred, send, recv, meta) {
 			$('#rc-workflows-list [data-method="send-data"] [data-cascade="exclude-giving"][data-value="'+recv[rc.ns+'exclude_giving__c'] + '"].btn').click();
 		}
 	}
-	rc.events.trigger('form-loaded-with-data'); // used in edit mode
 	rc.validate.initialize();
 	rc.ui.setDropdownVisible();
 	rc.ui.removeRedundantOpacity();
@@ -158,6 +157,7 @@ rc.applyPlaceholderAttributeValues = function(component, placeholderValues) {
 }
 
 rc.rollupDefaultValues = function(event, defaultValues) {
+	console.log('rc.rollupDefaultValues');
 	var defaultValueComponents = $('[data-field-default]');
 	if (!defaultValueComponents.length) {return;}
 	$(defaultValueComponents).each(function(index, field) {
