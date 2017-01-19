@@ -177,6 +177,7 @@ rc.selectFormData.done = function(data) {
 	}
 	rc.ui.markProcessingDone();// Unmark processing
 	$('#rc-ui-icon-unsaved-changes').hide();// Unmark modified
+	rc.rollupDefaultValues();/* Assign default values to all the fields */
 	rc.selectData();
 };
 
