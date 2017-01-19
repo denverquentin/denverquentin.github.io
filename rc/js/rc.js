@@ -123,7 +123,7 @@ rc.selectData.fail = function(deferred, send, recv, meta) {
 
 rc.initializeParams = function() {
 	rc.params = {};
-	var match = str.match(/[^=&?]+\s*=\s*[^&#]*/g);
+	var match = window.location.search.match(/[^=&?]+\s*=\s*[^&#]*/g);
 	for (var i = match.length; i--;) {
 		var spl = match[i].split("=");
 		var name = spl[0];
