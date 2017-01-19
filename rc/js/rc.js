@@ -139,30 +139,20 @@ rc.getParam = function(name) {
 	return rc.params[name] || null;
 };
 
-/* rc.getParamVal method looks for a parameter with the name passed in.
-is different the rc.getParam which only looks for params after a #
-*/
-rc.getParamVal = function(name) {
+// specific to finding the data parameter which can be ?data, &data or #data
+rc.getDataParamVal = function() {
 	console.log('rc.getParamVal');
-	console.log('location.href = ' + window.location.href);
 	var match = window.location.href.match(/[^=&?]+\s*=\s*[^&#]*/g);
-	console.log('name = ' + name);
-	console.log('match.length = ' + match.length);
-	console.log('match = ' + match);
-
-//https://connectqf-developer-edition.na30.force.com/ngoc/campaign_designform?id=70136000000HCBYAA4#data=a53d24f550aed64eb24fb459f336ef4036253494735cecba994fdd1d2a9bccb4
-
 	for (var i = match.length; i--;) {
 		var spl = match[i].split("=");
-		console.log('spl = ' + spl);
-		console.log('spl[0] = ' + spl[0]);
-		console.log('spl[1] = ' + spl[1]);
-		if (name == spl[0]) {
+		if (spl[0] == 'data' || spl[0] == '#data') {
 			return spl[1];
 		}
 	}
 	return null;
 }
+//https://connectqf-developer-edition.na30.force.com/ngoc/campaign_designform?id=70136000000HCBYAA4#data=a53d24f550aed64eb24fb459f336ef4036253494735cecba994fdd1d2a9bccb4
+
 
 rc.setParam = function(name, data) {
 	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
