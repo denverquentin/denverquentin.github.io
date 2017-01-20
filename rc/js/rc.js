@@ -31,6 +31,9 @@ rc.initializeFormApp = function() {
 			$('#rc-theme-link').attr('href', data.data['theme-href']);
 			$('#rc-theme-link').attr('data-name', data.data['theme-name']);
 		}
+	// Empty existing container
+	$('#rc-container-list').empty();
+	$('#rc-workflows-list').empty();
 		// Add workflow names to dropdown - important if there are more than one or are chained
 		var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 		item_list.empty();
