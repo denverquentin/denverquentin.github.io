@@ -52,13 +52,6 @@ rc.initializeFormApp = function() {
 		$(data.containers).each(function(at, data) {/* set columns/components */
 			rc.comp.insertColumnList('#rc-container-list', data);
 		});
-		console.log('UPDATED!!!!!!!!!!!!!!!!!!!');
-	// Process copy-param clicks
-	$('.dropdown-menu[data-original-target]').each(function() {
-		var name = $(this).attr('data-original-target');
-		$(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
-	});
-
 		rc.rollupDefaultValues();/* Assign default values to all the fields */
 		// only do this method call if the "data" parameter is set - elminates ajax request to SF
 		var dataParam = rc.getDataParamVal();
