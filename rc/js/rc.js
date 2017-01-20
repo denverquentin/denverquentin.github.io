@@ -16,8 +16,6 @@ var sessionList = {};
 /* this method is called at the bottom of this file */
 rc.initializeFormApp = function() {
 	rc.initializeParams();
-	// todo: does this need tp be improved?
-	console.log('rc.params = ' + JSON.stringify(rc.params));
 	$('body').addClass('rc-content-css');/* Make sure the body tag has a css target */
 	if (!rc.isEditMode) {/* Load if not in edit mode - data for edit mode is loaded in rc.form.edit.js */
 		data = rc.selectedForm || {};
@@ -35,9 +33,6 @@ rc.initializeFormApp = function() {
 		}
 		// Add workflow names to dropdown - important if there are more than one or are chained
 		var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
-		console.log('rc.initializeFormApp');
-		console.log('item_list = ' + JSON.stringify(item_list));
-		console.log('data.workflows = ' + JSON.stringify(data.workflows));
 		item_list.empty();
 		$(data.workflows).each(function(at, data) {
 			console.log('data = ' + JSON.stringify(data));
@@ -47,15 +42,11 @@ rc.initializeFormApp = function() {
 				item.attr('data-value', data.data.guid);
 				item.text(rc.text(data.data.name));
 				// Add to workflow menu list
-				console.log('data.data.guid = ' + data.data.guid);
-				console.log('data.data.name = ' + data.data.name);
-				console.log('data.actions.data.data = ' + JSON.stringify(data.actions));
 				item_list.append(item.wrap('<li></li>').parent());
 			} catch (message) {
 				console.error('[ERROR]', message);
 			}
 		});
-		console.log('item_list FINAL = ' + JSON.stringify(item_list));
 		$(data.workflows).each(function(at, data) {/* set workflows */
 			rc.comp.insertWorkflow('#rc-workflows-list', data);
 		});
