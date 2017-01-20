@@ -1171,7 +1171,8 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 
 // todo: finish this
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
-		console.log('container = ' + JSON.stringify(container));
+		window.debug_elem = container;
+		console.log('DEBUG = ' + window.debug_elem);
 		console.log('container_data.data[data] = ' + container_data.data['data']);
 		container.attr('data-value', container_data.data['data']);
 //		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
@@ -3241,7 +3242,7 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
 		window.debug_elem = action;
-		console.log('DEBUG THIS!!!!!!!!!!!!!!!!!');
+		console.log('DEBUG THIS');
 		console.log(window.debug_elem);
 		console.log('action = ' + JSON.stringify(action));
 		console.log('action.attr(data-method) = ' + action.attr('data-method'));
