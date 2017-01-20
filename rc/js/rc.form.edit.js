@@ -149,7 +149,7 @@ rc.selectFormData.done = function(data) {
 		}
 	});
 
-	window.debug_elem = item_list;
+	window.debug_elem = $(item_list);
 	console.log('item_list = ' + window.debug_elem);
 
 	// Process data
