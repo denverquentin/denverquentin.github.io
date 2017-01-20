@@ -3349,16 +3349,7 @@ rc.wf.process.LoadData = function(deferred, action, data) {
 
 rc.wf.process.LoadPage = function(deferred, action, data) {
 	console.log('rc.wf.process.LoadPage');
-
-	console.log('data = ' + JSON.stringify(data));
-
-
-/*
-	console.log('rc.wf.process.Workflow');
-	console.log('action = ' + JSON.stringify(action));
-	console.log('actionButtonContext = ' + JSON.stringify(actionButtonContext));
-	*/
-
+	console.log('deferred = ' + JSON.stringify(deferred));
 	console.log('action = ' + JSON.stringify(action));
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
@@ -3366,9 +3357,8 @@ rc.wf.process.LoadPage = function(deferred, action, data) {
 		+ '&formCampaignId=' + campaignFormId + '&form=' + $(action).attr('data-value')
 		+ '&data=' + rc.getParam('data');
 
-	console.log('rc.paramFormCampaignId = ' + rc.paramFormCampaignId);
-	console.log('campaignFormId = ' + campaignFormId);
-	console.log('rc.getParam(data) = ' + rc.getParam('data'));
+	console.log('action.attr(data-method) = ' + action.attr('data-method'));
+	console.log('action.attr(data-cascade) = ' + action.attr('data-cascade'));
 	console.log('action.attr(data-value) = ' + $(action).attr('data-value'));
 	console.log('redirectTo = ' + redirectTo);
 //	window.location = redirectTo;
