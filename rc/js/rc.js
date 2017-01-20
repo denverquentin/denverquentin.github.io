@@ -1157,8 +1157,8 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 		}
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Authorize.net') {
 		if (rc.isAuthDotNetConfigured) {
-		item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
-		item_details.find('[data-cascade]').change();
+			item_details.find('[data-value="' + container_data.data['data'] + '"].btn').click();
+			item_details.find('[data-cascade]').change();
 		}
 	} else if (container_data.method == 'send-payment' && container_data.data.data == 'Cybersource') {
 		if (rc.isCybersourceConfigured) {
@@ -1168,6 +1168,19 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 	} else if (container_data.method == 'copy-param') {
 		item_details.find('.form-control').val(container_data.data['parameter']).change();
 		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
+	} else if (container_data.method == 'load-page') {
+// todo: finish this
+		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
+		console.log('container_data.data[data] = ' + container_data.data['data']);
+		item_details.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
+/*
+	context.find('[data-component-type="workflow-action"]').each(function() {
+		var action = $(this);
+		console.log('action = ' + JSON.stringify(action));
+		console.log('action.attr(data-value) = ' + action.attr('data-value'));
+*/
+//		item.find('.dropdown-menu a[data-value="send-payment"]').attr("disabled","disabled");
+//		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
 	} else if (container_data.method == 'send-data') {
 		//if undefined or null default value will be true
 		if (container_data.data['exclude-giving']==null || container_data.data['exclude-giving']===undefined ){
@@ -3296,7 +3309,6 @@ rc.wf.process = function(type, guid, data, actionButtonContext) {
 	method_map['workflow'] = rc.wf.process.Workflow;
 	// Execute method
 	var method_action = action.attr('data-method');
-	console.log('method_action = ' + method_action);
 	var method = method_map[method_action] || function(deferred, action) {};
 	try {
 		var method_result = new method(deferred, action, data, actionButtonContext);
@@ -3334,6 +3346,14 @@ rc.wf.process.LoadData = function(deferred, action, data) {
 
 rc.wf.process.LoadPage = function(deferred, action, data) {
 	console.log('rc.wf.process.LoadPage');
+
+/*
+	console.log('rc.wf.process.Workflow');
+	console.log('data = ' + JSON.stringify(data));
+	console.log('action = ' + JSON.stringify(action));
+	console.log('actionButtonContext = ' + JSON.stringify(actionButtonContext));
+	*/
+
 	console.log('action = ' + JSON.stringify(action));
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
@@ -3552,10 +3572,6 @@ rc.wf.process.SendPayment.send = function(deferred, action, data) {
 }
 
 rc.wf.process.Workflow = function(deferred, action, data, actionButtonContext) {
-	console.log('rc.wf.process.Workflow');
-	console.log('data = ' + JSON.stringify(data));
-	console.log('action = ' + JSON.stringify(action));
-	console.log('actionButtonContext = ' + JSON.stringify(actionButtonContext));
 	rc.wf.execute($(action).attr('data-value'),actionButtonContext);
 	deferred.resolve();
 };

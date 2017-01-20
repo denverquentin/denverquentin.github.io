@@ -65,11 +65,9 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 		item.find('a').attr('data-cascade', 'data-page');
 		item.find('a').attr('data-value', info.id);
 		item.find('a').text(info.name);
-		console.log('item = ' + JSON.stringify(info));
 		divider.before(item)
 		// Also add to the workflow menu
 		var item_clone = item.clone();
-		console.log('item = ' + JSON.stringify(item_clone));
 		item_clone.find('a').attr('data-cascade', 'data-value');
 		menu.append(item_clone);
 	});
