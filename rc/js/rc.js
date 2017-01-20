@@ -49,6 +49,7 @@ rc.initializeFormApp = function() {
 				// Add to workflow menu list
 				console.log('data.data.guid = ' + data.data.guid);
 				console.log('data.data.name = ' + data.data.name);
+				console.log('data.data.data = ' + data.data.data);
 				item_list.append(item.wrap('<li></li>').parent());
 			} catch (message) {
 				console.error('[ERROR]', message);
