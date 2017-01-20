@@ -3553,8 +3553,7 @@ rc.wf.process.SendPayment.send = function(deferred, action, data) {
 
 rc.wf.process.Workflow = function(deferred, action, data, actionButtonContext) {
 	console.log('rc.wf.process.Workflow');
-	console.log('$(action).attr(data-value) = ' + $(action).attr('data-value'));
-	console.log('$(action).data.data = ' + $(action).data.data);
+	console.log('$(action) = ' + JSON.stringify($(action)));
 	rc.wf.execute($(action).attr('data-value'),actionButtonContext);
 	deferred.resolve();
 };
