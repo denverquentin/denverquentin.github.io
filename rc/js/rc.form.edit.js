@@ -148,7 +148,10 @@ rc.selectFormData.done = function(data) {
 			console.error('[ERROR]', message);
 		}
 	});
-	console.log('item_list = ' + JSON.stringify(item_list));
+
+	window.debug_elem = item_list;
+	console.log('item_list = ' + window.debug_elem);
+
 	// Process data
 	$(data.workflows).each(function(at, data) {
 		rc.comp.insertWorkflow('#rc-workflows-list', data);

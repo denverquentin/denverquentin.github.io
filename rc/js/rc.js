@@ -46,7 +46,9 @@ rc.initializeFormApp = function() {
 				console.error('[ERROR]', message);
 			}
 		});
-		console.log('item_list = ' + JSON.stringify(item_list));
+
+		window.debug_elem = item_list;
+		console.log('item_list = ' + window.debug_elem);
 
 
 		$(data.workflows).each(function(at, data) {/* set workflows */
