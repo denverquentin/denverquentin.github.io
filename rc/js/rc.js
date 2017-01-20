@@ -2658,10 +2658,14 @@ rc.comp.Button = function(container, data) {
 	//console.log('workflow_list = ' + JSON.stringify(workflow_list));
 	$('#rc-workflows-list').find('.rc-container-workflow').each(function() {
 		var context = $(this);
-		window.debug_elem = context;
-		console.log('button workflow = ' + window.debug_elem);
+//		window.debug_elem = context;
+		console.log('button contact = ' + JSON.stringify(context));
 		var item = $('<li><a class="rc-cursor-pointer rc-cascade-value rc-cascade-dropdown-text"></a></li>');
 		item.find('a').attr('data-cascade', 'data-workflow');
+
+		window.debug_elem = item.find('a');
+		console.log('item.find(a) = ' + window.debug_elem);
+
 		item.find('a').attr('data-value', context.attr('id')); // guid
 		item.find('a').text(context.find('.rc-workflow-name').val());
 		// Manually bind
