@@ -2655,17 +2655,10 @@ rc.comp.Button = function(container, data) {
 	this.content.find('.rc-name').text(data.text);
 	this.content.find('.rc-icon').addClass(data.icon);
 	var workflow_list = this.content.find('.dropdown-menu');// Populate the list of workflows
-	//console.log('workflow_list = ' + JSON.stringify(workflow_list));
 	$('#rc-workflows-list').find('.rc-container-workflow').each(function() {
 		var context = $(this);
-//		window.debug_elem = context;
-		console.log('button contact = ' + JSON.stringify(context));
 		var item = $('<li><a class="rc-cursor-pointer rc-cascade-value rc-cascade-dropdown-text"></a></li>');
 		item.find('a').attr('data-cascade', 'data-workflow');
-
-		window.debug_elem = item.find('a');
-		console.log('item.find(a) = ' + window.debug_elem);
-
 		item.find('a').attr('data-value', context.attr('id')); // guid
 		item.find('a').text(context.find('.rc-workflow-name').val());
 		// Manually bind
@@ -3248,17 +3241,20 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	// Add actions
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
+/*
 		window.debug_elem = action;
 		console.log('DEBUG THIS');
 		console.log(window.debug_elem);
 		console.log('action = ' + JSON.stringify(action));
 		console.log('action.attr(data-method) = ' + action.attr('data-method'));
 		console.log('action.attr(data-value) = ' + action.attr('data-value'));
+*/
 		var action_type = action.attr('data-context');
 		var action_guid = action.attr('id');
 		var action_method = action.attr('data-method');
 		if (action_type == 'then' || action_type == 'execute') { // the "execute" type is for very early versions of the form
 			flow = flow.then(function(data) {
+				console.log('data in FLOW = ' + JSON.stringify(data));
 				return rc.wf.process('then', action_guid, {workflowGuid:guid}, actionButtonContext);
 			});
 		}
