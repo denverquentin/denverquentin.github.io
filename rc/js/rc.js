@@ -1167,14 +1167,14 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 	} else if (container_data.method == 'copy-param') {
 		item_details.find('.form-control').val(container_data.data['parameter']).change();
 		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
-	} else if (container_data.method == 'load-page') {
+	//} else if (container_data.method == 'load-page') {
 
 // todo: finish this
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
-		window.debug_elem = item_content;
-		console.log('DEBUG = ' + window.debug_elem);
+//		window.debug_elem = item_content;
+//		console.log('DEBUG = ' + window.debug_elem);
 		console.log('container_data.data[data] = ' + container_data.data['data']);
-		item_content.attr('data-value', container_data.data['data']);
+//		item_content.attr('data-value', container_data.data['data']);
 //		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
 //		item_details.find('.dropdown-menu').attr('data-value', container_data.data['data']);
 
@@ -3254,7 +3254,6 @@ rc.wf.execute = function(guid,actionButtonContext) {
 		var action_method = action.attr('data-method');
 		if (action_type == 'then' || action_type == 'execute') { // the "execute" type is for very early versions of the form
 			flow = flow.then(function(data) {
-				console.log('data in FLOW = ' + JSON.stringify(data));
 				return rc.wf.process('then', action_guid, {workflowGuid:guid}, actionButtonContext);
 			});
 		}
@@ -3356,7 +3355,6 @@ rc.wf.process.LoadData = function(deferred, action, data) {
 
 rc.wf.process.LoadPage = function(deferred, action, data) {
 	console.log('rc.wf.process.LoadPage');
-	console.log('deferred = ' + JSON.stringify(deferred));
 	console.log('action = ' + JSON.stringify(action));
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
@@ -3366,7 +3364,8 @@ rc.wf.process.LoadPage = function(deferred, action, data) {
 
 	console.log('action.attr(data-method) = ' + action.attr('data-method'));
 	console.log('action.attr(data-cascade) = ' + action.attr('data-cascade'));
-	console.log('action.attr(data-value) = ' + $(action).attr('data-value'));
+	console.log('$action.attr(data-value) = ' + $(action).attr('data-value'));
+	console.log('action.attr(data-value) = ' + action.attr('data-value'));
 	console.log('redirectTo = ' + redirectTo);
 //	window.location = redirectTo;
 };
