@@ -63,7 +63,7 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 	$(recv).each(function(at, info) {
 		var item = $('<li class="rc-form-name"><a class="rc-cursor-pointer rc-cascade-value rc-toggle-active rc-cascade-dropdown-text rc-link"></a></li>');
 		item.find('a').attr('data-cascade', 'data-page');
-		item.find('a').attr('data-value', info.id);
+		//item.find('a').attr('data-value', info.id);
 		item.find('a').text(info.name);
 		divider.before(item)
 		// Also add to the workflow menu
