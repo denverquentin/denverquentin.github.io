@@ -46,6 +46,9 @@ rc.initializeFormApp = function() {
 				console.error('[ERROR]', message);
 			}
 		});
+		console.log('item_list = ' + JSON.stringify(item_list));
+
+
 		$(data.workflows).each(function(at, data) {/* set workflows */
 			rc.comp.insertWorkflow('#rc-workflows-list', data);
 		});
