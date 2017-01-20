@@ -35,7 +35,6 @@ rc.initializeFormApp = function() {
 		var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 		item_list.empty();
 		$(data.workflows).each(function(at, data) {
-			console.log('data = ' + JSON.stringify(data));
 			try {
 				var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
 				item.attr('data-cascade', 'data-value');
@@ -1172,7 +1171,11 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 // todo: finish this
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
 		console.log('container_data.data[data] = ' + container_data.data['data']);
-		item_details.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
+		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
+		item.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
+
+// next line didn't work
+//		item_details.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
 /*
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);

@@ -114,8 +114,6 @@ rc.selectFormData.done = function(data) {
 	data = data || {};
 	data.containers = data.containers || [];
 	data.workflows = data.workflows || [];
-	console.log('rc.selectFormData.done');
-	console.log('data.workflows = ' + data.workflows);
 	data.data = data.data || {};
 	// Apply Page Level CSS
 	rc.comp.importContentCSS($("html"), data.styles);
@@ -137,25 +135,19 @@ rc.selectFormData.done = function(data) {
 	$('#rc-workflows-list').empty();
 	// Add workflow names to dropdown
 	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
-	console.log('item_list = ' + JSON.stringify(item_list));
-	console.log('data.workflows = ' + JSON.stringify(data.workflows));
 	item_list.empty();
 	$(data.workflows).each(function(at, data) {
-		console.log('data = ' + JSON.stringify(data));
 		try {
 			var item = $('<a class="rc-cascade-dropdown-text rc-cursor-pointer rc-cascade-value"></a>');
 			item.attr('data-cascade', 'data-value');
 			item.attr('data-value', data.data.guid);
 			item.text(rc.text(data.data.name));
 			// Add to workflow menu list
-			console.log('data.data.guid = ' + data.data.guid);
-			console.log('data.data.name = ' + data.data.name);
 			item_list.append(item.wrap('<li></li>').parent());
 		} catch (message) {
 			console.error('[ERROR]', message);
 		}
 	});
-	console.log('item_list FINAL = ' + JSON.stringify(item_list));
 	// Process data
 	$(data.workflows).each(function(at, data) {
 		rc.comp.insertWorkflow('#rc-workflows-list', data);
