@@ -67,7 +67,6 @@ rc.initializeFormApp = function() {
 };
 
 rc.selectData = function(deferred, send) {
-	console.log('rc.selectData');
 	deferred = deferred || new jQuery.Deferred();
 	send = send || {};
 	send.__action = rc.actions.selectData;
@@ -3216,7 +3215,6 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
 	var context = $('#' + guid);
 	console.log('rc.wf.execute');
-	console.log('context = ' + JSON.stringify(context));
 	var flow_origin = new jQuery.Deferred(); // null deferred to kickoff the flow
 	var flow = flow_origin.promise();
 	rc.wf.retroactiveFailure = new jQuery.Deferred();
@@ -3556,6 +3554,7 @@ rc.wf.process.SendPayment.send = function(deferred, action, data) {
 rc.wf.process.Workflow = function(deferred, action, data, actionButtonContext) {
 	console.log('rc.wf.process.Workflow');
 	console.log('$(action).attr(data-value) = ' + $(action).attr('data-value'));
+	console.log('$(action).data.data = ' + $(action).data.data);
 	rc.wf.execute($(action).attr('data-value'),actionButtonContext);
 	deferred.resolve();
 };
