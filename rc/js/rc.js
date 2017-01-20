@@ -3241,14 +3241,13 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	// Add actions
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
-/*
 		window.debug_elem = action;
 		console.log('DEBUG THIS');
 		console.log(window.debug_elem);
-		console.log('action = ' + JSON.stringify(action));
+//		console.log('action = ' + JSON.stringify(action));
 		console.log('action.attr(data-method) = ' + action.attr('data-method'));
 		console.log('action.attr(data-value) = ' + action.attr('data-value'));
-*/
+
 		var action_type = action.attr('data-context');
 		var action_guid = action.attr('id');
 		var action_method = action.attr('data-method');
@@ -3363,8 +3362,6 @@ rc.wf.process.LoadPage = function(deferred, action, data) {
 		+ '&data=' + rc.getParam('data');
 
 	console.log('action.attr(data-method) = ' + action.attr('data-method'));
-	console.log('action.attr(data-cascade) = ' + action.attr('data-cascade'));
-	console.log('$action.attr(data-value) = ' + $(action).attr('data-value'));
 	console.log('action.attr(data-value) = ' + action.attr('data-value'));
 	console.log('redirectTo = ' + redirectTo);
 //	window.location = redirectTo;
