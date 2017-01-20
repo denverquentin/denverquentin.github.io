@@ -22,7 +22,6 @@ rc.initializeFormApp = function() {
 		data.containers = data.containers || [];
 		data.workflows = data.workflows || [];
 		data.data = data.data || {};
-		console.log('data.data = ' + JSON.stringify(data.data));
 		// apply Page Level CSS
 		rc.comp.importContentCSS($('html'), data.styles);
 		rc.comp.updateContentCSS($('html'));
@@ -1172,13 +1171,15 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 
 // todo: finish this
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
+		console.log('container = ' + container);
 		console.log('container_data.data[data] = ' + container_data.data['data']);
+		container.attr('data-value', container_data.data['data']);
 //		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
 //		item_details.find('.dropdown-menu').attr('data-value', container_data.data['data']);
 
+/*
 		item.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
 		item_details.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
-/*
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
 		console.log('action = ' + JSON.stringify(action));
