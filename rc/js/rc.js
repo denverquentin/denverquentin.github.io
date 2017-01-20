@@ -22,6 +22,7 @@ rc.initializeFormApp = function() {
 		data.containers = data.containers || [];
 		data.workflows = data.workflows || [];
 		data.data = data.data || {};
+		console.log('data.data = ' + JSON.stringify(data.data));
 		// apply Page Level CSS
 		rc.comp.importContentCSS($('html'), data.styles);
 		rc.comp.updateContentCSS($('html'));
@@ -2688,8 +2689,8 @@ rc.comp.Button.execute = function() {
 	// TODO Perhaps this call should be in rc.validate.isFormValid()
 	rc.enableLocalOnly(true);
 	console.log('actionButtonContext = ' + JSON.stringify(actionButtonContext));
-	console.log('workflowToExecuteId = ' + JSON.stringify(workflowToExecuteId));
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
+	console.log('workflowToExecuteId = ' + JSON.stringify(workflowToExecuteId));
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
 		rc.wf.execute(workflowToExecuteId, actionButtonContext);
 	} else {
