@@ -32,6 +32,10 @@ rc.initializeFormApp = function() {
 			$('#rc-theme-link').attr('data-name', data.data['theme-name']);
 		}
 		// Add workflow names to dropdown - important if there are more than one or are chained
+
+		window.debug_elem = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
+		console.log('item_list = ' + window.debug_elem);
+
 		var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 		item_list.empty();
 		$(data.workflows).each(function(at, data) {
@@ -46,10 +50,6 @@ rc.initializeFormApp = function() {
 				console.error('[ERROR]', message);
 			}
 		});
-
-		window.debug_elem = $(item_list);
-		console.log('item_list = ' + window.debug_elem);
-
 
 		$(data.workflows).each(function(at, data) {/* set workflows */
 			rc.comp.insertWorkflow('#rc-workflows-list', data);
