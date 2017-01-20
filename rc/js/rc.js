@@ -155,7 +155,6 @@ rc.setParam = function(name, data) {
 
 // specific to finding the data parameter which can be ?data, &data or #data
 rc.getDataParamVal = function() {
-	console.log('rc.getParamVal');
 	var match = window.location.href.match(/[^=&?]+\s*=\s*[^&#]*/g);
 	for (var i = match.length; i--;) {
 		var spl = match[i].split("=");
