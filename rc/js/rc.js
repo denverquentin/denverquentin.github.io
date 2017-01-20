@@ -1168,15 +1168,15 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 		item_details.find('.form-control').val(container_data.data['parameter']).change();
 		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
 	} else if (container_data.method == 'load-page') {
+
 // todo: finish this
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
 		console.log('container_data.data[data] = ' + container_data.data['data']);
 //		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
-//		item.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
-		item_details.find('.dropdown-menu').attr('data-value', container_data.data['data']);
+//		item_details.find('.dropdown-menu').attr('data-value', container_data.data['data']);
 
-// next line didn't work
-//		item_details.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
+		item.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
+		item_details.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
 /*
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
@@ -1187,12 +1187,12 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 //		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
 	} else if (container_data.method == 'send-data') {
 		//if undefined or null default value will be true
-		if (container_data.data['exclude-giving']==null || container_data.data['exclude-giving']===undefined ){
+		if (container_data.data['exclude-giving']==null || container_data.data['exclude-giving']===undefined) {
 			container_data.data['exclude-giving'] = false;
 			//for backward compatibility, is old record which may have exclude giving flag unset on batch-upload
 			item_details.find('[data-cascade="exclude-giving"]').attr("is-old","true");
 		}
-		if (container_data.data['exclude-events']==null || container_data.data['exclude-events']===undefined ){
+		if (container_data.data['exclude-events']==null || container_data.data['exclude-events']===undefined) {
 			container_data.data['exclude-events'] = true;
 		}
 		item_details.find('[data-cascade="exclude-giving"][data-value="' + container_data.data['exclude-giving'] + '"].btn').click();
@@ -3293,7 +3293,8 @@ rc.wf.process = function(type, guid, data, actionButtonContext) {
 	var deferred = new jQuery.Deferred();
 	deferred.workflowGuid = data.workflowGuid;
 	var action = $('#' + guid);
-	console.log('action = ' + JSON.stringify(action));
+	console.log('type = ' + JSON.stringify(type));
+	console.log('data = ' + JSON.stringify(data));
 	var method_map = {};
 	method_map['copy-param'] = rc.wf.process.CopyParameter;
 	method_map['javascript'] = rc.wf.process.Javascript;
