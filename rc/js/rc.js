@@ -1171,7 +1171,7 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 
 // todo: finish this
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
-		console.log('container = ' + container);
+		console.log('container = ' + JSON.stringify(container));
 		console.log('container_data.data[data] = ' + container_data.data['data']);
 		container.attr('data-value', container_data.data['data']);
 //		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
@@ -2689,9 +2689,7 @@ rc.comp.Button.execute = function() {
 	//workflows should send local only data to server
 	// TODO Perhaps this call should be in rc.validate.isFormValid()
 	rc.enableLocalOnly(true);
-	console.log('actionButtonContext = ' + JSON.stringify(actionButtonContext));
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
-	console.log('workflowToExecuteId = ' + JSON.stringify(workflowToExecuteId));
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
 		rc.wf.execute(workflowToExecuteId, actionButtonContext);
 	} else {
@@ -3243,6 +3241,7 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
 		console.log('action = ' + JSON.stringify(action));
+		console.log('action.attr(data-method) = ' + action.attr('data-method'));
 		console.log('action.attr(data-value) = ' + action.attr('data-value'));
 		var action_type = action.attr('data-context');
 		var action_guid = action.attr('id');
