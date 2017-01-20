@@ -1038,7 +1038,7 @@ rc.comp.insertWorkflow = function(container, container_data) {
 	container_data.data['guid'] = container_data.data['guid'] || rc.guid();
 	// Set attributes
 	var item = rc.comp.insert('#rc-container-workflow', container, container_data.data);
-	var item_content = item.find('.rc-container-workflow-content');
+	//var item_content = item.find('.rc-container-workflow-content');
 	// Process
 	item.find('.rc-workflow-name').val(container_data.data['name']);
 	item.find('.rc-workflow-active').prop('checked', container_data.data['active'] == 'true');
@@ -1171,10 +1171,10 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 
 // todo: finish this
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
-		window.debug_elem = container;
+		window.debug_elem = item_content;
 		console.log('DEBUG = ' + window.debug_elem);
 		console.log('container_data.data[data] = ' + container_data.data['data']);
-		container.attr('data-value', container_data.data['data']);
+		item_content.attr('data-value', container_data.data['data']);
 //		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
 //		item_details.find('.dropdown-menu').attr('data-value', container_data.data['data']);
 
