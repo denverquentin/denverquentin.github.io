@@ -2679,6 +2679,8 @@ rc.comp.Button.execute = function() {
 	//workflows should send local only data to server
 	// TODO Perhaps this call should be in rc.validate.isFormValid()
 	rc.enableLocalOnly(true);
+	console.log('actionButtonContext = ' + JSON.stringify(actionButtonContext));
+	console.log('workflowToExecuteId = ' + JSON.stringify(workflowToExecuteId));
 	var workflowToExecuteId = $.trim($(this).closest('[data-workflow]').attr('data-workflow'));
 	if (rc.getCurrentMode() == 'view' && formValid && workflowToExecuteId) {
 		rc.wf.execute(workflowToExecuteId, actionButtonContext);
@@ -3560,6 +3562,8 @@ rc.wf.process.SendPayment.send = function(deferred, action, data) {
 }
 
 rc.wf.process.Workflow = function(deferred, action, data, actionButtonContext) {
+	console.log('rc.wf.process.Workflow');
+	console.log('$(action).attr(data-value) = ' + $(action).attr('data-value'));
 	rc.wf.execute($(action).attr('data-value'),actionButtonContext);
 	deferred.resolve();
 };
