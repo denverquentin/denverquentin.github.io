@@ -186,7 +186,6 @@ rc.applyPlaceholderAttributeValues = function(component, placeholderValues) {
 }
 
 rc.rollupDefaultValues = function(event, defaultValues) {
-	console.log('rc.rollupDefaultValues');
 	var defaultValueComponents = $('[data-field-default]');
 	if (!defaultValueComponents.length) {return;}
 	$(defaultValueComponents).each(function(index, field) {
