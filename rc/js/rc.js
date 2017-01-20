@@ -52,7 +52,7 @@ rc.initializeFormApp = function() {
 		$(data.containers).each(function(at, data) {/* set columns/components */
 			rc.comp.insertColumnList('#rc-container-list', data);
 		});
-		console.log('UPDATED!!!!!!!!!!!!!!!!!!!);
+		console.log('UPDATED!!!!!!!!!!!!!!!!!!!');
 	// Process copy-param clicks
 	$('.dropdown-menu[data-original-target]').each(function() {
 		var name = $(this).attr('data-original-target');
