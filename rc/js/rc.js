@@ -1171,8 +1171,9 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 // todo: finish this
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
 		console.log('container_data.data[data] = ' + container_data.data['data']);
-		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
-		item.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
+//		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
+//		item.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
+		item_details.find('.dropdown-menu').attr('data-value', container_data.data['data']);
 
 // next line didn't work
 //		item_details.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
@@ -3291,7 +3292,6 @@ rc.wf.process = function(type, guid, data, actionButtonContext) {
 	// Find and execute
 	var deferred = new jQuery.Deferred();
 	deferred.workflowGuid = data.workflowGuid;
-	console.log('deferred.workflowGuid = ' + deferred.workflowGuid);
 	var action = $('#' + guid);
 	console.log('action = ' + JSON.stringify(action));
 	var method_map = {};
@@ -3350,9 +3350,11 @@ rc.wf.process.LoadData = function(deferred, action, data) {
 rc.wf.process.LoadPage = function(deferred, action, data) {
 	console.log('rc.wf.process.LoadPage');
 
+	console.log('data = ' + JSON.stringify(data));
+
+
 /*
 	console.log('rc.wf.process.Workflow');
-	console.log('data = ' + JSON.stringify(data));
 	console.log('action = ' + JSON.stringify(action));
 	console.log('actionButtonContext = ' + JSON.stringify(actionButtonContext));
 	*/
