@@ -31,9 +31,6 @@ rc.initializeFormApp = function() {
 			$('#rc-theme-link').attr('href', data.data['theme-href']);
 			$('#rc-theme-link').attr('data-name', data.data['theme-name']);
 		}
-	// Empty existing container
-	$('#rc-container-list').empty();
-	$('#rc-workflows-list').empty();
 		// Add workflow names to dropdown - important if there are more than one or are chained
 		var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 		item_list.empty();
@@ -55,6 +52,13 @@ rc.initializeFormApp = function() {
 		$(data.containers).each(function(at, data) {/* set columns/components */
 			rc.comp.insertColumnList('#rc-container-list', data);
 		});
+		console.log('UPDATED!!!!!!!!!!!!!!!!!!!);
+	// Process copy-param clicks
+	$('.dropdown-menu[data-original-target]').each(function() {
+		var name = $(this).attr('data-original-target');
+		$(this).find('.rc-cascade-value[data-value="' + name + '"]').click();
+	});
+
 		rc.rollupDefaultValues();/* Assign default values to all the fields */
 		// only do this method call if the "data" parameter is set - elminates ajax request to SF
 		var dataParam = rc.getDataParamVal();
