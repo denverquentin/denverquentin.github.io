@@ -3240,6 +3240,9 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	// Add actions
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
+		window.debug_elem = action;
+		console.log('DEBUG THIS!!!!!!!!!!!!!!!!!');
+		console.log(window.debug_elem);
 		console.log('action = ' + JSON.stringify(action));
 		console.log('action.attr(data-method) = ' + action.attr('data-method'));
 		console.log('action.attr(data-value) = ' + action.attr('data-value'));
@@ -3294,8 +3297,6 @@ rc.wf.process = function(type, guid, data, actionButtonContext) {
 	var deferred = new jQuery.Deferred();
 	deferred.workflowGuid = data.workflowGuid;
 	var action = $('#' + guid);
-	console.log('type = ' + JSON.stringify(type));
-	console.log('data = ' + JSON.stringify(data));
 	var method_map = {};
 	method_map['copy-param'] = rc.wf.process.CopyParameter;
 	method_map['javascript'] = rc.wf.process.Javascript;
