@@ -109,7 +109,7 @@ rc.selectFormData = function() {
 	href = href.replace('#{fid}', formParam);
 	$('.page-header a.fa-link').attr('href', href);
 	// Load that page
-	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('form'),rc.selectFormData.done,{escape:false});
+	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,formParam,rc.selectFormData.done,{escape:false});
 	rc.ui.markProcessing();// Mark processing
 };
 
