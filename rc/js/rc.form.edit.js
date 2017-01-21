@@ -96,14 +96,17 @@ rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
 };
 
 rc.selectFormData = function() {
-	// Set the page name param
-	var form = rc.paramFormId || rc.getParam('form');
-	rc.setParam('form', $(this).attr('data-value') || form);
+	// Set the form name param if it's missing
+	var formParam = rc.getParamVal('form');
+	if (formParam == null || formParam == '') {
+		formParam = $(this).attr('data-value');
+		rc.setParam('form', formParam);
+	}
 	// Set the form link element
 	var href = '#{base}/' + rc.ns + 'campaign_designform?id=#{cid}&form=#{fid}';
 	href = href.replace('#{base}', '//' + rc.siteUrl);
 	href = href.replace('#{cid}', rc.campaignId);
-	href = href.replace('#{fid}', rc.getParam('form'));
+	href = href.replace('#{fid}', formParam);
 	$('.page-header a.fa-link').attr('href', href);
 	// Load that page
 	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('form'),rc.selectFormData.done,{escape:false});
