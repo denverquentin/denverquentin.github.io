@@ -134,9 +134,6 @@ rc.selectFormData.done = function(data) {
 	$('#rc-container-list').empty();
 	$('#rc-workflows-list').empty();
 	// Add workflow names to dropdown
-	window.debug_elem = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
-	console.log('item_list = ' + window.debug_elem);
-
 	var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 	item_list.empty();
 	$(data.workflows).each(function(at, data) {

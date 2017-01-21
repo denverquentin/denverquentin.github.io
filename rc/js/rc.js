@@ -32,10 +32,6 @@ rc.initializeFormApp = function() {
 			$('#rc-theme-link').attr('data-name', data.data['theme-name']);
 		}
 		// Add workflow names to dropdown - important if there are more than one or are chained
-
-		window.debug_elem = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
-		console.log('item_list = ' + window.debug_elem);
-
 		var item_list = $('#rc-component-workflow-action--workflow').find('.dropdown-menu');
 		item_list.empty();
 		$(data.workflows).each(function(at, data) {
@@ -1172,25 +1168,13 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 	} else if (container_data.method == 'copy-param') {
 		item_details.find('.form-control').val(container_data.data['parameter']).change();
 		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
-	//} else if (container_data.method == 'load-page') {
-
-// todo: finish this
+	} else if (container_data.method == 'load-page') {
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
+		$(container_data.data['guid']).attr('data-value', container_data.data['data']);
+// todo: finish this
 //		window.debug_elem = item_content;
 //		console.log('DEBUG = ' + window.debug_elem);
 		console.log('container_data.data[data] = ' + container_data.data['data']);
-//		item_content.attr('data-value', container_data.data['data']);
-//		item.find('.dropdown-menu a[data-value="load-page"]').attr('data-value', container_data.data['data']);
-//		item_details.find('.dropdown-menu').attr('data-value', container_data.data['data']);
-
-/*
-		item.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
-		item_details.find('[data-component-type="workflow-action"]').attr('data-value', container_data.data['data']);
-	context.find('[data-component-type="workflow-action"]').each(function() {
-		var action = $(this);
-		console.log('action = ' + JSON.stringify(action));
-		console.log('action.attr(data-value) = ' + action.attr('data-value'));
-*/
 //		item.find('.dropdown-menu a[data-value="send-payment"]').attr("disabled","disabled");
 //		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
 	} else if (container_data.method == 'send-data') {
