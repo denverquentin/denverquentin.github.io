@@ -1168,18 +1168,8 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 	} else if (container_data.method == 'copy-param') {
 		item_details.find('.form-control').val(container_data.data['parameter']).change();
 		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
-	} else if (container_data.method == 'load-page') {
-// todo: finish this
-		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
-		console.log('container_data.data[guid] = ' + container_data.data['guid']);
-		console.log('container_data.data[data] = ' + container_data.data['data']);
-
-//	var context = $('#' + guid);
-		console.log('DEBUG = ' + JSON.stringify($('#'+container_data.data['guid'])));
-
+	} else if (container_data.method == 'load-page') {// TAOS-1718
 		$('#'+container_data.data['guid']).attr('data-value', container_data.data['data']);
-//		item.find('.dropdown-menu a[data-value="send-payment"]').attr("disabled","disabled");
-//		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
 	} else if (container_data.method == 'send-data') {
 		//if undefined or null default value will be true
 		if (container_data.data['exclude-giving']==null || container_data.data['exclude-giving']===undefined) {
@@ -1622,160 +1612,6 @@ rc.comp.CampaignAsk.setFrequencyAmountMinThreshold = function(key, val) {
 	rc.comp.CampaignAsk.frequencyAmountMinThreshold[key] = val;
 };
 
-/* old code - delete once refactor is complete
-rc.comp.CampaignAsk = function(container, data) {
-	this.container = container;
-	this.type = 'CampaignAsk';
-	this.data = data || {};
-	this.data.data = this.data.data || {};
-	this.component = rc.comp.insert('#rc-component-campaign-ask', this.container, this.data);
-	this.headers = this.component.find('.rc-component-headers');
-	this.content = this.component.find('.rc-component-content');
-	// Copy text values
-	this.component.find('.text-1').text(data['text-1']);
-	this.component.find('.text-2').text(data['text-2']);
-	// Actions: Required as properties here so that they can access the "this" value
-	this.send = rc.comp.CampaignAsk.send;
-	this.done = rc.comp.CampaignAsk.done;
-	this.component.find('.input-group').attr('data-required', data.required);
-};
-
-rc.comp.CampaignAsk.send = function(deferred, send) {
-	deferred = deferred || new jQuery.Deferred();
-	send = send || {};
-	send.__action = rc.actions.selectCampaignAskList;
-	rc.comp.remoting.send(deferred, send, this.done, this.fail);
-	return deferred.promise();
-};
-
-
-rc.comp.CampaignAsk.done = function(deferred, send, recv, meta) {
-	console.log('rc.comp.CampaignAsk: recv = ' + JSON.stringify(recv));
-
-	//ask amounts
-	var html = $('#rc-component-campaign-ask-item').html();
-	var list = $('.rc-component-campaign-ask-item-list');
-	var campaignAskContainer = list.closest(".rc-component-campaign-ask > .rc-component-campaign-ask-content");
-	//frequency
-	var freqArray = [];
-	var freqHtml = $('#rc-component-campaign-ask-freq-item').html();
-	var freqList = campaignAskContainer.find(".rc-toggle-primary-container.rc-campaign-ask-frequency-list");
-	//other text field
-	var askOtherArray = [];
-	var otherHtml = $('#rc-component-campaign-ask-other-item').html();
-	var otherContainer = campaignAskContainer.find(".rc-component-campaign-ask-other");
-	list.empty();
-	// Define show/hide functions
-	var showOther = function() {
-		$('.rc-component-campaign-ask-other').show();
-	};
-	var hideOther = function() {
-		$('.rc-component-campaign-ask-other').hide();
-		$('.rc-component-campaign-ask-other input').val('');
-		$('.rc-component-campaign-ask-other .rc-error-label').remove();
-	};
-	// Load results
-	$(recv).each(function() {
-	//$(rc.campaignAskRecords).each(function() {
-		var content = rc.cleanKeysToLower(this);
-		var givingFrequency = content[rc.ns+'giving_frequency__c'] || '';
-		var givingType = content[rc.ns+'giving_type__c'] || '';
-		var freq = $(freqHtml);
-		freq.removeAttr("id");
-		freq.attr("data-show",".rc-amount[data-giving-frequency='" + givingFrequency + "']");
-		freq.attr("data-hide",".rc-amount[data-giving-frequency]");
-		freq.attr('data-value', givingFrequency);
-		freq.text(givingFrequency);
-		freq.on('click', hideOther);
-		campaignAskContainer.find(".note[data-giving-frequency='" + givingFrequency + "']").show();
-		if (!freqArray.length) { freq.removeClass("rc-margin-xs"); }
-		freqArray.push(freq);
-		if (content[rc.ns+'ask_1_amount__c']) {
-			var item = $(html);
-			item.removeAttr('id');
-			item.attr('data-giving-frequency', givingFrequency);
-			item.attr('data-giving-type', givingType);
-			item.attr('data-value', content[rc.ns+'ask_1_amount__c']);
-			item.text('$' + content[rc.ns+'ask_1_amount__c']);
-			item.addClass('rc-editSelection');
-			item.on('click', hideOther);
-			list.append(item);
-		}
-		if (content[rc.ns+'ask_2_amount__c']) {
-			var item = $(html);
-			item.removeAttr('id');
-			item.attr('data-giving-frequency', givingFrequency);
-			item.attr('data-giving-type', givingType);
-			item.attr('data-value', content[rc.ns+'ask_2_amount__c']);
-			item.text('$' + content[rc.ns+'ask_2_amount__c']);
-			item.addClass('rc-editSelection');
-			item.on('click', hideOther);
-			list.append(item);
-		}
-		if (content[rc.ns+'ask_3_amount__c']) {
-			var item = $(html);
-			item.removeAttr('id');
-			item.attr('data-giving-frequency', givingFrequency);
-			item.attr('data-giving-type', givingType);
-			item.attr('data-value', content[rc.ns+'ask_3_amount__c']);
-			item.text('$' + content[rc.ns+'ask_3_amount__c']);
-			item.addClass('rc-editSelection');
-			item.on('click', hideOther);
-			list.append(item);
-		}
-		if (content[rc.ns+'ask_4_amount__c']) {
-			var item = $(html);
-			item.removeAttr('id');
-			item.attr('data-giving-frequency', givingFrequency);
-			item.attr('data-giving-type', givingType);
-			item.attr('data-value', content[rc.ns+'ask_4_amount__c']);
-			item.text('$' + content[rc.ns+'ask_4_amount__c']);
-			item.addClass('rc-editSelection');
-			item.on('click', hideOther);
-			list.append(item);
-		}
-		if (content[rc.ns+'ask_5_amount__c']) {
-			var item = $(html);
-			item.removeAttr('id');
-			item.attr('data-giving-frequency', givingFrequency);
-			item.attr('data-giving-type', givingType);
-			item.attr('data-value', content[rc.ns+'ask_5_amount__c']);
-			item.text('$' + content[rc.ns+'ask_5_amount__c']);
-			item.addClass('rc-editSelection');
-			item.on('click', hideOther);
-			list.append(item);
-		}
-		if (content[rc.ns+'ask_other__c']) {
-			var item = $(html);
-			item.removeAttr('id');
-			item.attr('data-giving-frequency', givingFrequency);
-			item.attr('data-giving-type', givingType);
-			item.text('Other..');
-			item.addClass('rc-editSelection');
-			item.on('click', showOther);
-			list.append(item);
-			var otherElem = $(otherHtml);
-			otherElem.attr('data-giving-frequency', givingFrequency);
-			otherElem.attr('data-giving-type', givingType);
-			askOtherArray.push(otherElem);
-		}
-		//Note: Keeping minimum threshold amound in map to validate other amount when submitting the form.
-		rc.comp.CampaignAsk.frequencyAmountMinThreshold[content[rc.ns+'giving_frequency__c']] = content[rc.ns+'minimum_amount_threshold__c'];
-	});
-	freqList.empty();
-	otherContainer.empty();
-	if (freqArray && freqArray.length > 0) {freqArray[0].removeClass('');}
-	freqList.append(freqArray);
-	otherContainer.append(askOtherArray);
-	if (recv.length == 0) {list.append('<div class="alert alert-warning">No ask values configured!</div>');}
-	rc.comp.initialize(campaignAskContainer);
-	// Set the first one active
-	$('.rc-campaign-ask-frequency-list .btn').filter(':first').click();
-	// Validate CampaignAsk section against payment Processor
-	rc.comp.validateCampaignAskSection();
-};
-*/
-
 rc.comp.CampaignAsk.getAskValueFromMergeFields = function(result) {
 	result['finalAmount'] = 0;
 	//check if giving frequenncy field is exist on the page
@@ -1841,37 +1677,7 @@ rc.comp.CampaignAsk.getComponentAskValue = function() {
 	}
 	return result;
 };
-/*	todo: next 2 methods are not referenced anywhere - delete soon
-rc.comp.CampaignAsk.populateUpsertData = function(send) {
-	var askAmount = rc.comp.CampaignAsk.getAskValue();
-	if (askAmount && askAmount.frequency) {
-		send[rc.ns+'giving_giving_frequency__c'] = askAmount.frequency;
-		if (askAmount.finalAmount) {send[rc.ns+'giving_giving_amount__c'] = askAmount.finalAmount;}
-		if (askAmount.frequency != rc.givingFreqOnePymt) {
-			send[rc.ns+'giving_is_sustainer__c'] = 'true';
-		} else {
-			send[rc.ns+'giving_is_sustainer__c'] = 'false';
-		}
-	}
-	return send;
-};
 
-rc.comp.CampaignAsk.validateMergeFieldsAskValue = function() {
-	//check if giving frequenncy field is exist on the page
-	var isGivingFrequencyMergeField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_frequency__c"]').val() != undefined ? true : false;
-	//check if giving amount field is exist on the page
-	var isGivingAmountMergeField = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_amount__c"]').val() != undefined ? true : false;
-	//if fields are not present on the form
-	if (isGivingFrequencyMergeField == false && isGivingAmountMergeField == false) {return true;}
-	var isGivingAmountRequired = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_amount__c"]').closest('.input-group').attr('data-required');
-	var amount = $('.rc-component-merge-field-content').find('[name="'+rc.ns+'giving_giving_amount__c"]').val();
-	if (isGivingAmountRequired == "true" && parseInt(amount) == 0) {
-		rc.ui.showMessagePopup(rc.ui.ERROR, 'Please enter giving amount and retry.');
-		return false;
-	}
-	return true;
-};
-*/
 // Validate Campaign Ask amount entered
 rc.comp.CampaignAsk.validateAskValue = function() {
 	var askValue = rc.comp.CampaignAsk.getAskValue();
@@ -3224,7 +3030,6 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	//always disable the actionButton which was source of the event
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
 	var context = $('#' + guid);
-	console.log('rc.wf.execute');
 	var flow_origin = new jQuery.Deferred(); // null deferred to kickoff the flow
 	var flow = flow_origin.promise();
 	rc.wf.retroactiveFailure = new jQuery.Deferred();
@@ -3233,13 +3038,6 @@ rc.wf.execute = function(guid,actionButtonContext) {
 	// Add actions
 	context.find('[data-component-type="workflow-action"]').each(function() {
 		var action = $(this);
-		window.debug_elem = action;
-		console.log('DEBUG THIS');
-		console.log(window.debug_elem);
-//		console.log('action = ' + JSON.stringify(action));
-		console.log('action.attr(data-method) = ' + action.attr('data-method'));
-		console.log('action.attr(data-value) = ' + action.attr('data-value'));
-
 		var action_type = action.attr('data-context');
 		var action_guid = action.attr('id');
 		var action_method = action.attr('data-method');
@@ -3284,7 +3082,6 @@ rc.wf.execute = function(guid,actionButtonContext) {
 };
 
 rc.wf.process = function(type, guid, data, actionButtonContext) {
-	console.log('rc.wf.process');
 	//always disable action button when executing any action
 	if (actionButtonContext) {actionButtonContext.prop("disabled",true);}
 	// Find and execute
@@ -3345,31 +3142,13 @@ rc.wf.process.LoadData = function(deferred, action, data) {
 };
 
 rc.wf.process.LoadPage = function(deferred, action, data) {
-	console.log('rc.wf.process.LoadPage');
-	console.log('action = ' + JSON.stringify(action));
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
 		+ '&formCampaignId=' + campaignFormId + '&form=' + $(action).attr('data-value')
 		+ '&data=' + rc.getParam('data');
-
-	console.log('action.attr(data-method) = ' + action.attr('data-method'));
-	console.log('action.attr(data-value) = ' + action.attr('data-value'));
-	console.log('redirectTo = ' + redirectTo);
-//	window.location = redirectTo;
-};
-
-/*
-rc.workflow.process.LoadPage = function(deferred, action, data) {
-	var redirectTo = '{!$Page.Campaign_DesignForm}'
-	+ '?' + 'id={!$CurrentPage.Parameters.Id}'
-	+ '&' + 'formCampaignId={!BLANKVALUE($CurrentPage.Parameters.FormCampaignId, $CurrentPage.Parameters.Id)}'
-	+ '&' + 'form=' + action.attr('data-value')
-	+ '&' + 'data=' + rc.getParam('data');
-
 	window.location = redirectTo;
 };
-*/
 
 rc.wf.process.TrafficController = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;

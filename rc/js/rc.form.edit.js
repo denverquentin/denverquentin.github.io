@@ -389,8 +389,6 @@ rc.ui.markUnsavedChanges = function() {
 rc.modal.loadContainerCSS = function() {
 	var component = $('.rc-selected').filter(':first');
 	var context = $(this).find('.rc-cascade-value-target');
-	console.log('using component:', component);
-	console.log('using context:', context);
 	// Reset any current items
 	context.find('[data-cascade^="css-"]').filter('.btn-primary').removeClass('btn-primary');
 	context.find('[data-cascade^="css-"]').filter('input').val('');
@@ -415,8 +413,6 @@ rc.modal.loadContainerCSS = function() {
 rc.modal.saveContainerCSS = function() {
 	var component = $('.rc-selected').filter(':first');
 	var context = $(this).closest('.rc-cascade-value-target');
-	console.log('using component:', component);
-	console.log('using context:', context);
 	// Delete any form attributes starting with css-
 	$(component.get(0).attributes).each(function(index, attr) {
 		if (attr.name.match('css-')) {component.removeAttr(attr.name);}
@@ -442,7 +438,6 @@ rc.modal.saveContainerCSS = function() {
 };
 
 rc.modal.loadContainerColumns = function() {
-	console.log('rc.modal.loadContainerColumns', this);
 	var item = $('.rc-selected').filter(':first');// Working container
 	// Set the right number of columns
 	var form = $(this);
