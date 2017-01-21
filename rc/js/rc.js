@@ -55,7 +55,7 @@ rc.initializeFormApp = function() {
 		});
 		rc.rollupDefaultValues();/* Assign default values to all the fields */
 		// only do this method call if the "data" parameter is set - elminates ajax request to SF
-		var dataParam = rc.getDataParamVal();
+		var dataParam = rc.getParamVal('data');
 		if (dataParam != null && dataParam != '') {
 			rc.selectData();
 		} else {
@@ -145,11 +145,11 @@ rc.setParam = function(name, data) {
 };
 
 // specific to finding the data parameter which can be ?data, &data or #data
-rc.getDataParamVal = function() {
+rc.getParamVal = function(name) {
 	var match = window.location.href.match(/[^=&?]+\s*=\s*[^&#]*/g);
 	for (var i = match.length; i--;) {
 		var spl = match[i].split("=");
-		if (spl[0].toLowerCase() == 'data' || spl[0].toLowerCase() == '#data') {
+		if (spl[0].toLowerCase() == name.toLowerCase() || spl[0].toLowerCase() == name.toLowerCase()) {
 			return spl[1];
 		}
 	}
