@@ -1171,9 +1171,8 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 	} else if (container_data.method == 'load-page') {
 // todo: finish this
 		console.log('SETTING ATTRIBUTE FOR load-page!!!!!!!!!!!!!!!!!!!!!!!!!!');
-		$(container_data.data['guid']).attr('data-value', container_data.data['data']);
-		window.debug_elem = $(container_data.data['guid']);
-		console.log('DEBUG = ' + window.debug_elem);
+		$('#'+container_data.data['guid']).attr('data-value', container_data.data['data']);
+		console.log('DEBUG = ' + $('#'+container_data.data['guid']));
 		console.log('container_data.data[data] = ' + container_data.data['data']);
 //		item.find('.dropdown-menu a[data-value="send-payment"]').attr("disabled","disabled");
 //		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
