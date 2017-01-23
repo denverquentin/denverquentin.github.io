@@ -31,7 +31,7 @@ rc.initializeFormAppInDesignMode = function() {
 	//on view change, refresh html block elements to toggle between html<->text views
 	rc.events.on('view-change',rc.comp.HtmlBlock.refreshView);
 	// on view change, toggle placeholder values shown in fields
-	rc.events.on('view-change',rc.rollupPlaceholderValues);
+	//rc.events.on('view-change',rc.rollupPlaceholderValues);
 	// on view change, toggle default values shown in fields
 	rc.events.on('view-change',rc.rollupDefaultValues);
 	rc.initializeModals();
