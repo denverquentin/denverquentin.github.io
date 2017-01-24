@@ -3145,17 +3145,16 @@ rc.wf.process.LoadPage = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
-		+ '&formCampaignId=' + campaignFormId
-		if (rc.getParam('data') != null && rc.getParam('data') != '') {
-			+ '&data=' + rc.getParam('data');
-		}
-		// this code is a little hacky do get this functionality to work for both customer view and design/edit
-		if (rc.isEditMode) {
-			+ '#mode=view&form=' + $(action).attr('data-value');
-		} else {
-			+ '&form=' + $(action).attr('data-value');
-		}
-
+		+ '&formCampaignId=' + campaignFormId;
+	if (rc.getParam('data') != null && rc.getParam('data') != '') {
+		redirectTo += '&data=' + rc.getParam('data');
+	}
+	// this code is a little hacky do get this functionality to work for both customer view and design/edit
+	if (rc.isEditMode) {
+		redirectTo += '#mode=view&form=' + $(action).attr('data-value');
+	} else {
+		redirectTo += '&form=' + $(action).attr('data-value');
+	}
 	window.location = redirectTo;
 };
 
