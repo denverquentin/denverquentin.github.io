@@ -75,9 +75,13 @@ rc.selectFormInfoList.done = function(deferred, send, recv, meta) {
 	// When the form item is clicked, reselect the form data
 	list.find('.rc-link').on('click', rc.selectFormData);
 	// Is there a form already selected? Or just choose the first page?
-	var formParam = rc.getParamVal('form');
-	if (formParam != null && formParam != '') {
-		$('.rc-link[data-value="' + formParam + '"]').click();
+    var form = rc.paramFormId || rc.getParam('form');
+    if (form) {
+        $('.rc-link[data-value="' + form+ '"]').click();
+//	var formParam = rc.getParamVal('form');
+//	if (formParam != null && formParam != '') {
+//		$('.rc-link[data-value="' + formParam + '"]').click();
+
 	} else {
 		$('.rc-link:first').click();
 	}
