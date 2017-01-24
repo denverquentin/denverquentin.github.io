@@ -96,6 +96,7 @@ rc.selectFormInfoList.fail = function(deferred, send, recv, meta) {
 rc.selectFormData = function() {
 	// Set the form name param if it's missing
 	var formParam = rc.getParamVal('form');
+	console.log('formParam = ' + formParam);
 	if (formParam == null || formParam == '') {
 		formParam = $(this).attr('data-value');
 		rc.setParam('form', formParam);
@@ -107,6 +108,8 @@ rc.selectFormData = function() {
 	href = href.replace('#{fid}', formParam);
 	$('.page-header a.fa-link').attr('href', href);
 	// Load that page
+	console.log('href = ' + href);
+
 	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,formParam,rc.selectFormData.done,{escape:false});
 	rc.ui.markProcessing();// Mark processing
 };
