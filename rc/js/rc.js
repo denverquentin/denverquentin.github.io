@@ -1168,10 +1168,8 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 	} else if (container_data.method == 'copy-param') {
 		item_details.find('.form-control').val(container_data.data['parameter']).change();
 		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
-	} else if (container_data.method == 'load-page') {// TAOS-1718 - only want to do this for customer view
-		if (!rc.isEditMode) {
-			$('#'+container_data.data['guid']).attr('data-value', container_data.data['data']);
-		}
+	} else if (!rc.isEditMode && container_data.method == 'load-page') {// TAOS-1718 - only want to do this for customer view
+		$('#'+container_data.data['guid']).attr('data-value', container_data.data['data']);
 	} else if (container_data.method == 'send-data') {
 		//if undefined or null default value will be true
 		if (container_data.data['exclude-giving']==null || container_data.data['exclude-giving']===undefined) {
