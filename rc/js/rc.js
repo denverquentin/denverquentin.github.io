@@ -3145,7 +3145,10 @@ rc.wf.process.LoadPage = function(deferred, action, data) {
 	var campaignFormId = rc.paramFormCampaignId;
 	if (campaignFormId == '') {campaignFormId=rc.campaignId;}
 	var redirectTo = rc.pageCampaignDesignForm + '?id=' + rc.campaignId
-		+ '&formCampaignId=' + campaignFormId + '&data=' + rc.getParam('data')
+		+ '&formCampaignId=' + campaignFormId
+		if (rc.getParam('data') != null && rc.getParam('data') != '') {
+			+ '&data=' + rc.getParam('data');
+		}
 		+ '#mode=view&form=' + $(action).attr('data-value');
 	window.location = redirectTo;
 };
