@@ -97,7 +97,6 @@ rc.selectFormData = function() {
 	// Set the form name param if it's missing
 	var formParam = rc.getParamVal('form');
     rc.setParam('form', $(this).attr('data-value') || formParam);
-	console.log('formParam = ' + formParam);
 	// Set the form link element
 	var href = '#{base}/' + rc.ns + 'campaign_designform?id=#{cid}&form=#{fid}';
 	href = href.replace('#{base}', '//' + rc.siteUrl);
@@ -105,8 +104,6 @@ rc.selectFormData = function() {
 	href = href.replace('#{fid}', rc.getParam('form'));
 	$('.page-header a.fa-link').attr('href', href);
 	// Load that page
-	console.log('href = ' + href);
-
 	rc.remoting.invokeAction(rc.actions.selectFormData,rc.campaignId,rc.getParam('form'),rc.selectFormData.done,{escape:false});
 	rc.ui.markProcessing();// Mark processing
 };
