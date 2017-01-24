@@ -3366,14 +3366,15 @@ rc.wf.process.populateDefaultFields = function(action, data) {
 rc.wf.process.getCreditCardType = function(ccNum) {
 	if (ccNum == undefined || ccNum == '') {return '';}
 	var visa = new RegExp("^4[0-9]{12}(?:[0-9]{3})?$");
-	var master = new RegExp("^5[1-5][0-9]{14}$");
+	var master1 = new RegExp("^5[1-5][0-9]{14}$");
+	var master2 = new RegExp("^2[2-7][0-9]{14}$");//222100-272099
 	var amex = new RegExp("^3[47][0-9]{13}$");
 	var diners = new RegExp("^3(?:0[0-5]|[68][0-9])[0-9]{11}$");
 	var discover = new RegExp("^6(?:011|5[0-9]{2})[0-9]{12}$");
 	var jcb = new RegExp("^(?:2131|1800|35/d{3})/d{11}$");
 	if (visa.exec(ccNum) != null) {
 		return "visa";
-	} else if (master.exec(ccNum) != null) {
+	} else if (master1.exec(ccNum) != null || master2.exec(ccNum) != null) {
 		return "mastercard";
 	} else if (amex.exec(ccNum) != null) {
 		return "amex";
