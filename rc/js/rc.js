@@ -131,7 +131,7 @@ rc.getParam = function(name) {
 };
 
 rc.setParam = function(name, data) {
-	if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
+	//if (/mode/.test(name) && /false/.test(rc.isEditMode)) {return;}
 	rc.params[name] = data;
 	var hash = '';// rebuild the hash
 	for (name in rc.params) {
