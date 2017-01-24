@@ -1169,7 +1169,7 @@ rc.comp.insertWorkflowAction = function(container, container_data) {
 		item_details.find('.form-control').val(container_data.data['parameter']).change();
 		item_details.find('.dropdown-menu').attr('data-original-target', container_data.data['data']);
 	} else if (container_data.method == 'load-page') {// TAOS-1718 - only want to do this for customer view
-		if (rc.isEditMode!) {
+		if (!rc.isEditMode) {
 			$('#'+container_data.data['guid']).attr('data-value', container_data.data['data']);
 		}
 	} else if (container_data.method == 'send-data') {
