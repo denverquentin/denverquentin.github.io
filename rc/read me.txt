@@ -11,3 +11,16 @@ the corresponding .min.js or .min.css file.
 
 http://csscompressor.com/
 http://javascript-compressor.com/
+
+
+TODO - REPLACE CURRENT VALIDATION FRAMEWORK WITH AN OPEN SOURCE ONE
+The current design form code uses the following validation framework:
+https://github.com/nghuuphuoc/bootstrapvalidator
+Unfortunately this framework was "productized" and hasn't been updated in over 2 years.
+The productized version is here and cost $200 - http://formvalidation.io/license/
+
+To complete TAOS-1730, the bootstrapValidator.js file was downloaded, modified and
+added to the static resource zip used by the design form since we needed a quick turnaround
+for the bug. Long term, we should either switch to a free and maintained open source
+javascript validation library such as https://jqueryvalidation.org OR buy the productized
+version of the library we're currently using so we have documentation and can get updates.
