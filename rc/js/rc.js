@@ -3600,10 +3600,8 @@ rc.upsertData.validate = function() {
 };
 
 rc.upsertData.done = function(deferred, send, recv, meta) {
-	// Update the batch upload ID param
-	rc.setParam('data', recv.__data);
-	// reset any pending payment
-	rc.pendingPayment = null;
+	rc.setParam('data', recv.__data);// Update the batch upload ID param
+	rc.pendingPayment = null;// reset any pending payment
 	rc.ui.releaseProcessingModal();
 };
 
