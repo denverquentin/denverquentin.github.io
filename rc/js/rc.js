@@ -2413,7 +2413,7 @@ rc.comp.CreditCard = function(container, data) {
 	// Attach listener to reformat CC
 	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.comp.CreditCard.format);
 	// Attach listener to add leading 0 to expiration month
-	this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]').on('keyup', rc.comp.CreditCard.formatExpMonth);
+	this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]').on('change', rc.comp.CreditCard.formatExpMonth);
 	//prepopulate values for hidden fields saved along with the form
 	this.component.find('[data-field-hidden="true"]').each(function(index,hiddenField) {
 		var formControlInput = $(hiddenField).find(".form-control");
@@ -3974,7 +3974,6 @@ rc.validate.validatorMap = {
 		callback: {
 			message: 'Expired',
 			callback: function(value, validator, $field) {
-				console.log('IN CALLBACK, value = ' + value);
 				value = parseInt(value, 10);
 				var year = $('[name="'+rc.ns+'payment_method_card_expiration_year__c"]').val(),
 					currentMonth = new Date().getMonth() + 1,
