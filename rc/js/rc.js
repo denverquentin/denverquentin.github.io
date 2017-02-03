@@ -3960,6 +3960,11 @@ rc.validate.validatorMap = {
 		digits: {
 			message: 'The expiration month can contain digits only'
 		},
+		transformer: function($field, validatorName, validator) {
+			var value = $field.val();
+			// prefix 0 if missing for 1-9
+			return ("0" + (value + 1)).slice(-2);
+		},
 		callback: {
 			message: 'Expired',
 			callback: function(value, validator, $field) {
