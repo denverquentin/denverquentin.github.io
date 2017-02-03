@@ -3588,9 +3588,9 @@ rc.upsertData.validate = function() {
 	}
 	var monthContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_month__c"]');
 	var yearContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_year__c"]');
-	console.log('monthContext = ' + monthContext);
 	if (context.attr("name")==rc.ns+"payment_method_card_expiration_month__c") {
 		var month = parseInt(monthContext.val(),10);
+		console.log('month = ' + month);
 		if (month==0) {
 			context.closest(".input-group").addClass("has-error");
 			errorLabel.find(".label-text").text("Invalid month - please update and resubmit.");
