@@ -3588,6 +3588,7 @@ rc.upsertData.validate = function() {
 	}
 	var monthContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_month__c"]');
 	var yearContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_year__c"]');
+	console.log('monthContext = ' + monthContext);
 	if (context.attr("name")==rc.ns+"payment_method_card_expiration_month__c") {
 		var month = parseInt(monthContext.val(),10);
 		if (month==0) {
@@ -3961,9 +3962,10 @@ rc.validate.validatorMap = {
 			message: 'The expiration month can contain digits only'
 		},
 		transformer: function($field, validatorName, validator) {
-			var value = $field.val();
+			console.log('$field.val() = ' + $field.val());
+			console.log('(0 + ($field.val() + 1)).slice(-2) = ' + ('0' + ($field.val() + 1)).slice(-2));
 			// prefix 0 if missing for 1-9
-			return ("0" + (value + 1)).slice(-2);
+			return ('0' + ($field.val() + 1)).slice(-2);
 		},
 		callback: {
 			message: 'Expired',
