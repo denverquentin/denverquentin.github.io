@@ -2414,6 +2414,7 @@ rc.comp.CreditCard = function(container, data) {
 	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.comp.CreditCard.format);
 	// Attach listener to add leading 0 to expiration month
 	var x = this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]');
+	console.log(JSON.stringify(this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]')));
 	console.log('x.attr("name") = ' + x.attr("name"));
 	console.log('x.attr("type") = ' + x.attr("type"));
 
