@@ -2412,6 +2412,8 @@ rc.comp.CreditCard = function(container, data) {
 	this.component.attr('data-advanced-fraud-detection-test-mode', data['advanced-fraud-detection-test-mode']);
 	// Attach listener to reformat CC
 	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.comp.CreditCard.format);
+	// Attach listener to add leading 0 to expiration month
+	this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]').on('keyup', rc.comp.CreditCard.formatExpMonth);
 	//prepopulate values for hidden fields saved along with the form
 	this.component.find('[data-field-hidden="true"]').each(function(index,hiddenField) {
 		var formControlInput = $(hiddenField).find(".form-control");
@@ -2440,6 +2442,18 @@ rc.comp.CreditCard.format = function() {
 	data = data ? data.join(' ') : '';
 	if (oldData==data) {return;}
 	$(this).val(data);// Save data back to input
+	rc.validate.validateField(rc.ns+'payment_method_card_expiration_month__c');//revalidate the field
+};
+
+rc.comp.CreditCard.formatExpMonth = function() {
+	var oldVal = $(this).val();
+	var newVal = $(this).val();
+	console.log('oldVal = ' + oldVal);
+	// prefix 0 if missing for 1-9
+	newVal = ('0' + (newVal + 1)).slice(-2);
+	console.log('newVal = ' + newVal);
+	if (newVal==oldVal) {return;}
+	$(this).val(newVal);// Save data back to input
 	rc.validate.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
 };
 
@@ -3948,44 +3962,35 @@ rc.validate.validatorMap = {
 		}
 	},
 	"monthExpiration" : {
-		transformer: function($field, validatorName, validator) {
-			var value = $field.val();
-			console.log('value = ' + value);
-			console.log('(0 + ($field.val() + 1)).slice(-2) = ' + ('0' + (value + 1)).slice(-2));
-			// prefix 0 if missing for 1-9
-			return ('0' + (value + 1)).slice(-2);
+		between: {
+			min: 1,
+			max: 12,
+			inclusive: true,
+			message: 'The month must be between 01 and 12'
 		},
-		validators: {
-			between: {
-				min: 1,
-				max: 12,
-				inclusive: true,
-				message: 'The month must be between 01 and 12'
-			},
-			digits: {
-				message: 'The expiration month can contain digits only'
-			},
-			callback: {
-				message: 'Expired',
-				callback: function(value, validator, $field) {
-					console.log('IN CALLBACK, value = ' + value);
-					value = parseInt(value, 10);
-					var year = $('[name="'+rc.ns+'payment_method_card_expiration_year__c"]').val(),
-						currentMonth = new Date().getMonth() + 1,
-						currentYear  = new Date().getFullYear();
-					if (value < 0 || value > 12) {
-						return false;
-					}
-					if (year == '') {
-						return true;
-					}
-					year = parseInt(year, 10);
-					if (year > currentYear || (year == currentYear && value >= currentMonth)) {
-						validator.updateStatus(rc.ns+'payment_method_card_expiration_year__c', 'VALID');
-						return true;
-					} else {
-						return false;
-					}
+		digits: {
+			message: 'The expiration month can contain digits only'
+		},
+		callback: {
+			message: 'Expired',
+			callback: function(value, validator, $field) {
+				console.log('IN CALLBACK, value = ' + value);
+				value = parseInt(value, 10);
+				var year = $('[name="'+rc.ns+'payment_method_card_expiration_year__c"]').val(),
+					currentMonth = new Date().getMonth() + 1,
+					currentYear  = new Date().getFullYear();
+				if (value < 0 || value > 12) {
+					return false;
+				}
+				if (year == '') {
+					return true;
+				}
+				year = parseInt(year, 10);
+				if (year > currentYear || (year == currentYear && value >= currentMonth)) {
+					validator.updateStatus(rc.ns+'payment_method_card_expiration_year__c', 'VALID');
+					return true;
+				} else {
+					return false;
 				}
 			}
 		}
