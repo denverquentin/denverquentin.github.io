@@ -2414,14 +2414,13 @@ rc.comp.CreditCard = function(container, data) {
 	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.comp.CreditCard.format);
 	// Attach listener to add leading 0 to expiration month
 	var x = this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]');
-	console.log(JSON.stringify(this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]')));
-	console.log('x.attr("name") = ' + x.attr("name"));
+	console.log(JSON.stringify(x));
+	console.log('x.attr("data-field-name") = ' + x.attr("data-field-name"));
 	console.log('x.attr("type") = ' + x.attr("type"));
 
 	var y = this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]');
 	console.log('y.attr("name") = ' + y.attr("name"));
 	console.log('y.attr("type") = ' + y.attr("type"));
-
 /*
 <div data-field-text="Card Number"
 	 data-field-name="{!nameSpaceLowerCase}payment_method_card_number__c"
@@ -2438,8 +2437,7 @@ rc.comp.CreditCard = function(container, data) {
 	 data-field-menu="#rc-ui-template--dropdown-month"
 	 data-template="#rc-component-merge-field .rc-component-content"></div>
 */
-
-	this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]').on('blur', rc.comp.CreditCard.formatExpMonth);
+	this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]').on('keyup', rc.comp.CreditCard.formatExpMonth);
 	//prepopulate values for hidden fields saved along with the form
 	this.component.find('[data-field-hidden="true"]').each(function(index,hiddenField) {
 		var formControlInput = $(hiddenField).find(".form-control");
