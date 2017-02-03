@@ -3590,7 +3590,6 @@ rc.upsertData.validate = function() {
 	var yearContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_year__c"]');
 	if (context.attr("name")==rc.ns+"payment_method_card_expiration_month__c") {
 		var month = parseInt(monthContext.val(),10);
-		console.log('month = ' + month);
 		if (month==0) {
 			context.closest(".input-group").addClass("has-error");
 			errorLabel.find(".label-text").text("Invalid month - please update and resubmit.");
@@ -3959,13 +3958,13 @@ rc.validate.validatorMap = {
 			message: 'The month must be between 01 and 12'
 		},
 		digits: {
-			message: 'The expiration month can contain digits only'
-		},
-		transformer: function($field, validatorName, validator) {
-			console.log('$field.val() = ' + $field.val());
-			console.log('(0 + ($field.val() + 1)).slice(-2) = ' + ('0' + ($field.val() + 1)).slice(-2));
-			// prefix 0 if missing for 1-9
-			return ('0' + ($field.val() + 1)).slice(-2);
+			message: 'The expiration month can contain digits only',
+			transformer: function($field, validatorName, validator) {
+				console.log('$field.val() = ' + $field.val());
+				console.log('(0 + ($field.val() + 1)).slice(-2) = ' + ('0' + ($field.val() + 1)).slice(-2));
+				// prefix 0 if missing for 1-9
+				return ('0' + ($field.val() + 1)).slice(-2);
+			}
 		},
 		callback: {
 			message: 'Expired',
