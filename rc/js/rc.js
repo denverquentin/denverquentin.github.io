@@ -3955,34 +3955,37 @@ rc.validate.validatorMap = {
 			// prefix 0 if missing for 1-9
 			return ('0' + (value + 1)).slice(-2);
 		},
-		between: {
-			min: 1,
-			max: 12,
-			inclusive: true,
-			message: 'The month must be between 01 and 12'
-		},
-		digits: {
-			message: 'The expiration month can contain digits only'
-		},
-		callback: {
-			message: 'Expired',
-			callback: function(value, validator, $field) {
-				value = parseInt(value, 10);
-				var year = $('[name="'+rc.ns+'payment_method_card_expiration_year__c"]').val(),
-					currentMonth = new Date().getMonth() + 1,
-					currentYear  = new Date().getFullYear();
-				if (value < 0 || value > 12) {
-					return false;
-				}
-				if (year == '') {
-					return true;
-				}
-				year = parseInt(year, 10);
-				if (year > currentYear || (year == currentYear && value >= currentMonth)) {
-					validator.updateStatus(rc.ns+'payment_method_card_expiration_year__c', 'VALID');
-					return true;
-				} else {
-					return false;
+		validators: {
+			between: {
+				min: 1,
+				max: 12,
+				inclusive: true,
+				message: 'The month must be between 01 and 12'
+			},
+			digits: {
+				message: 'The expiration month can contain digits only'
+			},
+			callback: {
+				message: 'Expired',
+				callback: function(value, validator, $field) {
+					console.log('IN CALLBACK, value = ' + value);
+					value = parseInt(value, 10);
+					var year = $('[name="'+rc.ns+'payment_method_card_expiration_year__c"]').val(),
+						currentMonth = new Date().getMonth() + 1,
+						currentYear  = new Date().getFullYear();
+					if (value < 0 || value > 12) {
+						return false;
+					}
+					if (year == '') {
+						return true;
+					}
+					year = parseInt(year, 10);
+					if (year > currentYear || (year == currentYear && value >= currentMonth)) {
+						validator.updateStatus(rc.ns+'payment_method_card_expiration_year__c', 'VALID');
+						return true;
+					} else {
+						return false;
+					}
 				}
 			}
 		}
