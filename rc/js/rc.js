@@ -3730,9 +3730,8 @@ rc.validate.initializeFieldValidator = function(component) {
 	//check if validate flag already set (via json data load) if field validator is not disabled
 	if (component.hasClass("validate-field")) {
 		validateTypeAttr = component.attr('data-validate-type');
-		//instead of array store to json genarate validation rule accordingly
-		//currently only supporting standard validations stored as attributes
-		//which are populated via json
+		// instead of array store to json genarate validation rule accordingly currently
+		// only supporting standard validations stored as attributes which are populated via json
 		if (validateTypeAttr) {
 			validatorTypesArray = validateTypeAttr.split(";");
 		}
@@ -3949,6 +3948,13 @@ rc.validate.validatorMap = {
 		}
 	},
 	"monthExpiration" : {
+		transformer: function($field, validatorName, validator) {
+			var value = $field.val();
+			console.log('value = ' + value);
+			console.log('(0 + ($field.val() + 1)).slice(-2) = ' + ('0' + (value + 1)).slice(-2));
+			// prefix 0 if missing for 1-9
+			return ('0' + (value + 1)).slice(-2);
+		},
 		between: {
 			min: 1,
 			max: 12,
@@ -3956,13 +3962,7 @@ rc.validate.validatorMap = {
 			message: 'The month must be between 01 and 12'
 		},
 		digits: {
-			message: 'The expiration month can contain digits only',
-			transformer: function($field, validatorName, validator) {
-				console.log('$field.val() = ' + $field.val());
-				console.log('(0 + ($field.val() + 1)).slice(-2) = ' + ('0' + ($field.val() + 1)).slice(-2));
-				// prefix 0 if missing for 1-9
-				return ('0' + ($field.val() + 1)).slice(-2);
-			}
+			message: 'The expiration month can contain digits only'
 		},
 		callback: {
 			message: 'Expired',
