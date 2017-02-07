@@ -2415,8 +2415,18 @@ rc.comp.CreditCard = function(container, data) {
 
 	// Attach listener to reformat CC
 	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.comp.CreditCard.format);
+
 	// Attach listener to add leading 0 to expiration month
-	this.component.find('[data-name="'+rc.ns+'payment_method_card_expiration_month__c"]').on('blur', rc.comp.CreditCard.formatExpMonth);
+	this.component.find('[name="'+rc.ns+'payment_method_card_expiration_month__c"]').on('blur', rc.comp.CreditCard.formatExpMonth);
+
+/*	todo: remove this - doesn't work
+
+
+	var monthContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_month__c"]');
+	var yearContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_year__c"]');
+	if (context.attr("name")==rc.ns+"payment_method_card_expiration_month__c") {
+
+
 
 	var x = this.component.find('[data-field-name="'+rc.ns+'payment_method_card_expiration_month__c"]');
 	console.log(JSON.stringify(x));
@@ -2427,7 +2437,7 @@ rc.comp.CreditCard = function(container, data) {
 	console.log('y = ' + JSON.stringify(y));
 	console.log('y.attr("name") = ' + y.attr("name"));
 	console.log('y.attr("type") = ' + y.attr("type"));
-/*
+
 <div data-field-text="Card Number"
 	 data-field-name="{!nameSpaceLowerCase}payment_method_card_number__c"
 	 data-placeholder="0000-0000-0000-0000"
@@ -2475,6 +2485,7 @@ rc.comp.CreditCard.format = function() {
 };
 
 rc.comp.CreditCard.formatExpMonth = function() {
+	console.log('rc.comp.CreditCard.formatExpMonth!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 	var oldVal = $(this).val();
 	var newVal = $(this).val();
 	console.log('oldVal = ' + oldVal);
@@ -2483,7 +2494,7 @@ rc.comp.CreditCard.formatExpMonth = function() {
 	console.log('newVal = ' + newVal);
 	if (newVal==oldVal) {return;}
 	$(this).val(newVal);// Save data back to input
-	rc.validate.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
+//	rc.validate.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
 };
 
 rc.comp.Button = function(container, data) {
