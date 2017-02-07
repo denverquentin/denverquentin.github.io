@@ -2447,6 +2447,12 @@ rc.comp.CreditCard.format = function() {
 
 rc.comp.CreditCard.formatExpMonth = function() {
 	console.log('rc.comp.CreditCard.formatExpMonth!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+	var x = $(this).val();
+	console.log('x = ' + x);
+	if (x == 1 || x == 2) {
+		$(this).val('0' + x);// Save data back to input
+	}
+/*
 	var oldVal = $(this).val();
 	var newVal = $(this).val();
 	console.log('oldVal = ' + oldVal);
@@ -2455,6 +2461,7 @@ rc.comp.CreditCard.formatExpMonth = function() {
 	console.log('newVal = ' + newVal);
 	if (newVal==oldVal) {return;}
 	$(this).val(newVal);// Save data back to input
+*/
 	rc.validate.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
 };
 
