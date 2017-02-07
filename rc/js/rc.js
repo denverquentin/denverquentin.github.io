@@ -2490,7 +2490,7 @@ rc.comp.CreditCard.formatExpMonth = function() {
 	var newVal = $(this).val();
 	console.log('oldVal = ' + oldVal);
 	// prefix 0 if missing for 1-9
-	newVal = ('0' + (newVal + 1)).slice(-2);
+	newVal = ('0' + newVal).slice(-2);
 	console.log('newVal = ' + newVal);
 	if (newVal==oldVal) {return;}
 	$(this).val(newVal);// Save data back to input
