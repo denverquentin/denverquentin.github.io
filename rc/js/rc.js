@@ -2410,49 +2410,10 @@ rc.comp.CreditCard = function(container, data) {
 	this.component.attr('data-merchant-id', data['merchant-id']);
 	this.component.attr('data-advanced-fraud-detection', data['advanced-fraud-detection']);
 	this.component.attr('data-advanced-fraud-detection-test-mode', data['advanced-fraud-detection-test-mode']);
-
-	console.log(JSON.stringify(this.component));
-
 	// Attach listener to reformat CC
 	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]').on('keyup', rc.comp.CreditCard.format);
-
 	// Attach listener to add leading 0 to expiration month
 	this.component.find('[name="'+rc.ns+'payment_method_card_expiration_month__c"]').on('blur', rc.comp.CreditCard.formatExpMonth);
-
-/*	todo: remove this - doesn't work
-
-
-	var monthContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_month__c"]');
-	var yearContext = context.closest(".rc-component-credit-card").find('[name="'+rc.ns+'payment_method_card_expiration_year__c"]');
-	if (context.attr("name")==rc.ns+"payment_method_card_expiration_month__c") {
-
-
-
-	var x = this.component.find('[data-field-name="'+rc.ns+'payment_method_card_expiration_month__c"]');
-	console.log(JSON.stringify(x));
-	console.log('x.attr("data-field-name") = ' + x.attr("data-field-name"));
-	console.log('x.attr("type") = ' + x.attr("type"));
-
-	var y = this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]');
-	console.log('y = ' + JSON.stringify(y));
-	console.log('y.attr("name") = ' + y.attr("name"));
-	console.log('y.attr("type") = ' + y.attr("type"));
-
-<div data-field-text="Card Number"
-	 data-field-name="{!nameSpaceLowerCase}payment_method_card_number__c"
-	 data-placeholder="0000-0000-0000-0000"
-	 data-local-only="true"
-	 data-required="true"
-	 data-template="#rc-component-merge-field .rc-component-content"></div>
-
-<div data-field-text="Expiration Month"
-	 data-field-name="{!nameSpaceLowerCase}payment_method_card_expiration_month__c"
-	 data-placeholder="01 (January)"
-	 data-local-only="false"
-	 data-required="true"
-	 data-field-menu="#rc-ui-template--dropdown-month"
-	 data-template="#rc-component-merge-field .rc-component-content"></div>
-*/
 	//prepopulate values for hidden fields saved along with the form
 	this.component.find('[data-field-hidden="true"]').each(function(index,hiddenField) {
 		var formControlInput = $(hiddenField).find(".form-control");
@@ -2494,7 +2455,7 @@ rc.comp.CreditCard.formatExpMonth = function() {
 	console.log('newVal = ' + newVal);
 	if (newVal==oldVal) {return;}
 	$(this).val(newVal);// Save data back to input
-//	rc.validate.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
+	rc.validate.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
 };
 
 rc.comp.Button = function(container, data) {
