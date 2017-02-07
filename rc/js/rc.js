@@ -2446,22 +2446,11 @@ rc.comp.CreditCard.format = function() {
 };
 
 rc.comp.CreditCard.formatExpMonth = function() {
-	console.log('rc.comp.CreditCard.formatExpMonth!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 	var x = $(this).val();
 	console.log('x = ' + x);
-	if (x == 1 || x == 2) {
+	if (x == 1 || x == 2 || x == 3 || x == 4 || x == 5 || x == 6 || x == 7 || x == 8 || x == 9) {
 		$(this).val('0' + x);// Save data back to input
 	}
-/*
-	var oldVal = $(this).val();
-	var newVal = $(this).val();
-	console.log('oldVal = ' + oldVal);
-	// prefix 0 if missing for 1-9
-	newVal = ('0' + newVal).slice(-2);
-	console.log('newVal = ' + newVal);
-	if (newVal==oldVal) {return;}
-	$(this).val(newVal);// Save data back to input
-*/
 	rc.validate.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
 };
 
