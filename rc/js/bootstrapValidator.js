@@ -2608,7 +2608,7 @@ if (typeof jQuery === 'undefined') {
                 },
                 MASTERCARD: {
                     length: [16],
-                    prefix: ['51', '52', '53', '54', '55']
+                    prefix: ['51', '52', '53', '54', '55', '22', '23', '24', '25', '26', '27']
                 },
                 SOLO: {
                     length: [16, 18, 19],
