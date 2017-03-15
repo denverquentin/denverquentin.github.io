@@ -2442,13 +2442,8 @@ rc.comp.CreditCard.format = function() {
 	data = data ? data.join(' ') : '';
 	if (oldData==data) {return;}
 	$(this).val(data);// Save data back to input
-/*
-	// Attach listener to reformat CC
-	this.component.find('[data-name="'+rc.ns+'payment_method_card_number__c"]');
-	// Attach listener to add leading 0 to expiration month
-	;
-*/
-	var expMonth = $('rc-component-credit-card').find('[name="'+rc.ns+'payment_method_card_expiration_month__c"]').val();
+
+	var expMonth = $('[name="'+rc.ns+'payment_method_card_expiration_month__c"]').val();
 	console.log('#expMonth = ' + expMonth);
 	//rc.validate.validateField(rc.ns+'payment_method_card_expiration_month__c');//revalidate the field
 };
