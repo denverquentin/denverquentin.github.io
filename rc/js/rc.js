@@ -2442,7 +2442,7 @@ rc.comp.CreditCard.format = function() {
 	data = data ? data.join(' ') : '';
 	if (oldData==data) {return;}
 	$(this).val(data);// Save data back to input
-	var expMonth = $(rc.ns+'payment_method_card_expiration_month__c').val();
+	var expMonth = $('#'+rc.ns+'payment_method_card_expiration_month__c').val();
 	console.log('expMonth = ' + expMonth);
 	//rc.validate.validateField(rc.ns+'payment_method_card_expiration_month__c');//revalidate the field
 };
@@ -2453,7 +2453,7 @@ rc.comp.CreditCard.formatExpMonth = function() {
 		$(this).val('0' + x);// Save data back to input
 	}
 
-	var ccNum = $(rc.ns+'payment_method_card_number__c').val();
+	var ccNum = $('#'+rc.ns+'payment_method_card_number__c').val();
 	console.log('ccNum = ' + ccNum);
 	//rc.validate.validateField(rc.ns+'payment_method_card_number__c');//revalidate the field
 };
